@@ -10,7 +10,6 @@ import Main from "./layout/Main.tsx";
 import Transactions from "./pages/Transactions/Transactions.tsx";
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
     <MantineProvider>
       <Notifications />
       <ModalsProvider>
@@ -19,5 +18,4 @@ createRoot(document.getElementById("root")!).render(
         </Main>
       </ModalsProvider>
     </MantineProvider>
-  </StrictMode>,
 );
