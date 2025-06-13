@@ -83,7 +83,7 @@ function Transactions() {
           </Table.Td>
         </Table.Tr>
       )),
-    [transactions],
+    [transactions]
   );
 
   useEffect(() => {
@@ -132,10 +132,7 @@ function Transactions() {
               label={"Date"}
             />
           </Group>
-          <Button
-            onClick={(e) => addTransaction(transaction)}
-            variant={"light"}
-          >
+          <Button onClick={() => addTransaction(transaction)} variant={"light"}>
             Add New Transaction
           </Button>
         </Flex>
