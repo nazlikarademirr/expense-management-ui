@@ -1,5 +1,4 @@
 import { AppShell } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
 import { Navbar } from "./Navbar/Navbar.tsx";
 
 interface MainProps {
@@ -7,15 +6,12 @@ interface MainProps {
 }
 
 function Main({ children }: MainProps) {
-  const [opened, { toggle }] = useDisclosure();
-
   return (
     <AppShell
       layout="default"
       navbar={{
         width: 50,
         breakpoint: "sm",
-        collapsed: { mobile: !opened },
       }}
       padding="md"
     >

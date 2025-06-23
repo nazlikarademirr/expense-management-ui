@@ -12,14 +12,17 @@
   "dependencies": {
     "@mantine/core": "^7.17.3",
     "@mantine/dates": "^7.17.3",
-    "@mantine/form": "^7.17.3",
+    "@mantine/form": "^7.17.7",
     "@mantine/hooks": "^7.17.3",
     "@mantine/modals": "^7.17.3",
     "@mantine/notifications": "^7.17.3",
     "@tabler/icons-react": "^3.31.0",
+    "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-hot-toast": "^2.5.2",
+    "react-router": "^7.5.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
