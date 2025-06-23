@@ -8,6 +8,7 @@ import {
   Flex,
   Group,
   NumberInput,
+  ScrollArea,
   Select,
   SimpleGrid,
   Table,
@@ -40,8 +41,6 @@ function Expenses() {
   const [projectSelectData, setProjectSelectData] = useState<SelectItem[]>([]);
   const [reportSelectData, setReportSelectData] = useState<SelectItem[]>([]);
 
-  // const [overtimeMembers, setOvertimeMembers] = useState<OvertimeMember[]>([]);
-
   const { handleDataRequest } = useRequestHandler();
 
   const form = useForm<Expense>({
@@ -63,7 +62,7 @@ function Expenses() {
     },
     validate: {
       userId: (value) =>
-        value.length < 2 ? "First name must have at least 2 letters" : null,
+        value.length < 2 ? "Name must have at least 2 letters" : null,
     },
   });
 
@@ -75,6 +74,10 @@ function Expenses() {
       price: 0,
       createUser: crypto.randomUUID(),
       createDate: new Date(),
+    },
+    validate: {
+      userId: (value) =>
+        value.length < 2 ? "Name must have at least 2 letters" : null,
     },
   });
 
@@ -134,8 +137,12 @@ function Expenses() {
     () =>
       expenses.map((x: Expense) => (
         <Table.Tr key={x.id}>
-          <Table.Td> {x.userId} </Table.Td>
-          <Table.Td> {x.projectId} </Table.Td>
+          <Table.Td>
+            {userSelectData.find((y) => y.value === x.userId)?.label}
+          </Table.Td>
+          <Table.Td>
+            {projectSelectData.find((y) => y.value === x.projectId)?.label}
+          </Table.Td>
           <Table.Td>
             {expenseTypesData.find((y) => y.value === x.expenseType)?.label}
           </Table.Td>
@@ -149,8 +156,10 @@ function Expenses() {
           </Table.Td>
           <Table.Td> {x.tripDescription} </Table.Td>
           <Table.Td> {String(x.outOfOffice)} </Table.Td>
-          <Table.Td> {x.reportId} </Table.Td>
-          <Table.Td> {String(x.overtimeMembers)} </Table.Td>
+          <Table.Td>
+            {reportSelectData.find((y) => y.value === x.reportId)?.label}
+          </Table.Td>
+          <Table.Td>{String(x.overtimeMembers)}</Table.Td>
           <Table.Td> {"true"} </Table.Td>
           <Table.Td> {x.createUser} </Table.Td>
           <Table.Td>{format(x.createDate, "dd/MM/yyyy HH:mm")}</Table.Td>
@@ -203,20 +212,25 @@ function Expenses() {
   );
 
   const overtimeMemberSave = async () => {
+    if (!overtimeMemberForm.isValid()) return;
+
     form.setFieldValue("overtimeMembers", [
       ...form.values.overtimeMembers,
       overtimeMemberForm.values,
     ]);
+
     overtimeMemberForm;
   };
 
   const handleSave = async () => {
     if (!form.isValid()) return;
 
-    form.setFieldValue("overtimeMembers", [
-      ...form.values.overtimeMembers,
-      overtimeMemberForm.values,
-    ]);
+    // form.setFieldValue("overtimeMembers", [
+    //   ...form.values.overtimeMembers,
+    //   overtimeMemberForm.values,
+    // ]);
+
+    overtimeMemberSave();
 
     const retVal = await addExpense(form.values);
 
@@ -334,7 +348,6 @@ function Expenses() {
 
                   <TextInput
                     {...form.getInputProps("tripDescription")}
-                    withAsterisk
                     label={"Trip Description"}
                   />
 
@@ -376,7 +389,11 @@ function Expenses() {
                       hideControls
                     />
 
-                    <Button onClick={overtimeMemberSave} variant={"light"}>
+                    <Button
+                      onClick={overtimeMemberSave}
+                      variant={"light"}
+                      style={{ marginTop: "25px" }}
+                    >
                       Add Overtime Member
                     </Button>
                   </Group>
@@ -388,16 +405,19 @@ function Expenses() {
                     withColumnBorders
                     mt={16}
                   >
-                    <Table.Thead>
-                      <Table.Tr>
-                        <Table.Th>User Name</Table.Th>
-                        <Table.Th>Price</Table.Th>
-                        <Table.Th>Create User</Table.Th>
-                        <Table.Th>Create Date</Table.Th>
-                      </Table.Tr>
-                    </Table.Thead>
+                    <ScrollArea h={150} scrollbarSize={8}>
+                      <Table.Thead>
+                        <Table.Tr>
+                          <Table.Th>User Name</Table.Th>
+                          <Table.Th>Price</Table.Th>
+                          <Table.Th>Create User</Table.Th>
+                          <Table.Th>Create Date</Table.Th>
+                          <Table.Th></Table.Th>
+                        </Table.Tr>
+                      </Table.Thead>
 
-                    <Table.Tbody>{memoizedOvertimeMembers}</Table.Tbody>
+                      <Table.Tbody>{memoizedOvertimeMembers}</Table.Tbody>
+                    </ScrollArea>
                   </Table>
                 </Card>
               </SimpleGrid>

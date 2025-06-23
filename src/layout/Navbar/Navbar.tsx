@@ -28,11 +28,6 @@ const mainLinksMockdata: Link[] = [
   { icon: IconApps, label: "Projects", route: routes.projects },
   { icon: IconMenuDeep, label: "Expenses", route: routes.expenses },
   { icon: IconReportAnalytics, label: "Reports", route: routes.reports },
-  {
-    icon: IconFileExcel,
-    label: "Download Expense Excel",
-    route: routes.expenseExcel,
-  },
 ];
 
 export function Navbar() {

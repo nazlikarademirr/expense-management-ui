@@ -6,6 +6,7 @@ import routes from "./constants/routes";
 import Teams from "./pages/Teams/Teams";
 import Projects from "./pages/Projects/Projects";
 import Expenses from "./pages/Expenses/Expenses";
+import Reports from "./pages/Reports/Reports";
 
 function AppRouter() {
   return (
@@ -48,6 +49,14 @@ function AppRouter() {
           element={
             <Main>
               <Expenses />
+            </Main>
+          }
+        />
+        <Route
+          path={routes.reports}
+          element={
+            <Main>
+              <Reports />
             </Main>
           }
         />

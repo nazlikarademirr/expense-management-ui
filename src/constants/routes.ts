@@ -5,7 +5,6 @@ interface Routes {
   projects: string;
   expenses: string;
   reports: string;
-  expenseExcel: string;
 }
 
 const routes: Routes = {
@@ -15,7 +14,6 @@ const routes: Routes = {
   projects: "/projects",
   expenses: "/expenses",
   reports: "/reports",
-  expenseExcel: "/expense-excel",
 } as const;
 
 export default routes;

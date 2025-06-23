@@ -1,7 +1,7 @@
 type Report = {
   id: string;
   name: string;
-  lastReportDate: Date;
+  lastReportDate: Date | null;
   isActive: boolean;
   createUser: string;
   createDate: Date;
@@ -14,7 +14,7 @@ type ReportRequest = {
 type ReportResponse = {
   id: string;
   name: string;
-  lastReportDate: Date;
+  lastReportDate: Date | null;
   isActive: boolean;
   createUser: string;
   createDate: Date;

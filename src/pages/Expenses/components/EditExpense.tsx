@@ -136,6 +136,8 @@ function EditExpense({ expense, updateExpense }: EditExpense) {
     if (expenseInputRef.current) {
       expenseInputRef.current.focus();
     }
+    fetchUsers();
+    fetchProjects();
     fetchReports();
   }, []);
 

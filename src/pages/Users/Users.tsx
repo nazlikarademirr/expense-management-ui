@@ -75,14 +75,6 @@ function Users() {
   //   });
   // };
 
-  const openEditUser = (user: User) => {
-    modals.open({
-      title: "Edit User",
-      size: "xl",
-      children: <EditUser user={user} updateUser={updateUser} />,
-    });
-  };
-
   const gendersData = useMemo(
     () => [
       {
@@ -114,6 +106,14 @@ function Users() {
     ],
     []
   );
+
+  const openEditUser = (user: User) => {
+    modals.open({
+      title: "Edit User",
+      size: "xl",
+      children: <EditUser user={user} updateUser={updateUser} />,
+    });
+  };
 
   const memoizedUsers = useMemo(
     () =>
