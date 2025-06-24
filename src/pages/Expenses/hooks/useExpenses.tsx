@@ -49,7 +49,7 @@ function useExpenses() {
   };
 
   const deleteExpense = async (id: string) => {
-    var response = await handleDataRequest<object, undefined>(
+    var response = await handleDataRequest<string, never>(
       urls.expense,
       RequestType.Delete,
       undefined,

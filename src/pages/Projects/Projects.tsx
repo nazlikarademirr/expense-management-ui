@@ -58,14 +58,14 @@ function Projects() {
           <Table.Td>
             <Flex justify={"center"} gap={5}>
               <ActionIcon
-                onClick={(_) => openEditProject(x)}
+                onClick={() => openEditProject(x)}
                 variant={"light"}
                 color={"blue"}
               >
                 <IconEdit />
               </ActionIcon>
               <ActionIcon
-                onClick={(_) => deleteProject(x.id)}
+                onClick={() => deleteProject(x.id)}
                 variant={"light"}
                 color={"red"}
               >

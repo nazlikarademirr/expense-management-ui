@@ -33,7 +33,7 @@ function useReports() {
   };
 
   const downloadReport = async (reportId: string) => {
-    var response = await handleDataRequest<object, undefined>(
+    var response = await handleDataRequest<string, undefined>(
       urls.expenseExcel,
       RequestType.Post,
       undefined,
@@ -46,7 +46,7 @@ function useReports() {
   };
 
   const deleteReport = async (id: string) => {
-    var response = await handleDataRequest<object, undefined>(
+    var response = await handleDataRequest<string, never>(
       urls.report,
       RequestType.Delete,
       undefined,

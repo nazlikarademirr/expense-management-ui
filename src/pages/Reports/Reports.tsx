@@ -48,14 +48,14 @@ function Reports() {
           <Table.Td>
             <Flex justify={"center"} gap={5}>
               <ActionIcon
-                onClick={(_) => downloadReport(x.id)}
+                onClick={() => downloadReport(x.id)}
                 variant={"light"}
                 color={"blue"}
               >
                 <IconDownload />
               </ActionIcon>
               <ActionIcon
-                onClick={(_) => deleteReport(x.id)}
+                onClick={() => deleteReport(x.id)}
                 variant={"light"}
                 color={"red"}
               >

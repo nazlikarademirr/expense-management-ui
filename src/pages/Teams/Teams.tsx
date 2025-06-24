@@ -56,14 +56,14 @@ function Teams() {
           <Table.Td>
             <Flex justify={"center"} gap={5}>
               <ActionIcon
-                onClick={(_) => openEditTeam(x)}
+                onClick={() => openEditTeam(x)}
                 variant={"light"}
                 color={"blue"}
               >
                 <IconEdit />
               </ActionIcon>
               <ActionIcon
-                onClick={(_) => deleteTeam(x.id)}
+                onClick={() => deleteTeam(x.id)}
                 variant={"light"}
                 color={"red"}
               >

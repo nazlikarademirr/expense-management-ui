@@ -138,14 +138,14 @@ function Users() {
           <Table.Td>
             <Flex justify={"center"} gap={5}>
               <ActionIcon
-                onClick={(_) => openEditUser(x)}
+                onClick={() => openEditUser(x)}
                 variant={"light"}
                 color={"blue"}
               >
                 <IconEdit />
               </ActionIcon>
               <ActionIcon
-                onClick={(_) => deleteUser(x.id)}
+                onClick={() => deleteUser(x.id)}
                 variant={"light"}
                 color={"red"}
               >

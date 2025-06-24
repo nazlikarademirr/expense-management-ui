@@ -38,7 +38,7 @@ function useProjects() {
   };
 
   const deleteProject = async (id: string) => {
-    var response = await handleDataRequest<object, undefined>(
+    var response = await handleDataRequest<string, never>(
       urls.project,
       RequestType.Delete,
       undefined,
