@@ -166,14 +166,14 @@ function Expenses() {
           <Table.Td>
             <Flex justify={"center"} gap={5}>
               <ActionIcon
-                onClick={(_) => openEditExpense(x)}
+                onClick={() => openEditExpense(x)}
                 variant={"light"}
                 color={"blue"}
               >
                 <IconEdit />
               </ActionIcon>
               <ActionIcon
-                onClick={(_) => deleteExpense(x.id)}
+                onClick={() => deleteExpense(x.id)}
                 variant={"light"}
                 color={"red"}
               >
@@ -200,7 +200,7 @@ function Expenses() {
             <Flex justify={"center"} gap={5}>
               <ActionIcon variant={"light"} color={"red"}>
                 <IconTrash
-                  onClick={(_) => deleteOvertimeMember(x.userId)}
+                  onClick={() => deleteOvertimeMember(x.userId)}
                   color={"red"}
                 />
               </ActionIcon>
@@ -241,7 +241,7 @@ function Expenses() {
   };
 
   const fetchUsers = async () => {
-    var users = await handleDataRequest<unknown, UserResponse[]>(
+    var users = await handleDataRequest<never, UserResponse[]>(
       urls.user,
       RequestType.Get
     );
@@ -256,7 +256,7 @@ function Expenses() {
   };
 
   const fetchProjects = async () => {
-    var projects = await handleDataRequest<unknown, ProjectResponse[]>(
+    var projects = await handleDataRequest<never, ProjectResponse[]>(
       urls.project,
       RequestType.Get
     );
@@ -271,7 +271,7 @@ function Expenses() {
   };
 
   const fetchReports = async () => {
-    var reports = await handleDataRequest<unknown, ReportResponse[]>(
+    var reports = await handleDataRequest<never, ReportResponse[]>(
       urls.report,
       RequestType.Get
     );

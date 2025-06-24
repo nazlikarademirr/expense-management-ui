@@ -5,11 +5,6 @@ import urls from "../../../constants/urls";
 import RequestType from "../../../request-handler/request.type";
 import toast from "react-hot-toast";
 
-// interface UseUserProps {
-//   user: User;
-//   setUser(user: User): void;
-// }
-
 function useUsers() {
   const [users, setUsers] = useState<User[]>([]);
 
@@ -47,7 +42,7 @@ function useUsers() {
   };
 
   const deleteUser = async (id: string) => {
-    var response = await handleDataRequest<object, undefined>(
+    var response = await handleDataRequest<string, never>(
       urls.user,
       RequestType.Delete,
       undefined,

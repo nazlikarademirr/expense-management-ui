@@ -78,7 +78,7 @@ function EditExpense({ expense, updateExpense }: EditExpense) {
   );
 
   const fetchUsers = async () => {
-    var users = await handleDataRequest<unknown, UserResponse[]>(
+    var users = await handleDataRequest<never, UserResponse[]>(
       urls.user,
       RequestType.Get
     );
@@ -93,7 +93,7 @@ function EditExpense({ expense, updateExpense }: EditExpense) {
   };
 
   const fetchProjects = async () => {
-    var projects = await handleDataRequest<unknown, ProjectResponse[]>(
+    var projects = await handleDataRequest<never, ProjectResponse[]>(
       urls.project,
       RequestType.Get
     );
@@ -108,7 +108,7 @@ function EditExpense({ expense, updateExpense }: EditExpense) {
   };
 
   const fetchReports = async () => {
-    var reports = await handleDataRequest<unknown, ReportResponse[]>(
+    var reports = await handleDataRequest<never, ReportResponse[]>(
       urls.report,
       RequestType.Get
     );

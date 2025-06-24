@@ -34,7 +34,7 @@ function useTeams() {
   };
 
   const deleteTeam = async (id: string) => {
-    var response = await handleDataRequest<object, undefined>(
+    var response = await handleDataRequest<string, never>(
       urls.team,
       RequestType.Delete,
       undefined,
