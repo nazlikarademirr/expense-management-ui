@@ -12,13 +12,13 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import { IconDownload } from "@tabler/icons-react";
+import { IconDownload, IconTrash } from "@tabler/icons-react";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import useReports from "./hooks/useReports";
 
 function Reports() {
-  const { reports, addReport, downloadReport } = useReports();
+  const { reports, addReport, downloadReport, deleteReport } = useReports();
 
   const form = useForm({
     initialValues: {
@@ -53,6 +53,13 @@ function Reports() {
                 color={"blue"}
               >
                 <IconDownload />
+              </ActionIcon>
+              <ActionIcon
+                onClick={(_) => deleteReport(x.id)}
+                variant={"light"}
+                color={"red"}
+              >
+                <IconTrash />
               </ActionIcon>
             </Flex>
           </Table.Td>
