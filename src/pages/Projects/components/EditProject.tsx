@@ -88,7 +88,7 @@ function EditProject({ project, partiallyUpdateProject }: EditProject) {
         withAsterisk
         label={"Code"}
       />
-      <Button onClick={(e) => handleSave(e)}>Edit Project</Button>
+      <Button onClick={(e) => handleSave(e)}>Edit</Button>
     </Flex>
   );
 }

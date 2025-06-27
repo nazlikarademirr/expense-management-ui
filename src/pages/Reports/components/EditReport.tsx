@@ -82,7 +82,7 @@ function EditReport({ report, partiallyUpdateReport }: EditReport) {
         withAsterisk
         label={"Name"}
       />
-      <Button onClick={(e) => handleSave(e)}>Edit Report</Button>
+      <Button onClick={(e) => handleSave(e)}>Edit</Button>
     </Flex>
   );
 }

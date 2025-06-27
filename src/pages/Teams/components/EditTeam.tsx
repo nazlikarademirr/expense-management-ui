@@ -81,7 +81,7 @@ function EditTeam({ team, partiallyUpdateTeam }: EditTeam) {
         withAsterisk
         label={"Name"}
       />
-      <Button onClick={(e) => handleSave(e)}>Edit Team</Button>
+      <Button onClick={(e) => handleSave(e)}>Edit</Button>
     </Flex>
   );
 }

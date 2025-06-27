@@ -236,7 +236,7 @@ function EditExpense({ expense, partiallyUpdateExpense }: EditExpense) {
         data={reportSelectData}
         label={"Report Name"}
       />
-      <Button onClick={(e) => handleSave(e)}>Edit Expense</Button>
+      <Button onClick={(e) => handleSave(e)}>Edit</Button>
     </Flex>
   );
 }

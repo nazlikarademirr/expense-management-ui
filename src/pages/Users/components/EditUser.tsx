@@ -186,7 +186,7 @@ function EditUser({ user, partiallyUpdateUser }: EditUser) {
         label={"Role"}
       />
 
-      <Button onClick={(e) => handleSave(e)}>Edit User</Button>
+      <Button onClick={(e) => handleSave(e)}>Edit</Button>
     </Flex>
   );
 }
