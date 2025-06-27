@@ -1,5 +1,5 @@
 import parseResponseErrors from "../helpers/apiErrorParser";
-import RequestType from "../request-handler/request.type";
+import RequestType from "../request-handler/request-type";
 import toast from "react-hot-toast";
 
 interface SuccessResponse<T> {

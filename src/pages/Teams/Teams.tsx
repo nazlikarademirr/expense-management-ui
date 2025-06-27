@@ -20,7 +20,7 @@ import toast from "react-hot-toast";
 import EditTeam from "./components/EditTeam";
 
 function Teams() {
-  const { teams, addTeam, updateTeam, deleteTeam } = useTeams();
+  const { teams, addTeam, deleteTeam, partiallyUpdateTeam } = useTeams();
 
   const form = useForm({
     initialValues: {
@@ -33,7 +33,7 @@ function Teams() {
     },
     validate: {
       name: (value) =>
-        value.length < 2 ? "First name must have at least 2 letters" : null,
+        value.length < 2 ? "Name must have at least 2 letters" : null,
     },
   });
 
@@ -41,7 +41,9 @@ function Teams() {
     modals.open({
       title: "Edit Team",
       size: "xl",
-      children: <EditTeam team={team} updateTeam={updateTeam} />,
+      children: (
+        <EditTeam team={team} partiallyUpdateTeam={partiallyUpdateTeam} />
+      ),
     });
   };
 

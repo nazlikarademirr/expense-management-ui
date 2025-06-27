@@ -23,13 +23,13 @@ import { SelectItem } from "../../types/select-item.ts";
 import { TeamResponse } from "../../types/team.ts";
 import Gender from "../../enums/gender.ts";
 import Role from "../../enums/role.ts";
-import RequestType from "../../request-handler/request.type.ts";
+import RequestType from "../../request-handler/request-type.ts";
 import { useForm } from "@mantine/form";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
 
 function Users() {
-  const { users, addUser, updateUser, deleteUser } = useUsers();
+  const { users, addUser, deleteUser, partiallyUpdateUser } = useUsers();
 
   const [teamSelectData, setTeamSelectData] = useState<SelectItem[]>([]);
 
@@ -53,27 +53,9 @@ function Users() {
     },
     validate: {
       name: (value) =>
-        value.length < 2 ? "First name must have at least 2 letters" : null,
+        value.length < 2 ? "Name must have at least 2 letters" : null,
     },
   });
-
-  // const handleSetUser = (user: User) => {
-  //   form.setValues({
-  //     id: user.id,
-  //     name: user.name,
-  //     surname: user.surname,
-  //     teamId: user.teamId,
-  //     gender: user.gender,
-  //     cardNumber: user.cardNumber,
-  //     email: user.email,
-  //     password: user.password,
-  //     role: user.role,
-  //     searchText: user.searchText,
-  //     isActive: user.isActive,
-  //     creareUser: user.createUser,
-  //     createDate: user.createDate,
-  //   });
-  // };
 
   const gendersData = useMemo(
     () => [
@@ -111,7 +93,9 @@ function Users() {
     modals.open({
       title: "Edit User",
       size: "xl",
-      children: <EditUser user={user} updateUser={updateUser} />,
+      children: (
+        <EditUser user={user} partiallyUpdateUser={partiallyUpdateUser} />
+      ),
     });
   };
 
@@ -170,7 +154,7 @@ function Users() {
   };
 
   const fetchTeams = async () => {
-    var teams = await handleDataRequest<unknown, TeamResponse[]>(
+    var teams = await handleDataRequest<never, TeamResponse[]>(
       urls.team,
       RequestType.Get
     );

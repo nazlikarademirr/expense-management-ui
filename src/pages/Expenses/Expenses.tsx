@@ -25,7 +25,7 @@ import { IconEdit, IconTrash } from "@tabler/icons-react";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import urls from "../../constants/urls";
-import RequestType from "../../request-handler/request.type";
+import RequestType from "../../request-handler/request-type";
 import { SelectItem } from "../../types/select-item";
 import { UserResponse } from "../../types/user";
 import { ProjectResponse } from "../../types/project";
@@ -35,7 +35,8 @@ import { DateInput } from "@mantine/dates";
 import { OvertimeMember } from "../../types/overtime-member";
 
 function Expenses() {
-  const { expenses, addExpense, updateExpense, deleteExpense } = useExpenses();
+  const { expenses, addExpense, deleteExpense, partiallyUpdateExpense } =
+    useExpenses();
 
   const [userSelectData, setUserSelectData] = useState<SelectItem[]>([]);
   const [projectSelectData, setProjectSelectData] = useState<SelectItem[]>([]);
@@ -85,7 +86,12 @@ function Expenses() {
     modals.open({
       title: "Edit Expense",
       size: "xl",
-      children: <EditExpense expense={expense} updateExpense={updateExpense} />,
+      children: (
+        <EditExpense
+          expense={expense}
+          partiallyUpdateExpense={partiallyUpdateExpense}
+        />
+      ),
     });
   };
 
@@ -146,7 +152,7 @@ function Expenses() {
           <Table.Td>
             {expenseTypesData.find((y) => y.value === x.expenseType)?.label}
           </Table.Td>
-          <Table.Td>{format(x.expenseDate, "dd/MM/yyyy HH:mm")}</Table.Td>
+          <Table.Td>{format(x.expenseDate, "dd/MM/yyyy")}</Table.Td>
           <Table.Td> {x.totalPrice} </Table.Td>
           <Table.Td>
             {
@@ -224,11 +230,6 @@ function Expenses() {
 
   const handleSave = async () => {
     if (!form.isValid()) return;
-
-    // form.setFieldValue("overtimeMembers", [
-    //   ...form.values.overtimeMembers,
-    //   overtimeMemberForm.values,
-    // ]);
 
     overtimeMemberSave();
 

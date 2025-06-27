@@ -20,7 +20,8 @@ import toast from "react-hot-toast";
 import EditProject from "./components/EditProject";
 
 function Projects() {
-  const { projects, addProject, updateProject, deleteProject } = useProjects();
+  const { projects, addProject, deleteProject, partiallyUpdateProject } =
+    useProjects();
 
   const form = useForm({
     initialValues: {
@@ -42,7 +43,12 @@ function Projects() {
     modals.open({
       title: "Edit Project",
       size: "xl",
-      children: <EditProject project={project} updateProject={updateProject} />,
+      children: (
+        <EditProject
+          project={project}
+          partiallyUpdateProject={partiallyUpdateProject}
+        />
+      ),
     });
   };
 
@@ -79,8 +85,6 @@ function Projects() {
   );
 
   const handleSave = async () => {
-    // form.validate();
-
     if (!form.isValid()) return;
 
     const retVal = await addProject(form.values);

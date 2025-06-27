@@ -6,7 +6,7 @@ import {
 } from "../../../types/project";
 import useRequestHandler from "../../../hooks/useRequestHandler";
 import urls from "../../../constants/urls";
-import RequestType from "../../../request-handler/request.type";
+import RequestType from "../../../request-handler/request-type";
 import toast from "react-hot-toast";
 
 function useProjects() {
@@ -82,6 +82,16 @@ function useProjects() {
     return false;
   };
 
+  const partiallyUpdateProject = (updatedProject: Project) => {
+    const replacedProjects = projects.map((x) => {
+      if (x.id === updatedProject.id) {
+        return updatedProject;
+      }
+      return x;
+    });
+    setProjects(replacedProjects);
+  };
+
   const replaceProject = (list: Project[]) => {
     setProjects(list);
   };
@@ -109,7 +119,14 @@ function useProjects() {
     fetchProjects();
   });
 
-  return { projects, addProject, updateProject, replaceProject, deleteProject };
+  return {
+    projects,
+    addProject,
+    updateProject,
+    replaceProject,
+    partiallyUpdateProject,
+    deleteProject,
+  };
 }
 
 export default useProjects;

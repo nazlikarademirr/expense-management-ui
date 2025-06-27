@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { User, UserRequest, UserResponse } from "../../../types/user";
 import useRequestHandler from "../../../hooks/useRequestHandler";
 import urls from "../../../constants/urls";
-import RequestType from "../../../request-handler/request.type";
+import RequestType from "../../../request-handler/request-type";
 import toast from "react-hot-toast";
 
 function useUsers() {
@@ -58,36 +58,14 @@ function useUsers() {
     return false;
   };
 
-  const updateUser = async (user: User) => {
-    const updateUsers = users.map((x) => {
-      if (x.id === user.id) {
-        return user;
+  const partiallyUpdateUser = (updatedUser: User) => {
+    const replacedUsers = users.map((x) => {
+      if (x.id === updatedUser.id) {
+        return updatedUser;
       }
-
       return x;
     });
-
-    const userRequest: UserRequest = {
-      name: user.name,
-      surname: user.surname,
-      teamId: user.teamId ?? "",
-      gender: Number(user.gender),
-      cardNumber: user.cardNumber,
-      email: user.email,
-      password: user.password,
-      role: Number(user.role),
-    };
-
-    var response = await handleDataRequest<UserRequest, UserResponse>(
-      urls.user + "/" + user.id,
-      RequestType.Patch,
-      userRequest
-    );
-    if (response.isSuccess) {
-      setUsers(updateUsers);
-      return true;
-    }
-    return false;
+    setUsers(replacedUsers);
   };
 
   const replaceUser = (list: User[]) => {
@@ -127,8 +105,8 @@ function useUsers() {
     users,
     addUser,
     deleteUser,
-    updateUser,
     replaceUser,
+    partiallyUpdateUser,
   };
 }
 

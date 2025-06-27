@@ -6,7 +6,7 @@ import {
 } from "../../../types/expense";
 import useRequestHandler from "../../../hooks/useRequestHandler";
 import urls from "../../../constants/urls";
-import RequestType from "../../../request-handler/request.type";
+import RequestType from "../../../request-handler/request-type";
 import toast from "react-hot-toast";
 
 function useExpenses() {
@@ -99,6 +99,16 @@ function useExpenses() {
     return false;
   };
 
+  const partiallyUpdateExpense = (updatedExpense: Expense) => {
+    const replacedExpense = expenses.map((x) => {
+      if (x.id === updatedExpense.id) {
+        return updatedExpense;
+      }
+      return x;
+    });
+    setExpenses(replacedExpense);
+  };
+
   const replaceExpense = (list: Expense[]) => {
     setExpenses(list);
   };
@@ -139,6 +149,7 @@ function useExpenses() {
     deleteExpense,
     updateExpense,
     replaceExpense,
+    partiallyUpdateExpense,
   };
 }
 

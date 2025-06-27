@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import useRequestHandler from "../../../hooks/useRequestHandler";
 import urls from "../../../constants/urls";
-import RequestType from "../../../request-handler/request.type";
+import RequestType from "../../../request-handler/request-type";
 import { Report, ReportRequest, ReportResponse } from "../../../types/report";
 import toast from "react-hot-toast";
 
@@ -43,6 +43,16 @@ function useReports() {
     if (response.isSuccess) {
       response.value;
     }
+  };
+
+  const partiallyUpdateReport = (updatedReport: Report) => {
+    const replacedReports = reports.map((x) => {
+      if (x.id === updatedReport.id) {
+        return updatedReport;
+      }
+      return x;
+    });
+    setReports(replacedReports);
   };
 
   const deleteReport = async (id: string) => {
@@ -89,6 +99,7 @@ function useReports() {
     reports,
     addReport,
     downloadReport,
+    partiallyUpdateReport,
     deleteReport,
   };
 }

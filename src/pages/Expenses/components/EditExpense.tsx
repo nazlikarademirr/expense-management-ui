@@ -1,45 +1,56 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Expense } from "../../../types/expense";
+import { Expense, ExpenseResponse } from "../../../types/expense";
 import ExpenseCurrencyType from "../../../enums/expense-currency-type";
 import ExpenseType from "../../../enums/expense-type";
 import { modals } from "@mantine/modals";
 import { Button, Flex, Select, TextInput } from "@mantine/core";
 import { ReportResponse } from "../../../types/report";
-import RequestType from "../../../request-handler/request.type";
+import RequestType from "../../../request-handler/request-type";
 import { SelectItem } from "../../../types/select-item";
 import useRequestHandler from "../../../hooks/useRequestHandler";
 import urls from "../../../constants/urls";
 import { UserResponse } from "../../../types/user";
 import { ProjectResponse } from "../../../types/project";
+import { useForm } from "@mantine/form";
+import {
+  createJsonPatchDocumentFromDirtyForm,
+  JsonPatchKeyValuePair,
+} from "../../../types/json-patch-document";
+import toast from "react-hot-toast";
+import { DateInput } from "@mantine/dates";
 
 interface EditExpense {
   expense: Expense;
-  updateExpense: (editedExpense: Expense) => void;
+  partiallyUpdateExpense: (formEditedExpense: Expense) => void;
 }
 
-function EditExpense({ expense, updateExpense }: EditExpense) {
+function EditExpense({ expense, partiallyUpdateExpense }: EditExpense) {
   const [userSelectData, setUserSelectData] = useState<SelectItem[]>([]);
   const [projectSelectData, setProjectSelectData] = useState<SelectItem[]>([]);
   const [reportSelectData, setReportSelectData] = useState<SelectItem[]>([]);
 
   const { handleDataRequest } = useRequestHandler();
 
-  const [editedExpense, setEditedExpense] = useState<Expense>({
-    id: expense.id,
-    userId: expense.userId,
-    projectId: expense.projectId,
-    expenseType: expense.expenseType,
-    expenseDate: expense.expenseDate,
-    totalPrice: expense.totalPrice,
-    currency: expense.currency,
-    tripDescription: expense.tripDescription,
-    outOfOffice: expense.outOfOffice,
-    reportId: expense.reportId,
-    overtimeMembers: expense.overtimeMembers,
-    isActive: expense.isActive,
-    createUser: expense.createUser,
-    createDate: expense.createDate,
+  const formEditedExpense = useForm({
+    initialValues: {
+      id: expense.id,
+      userId: expense.userId,
+      projectId: expense.projectId,
+      expenseType: expense.expenseType,
+      expenseDate: new Date(expense.expenseDate),
+      totalPrice: expense.totalPrice,
+      currency: expense.currency,
+      tripDescription: expense.tripDescription,
+      outOfOffice: expense.outOfOffice,
+      reportId: expense.reportId,
+      overtimeMembers: expense.overtimeMembers,
+      isActive: expense.isActive,
+      createUser: expense.createUser,
+      createDate: expense.createDate,
+    },
   });
+
+  const initialValues = useRef<Expense>(formEditedExpense.values);
 
   const expenseTypesData = useMemo(
     () => [
@@ -122,19 +133,37 @@ function EditExpense({ expense, updateExpense }: EditExpense) {
     }
   };
 
-  const expenseInputRef = useRef<HTMLInputElement>(null);
+  const userInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSave = (e: React.MouseEvent) => {
+  const handleSave = async (e: React.MouseEvent) => {
     e.preventDefault();
 
-    updateExpense(editedExpense);
+    if (formEditedExpense.isDirty()) {
+      const patchDocument = createJsonPatchDocumentFromDirtyForm(
+        formEditedExpense,
+        formEditedExpense.values
+      );
 
-    modals.closeAll();
+      const response = await handleDataRequest<
+        JsonPatchKeyValuePair[],
+        ExpenseResponse
+      >(urls.expense + "/" + expense.id, RequestType.Patch, patchDocument);
+
+      if (response.isSuccess) {
+        initialValues.current = formEditedExpense.values;
+
+        partiallyUpdateExpense(formEditedExpense.values);
+
+        toast.success("Expense edited successfully.");
+
+        modals.closeAll();
+      }
+    }
   };
 
   useEffect(() => {
-    if (expenseInputRef.current) {
-      expenseInputRef.current.focus();
+    if (userInputRef.current) {
+      userInputRef.current.focus();
     }
     fetchUsers();
     fetchProjects();
@@ -143,109 +172,71 @@ function EditExpense({ expense, updateExpense }: EditExpense) {
 
   return (
     <Flex direction={"column"} gap={10}>
-      <TextInput
-        ref={expenseInputRef}
-        value={editedExpense.userId}
-        onChange={(e) =>
-          setEditedExpense({ ...editedExpense, userId: e.currentTarget.value })
-        }
+      <Select
+        ref={userInputRef}
+        key={formEditedExpense.key("id")}
+        {...formEditedExpense.getInputProps("userId")}
+        withAsterisk
+        data={userSelectData}
+        searchable
         label={"User Name"}
       />
 
-      <TextInput
-        value={editedExpense.projectId}
-        onChange={(e) =>
-          setEditedExpense({
-            ...editedExpense,
-            projectId: e.currentTarget.value,
-          })
-        }
+      <Select
+        {...formEditedExpense.getInputProps("projectId")}
+        withAsterisk
+        data={projectSelectData}
+        searchable
         label={"Project Name"}
       />
 
       <Select
-        value={editedExpense.expenseType}
-        onChange={(e) => setEditedExpense({ ...editedExpense, expenseType: e })}
+        {...formEditedExpense.getInputProps("expenseType")}
         withAsterisk
         data={expenseTypesData}
         searchable
         label={"Expense Type"}
       />
 
-      {/* <DateInput
-        value={editedExpense.expenseDate}
-        onChange={(e) =>
-          setEditedExpense({
-            ...editedExpense,
-            
-          })
-        }
+      <DateInput
+        {...formEditedExpense.getInputProps("expenseDate")}
         withAsterisk
         label={"Expense Date"}
-      /> */}
+      />
 
       <TextInput
-        value={editedExpense.totalPrice}
-        onChange={(e) =>
-          setEditedExpense({
-            ...editedExpense,
-            totalPrice: Number(e.currentTarget.value),
-          })
-        }
+        {...formEditedExpense.getInputProps("totalPrice")}
+        withAsterisk
         label={"Total Price"}
       />
 
       <Select
-        value={editedExpense.currency}
-        onChange={(e) =>
-          setEditedExpense({
-            ...editedExpense,
-            currency: e,
-          })
-        }
+        {...formEditedExpense.getInputProps("currency")}
         withAsterisk
         data={expenseCurrencyTypesData}
         label={"Currency"}
       />
 
       <TextInput
-        value={editedExpense.tripDescription}
-        onChange={(e) =>
-          setEditedExpense({
-            ...editedExpense,
-            tripDescription: e.currentTarget.value,
-          })
-        }
+        {...formEditedExpense.getInputProps("tripDescription")}
         withAsterisk
         label={"Trip Description"}
       />
 
       <Select
-        value={String(editedExpense.outOfOffice)}
-        onChange={(e) =>
-          setEditedExpense({
-            ...editedExpense,
-            outOfOffice: Boolean(e),
-          })
-        }
+        {...formEditedExpense.getInputProps("outOfOffice")}
         withAsterisk
         data={["true", "false"]}
         label={"Out Of Office"}
       />
 
       <Select
-        value={editedExpense.reportId}
-        onChange={(e) =>
-          setEditedExpense({
-            ...editedExpense,
-            reportId: String(e),
-          })
-        }
+        {...formEditedExpense.getInputProps("reportId")}
         withAsterisk
         data={reportSelectData}
         label={"Report Name"}
       />
-      <Button onClick={(e) => handleSave(e)}>Edit</Button>
+      <Button onClick={(e) => handleSave(e)}>Edit Expense</Button>
     </Flex>
   );
 }

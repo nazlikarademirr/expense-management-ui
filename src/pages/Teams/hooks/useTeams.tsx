@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Team, TeamRequest, TeamResponse } from "../../../types/team";
 import useRequestHandler from "../../../hooks/useRequestHandler";
 import urls from "../../../constants/urls";
-import RequestType from "../../../request-handler/request.type";
+import RequestType from "../../../request-handler/request-type";
 import toast from "react-hot-toast";
 
 function useTeams() {
@@ -75,6 +75,17 @@ function useTeams() {
     return false;
   };
 
+  const partiallyUpdateTeam = (updatedTeam: Team) => {
+    const replacedTeams = teams.map((x) => {
+      if (x.id === updatedTeam.id) {
+        return updatedTeam;
+      }
+
+      return x;
+    });
+    setTeams(replacedTeams);
+  };
+
   const replaceTeam = (list: Team[]) => {
     setTeams(list);
   };
@@ -107,6 +118,7 @@ function useTeams() {
     deleteTeam,
     updateTeam,
     replaceTeam,
+    partiallyUpdateTeam,
   };
 }
 

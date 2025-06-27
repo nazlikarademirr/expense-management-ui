@@ -12,20 +12,27 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import { IconDownload, IconTrash } from "@tabler/icons-react";
+import { IconDownload, IconEdit, IconTrash } from "@tabler/icons-react";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import useReports from "./hooks/useReports";
+import { modals } from "@mantine/modals";
+import EditReport from "./components/EditReport";
 
 function Reports() {
-  const { reports, addReport, downloadReport, deleteReport } = useReports();
+  const {
+    reports,
+    addReport,
+    downloadReport,
+    partiallyUpdateReport,
+    deleteReport,
+  } = useReports();
 
   const form = useForm({
     initialValues: {
       id: crypto.randomUUID(),
       name: "",
       lastReportDate: new Date(),
-      searchText: "",
       isActive: false,
       createUser: "",
       createDate: new Date(),
@@ -35,6 +42,19 @@ function Reports() {
         value.length < 2 ? "Name must have at least 2 letters" : null,
     },
   });
+
+  const openEditReport = (report: Report) => {
+    modals.open({
+      title: "Edit Report",
+      size: "xl",
+      children: (
+        <EditReport
+          report={report}
+          partiallyUpdateReport={partiallyUpdateReport}
+        />
+      ),
+    });
+  };
 
   const memoizedReports = useMemo(
     () =>
@@ -53,6 +73,13 @@ function Reports() {
                 color={"blue"}
               >
                 <IconDownload />
+              </ActionIcon>
+              <ActionIcon
+                onClick={() => openEditReport(x)}
+                variant={"light"}
+                color={"blue"}
+              >
+                <IconEdit />
               </ActionIcon>
               <ActionIcon
                 onClick={() => deleteReport(x.id)}
