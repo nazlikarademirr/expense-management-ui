@@ -6,7 +6,11 @@ import RequestType from "../request-handler/request-type";
 import toast from "react-hot-toast";
 import { SelectItem } from "../types/select-item";
 
-function useUsers() {
+interface UseUsersProps {
+  hasValueLabel: boolean;
+}
+
+function useUsers({ hasValueLabel }: UseUsersProps) {
   const [users, setUsers] = useState<User[]>([]);
 
   const [userSelectData, setUserSelectData] = useState<SelectItem[]>([]);
@@ -97,12 +101,14 @@ function useUsers() {
         createDate: x.createDate,
       }));
       setUsers(users);
-      setUserSelectData(
-        response.value.map((x) => ({
-          value: x.id,
-          label: `${x.name} ${x.surname}`,
-        }))
-      );
+      if (hasValueLabel) {
+        setUserSelectData(
+          response.value.map((x) => ({
+            value: x.id,
+            label: `${x.name} ${x.surname}`,
+          }))
+        );
+      }
     }
   };
 

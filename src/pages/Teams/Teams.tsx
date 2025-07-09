@@ -20,7 +20,9 @@ import toast from "react-hot-toast";
 import EditTeamModal from "./components/EditTeamModal";
 
 function Teams() {
-  const { teams, addTeam, deleteTeam, updateTeam } = useTeams();
+  const { teams, addTeam, deleteTeam, updateTeam } = useTeams({
+    hasValueLabel: false,
+  });
 
   const form = useForm({
     initialValues: {
@@ -95,15 +97,13 @@ function Teams() {
       <Divider my={15} />
       <Card shadow={"md"} radius={"md"} withBorder>
         <Flex gap={10} direction={"column"}>
-          <form>
-            <Group grow>
-              <TextInput
-                {...form.getInputProps("name")}
-                withAsterisk
-                label={"Name"}
-              />
-            </Group>
-          </form>
+          <Group grow>
+            <TextInput
+              {...form.getInputProps("name")}
+              withAsterisk
+              label={"Name"}
+            />
+          </Group>
           <Button onClick={handleSave} variant={"light"}>
             Add New Team
           </Button>

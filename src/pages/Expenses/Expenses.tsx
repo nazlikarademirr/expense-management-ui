@@ -35,9 +35,15 @@ import useReports from "../../hooks/useReports";
 function Expenses() {
   const { expenses, addExpense, deleteExpense, updateExpense } = useExpenses();
 
-  const { userSelectData } = useUsers();
-  const { projectSelectData } = useProjects();
-  const { reportSelectData } = useReports();
+  const { userSelectData } = useUsers({
+    hasValueLabel: true,
+  });
+  const { projectSelectData } = useProjects({
+    hasValueLabel: true,
+  });
+  const { reportSelectData } = useReports({
+    hasValueLabel: true,
+  });
   const form = useForm<Expense>({
     initialValues: {
       id: crypto.randomUUID(),
@@ -201,126 +207,122 @@ function Expenses() {
       <Divider my={15} />
       <Card shadow={"md"} radius={"md"} withBorder>
         <Flex gap={10} direction={"column"}>
-          <form>
-            <Group grow>
-              <SimpleGrid cols={2}>
-                <SimpleGrid cols={3}>
+          <Group grow>
+            <SimpleGrid cols={2}>
+              <SimpleGrid cols={3}>
+                <Select
+                  {...form.getInputProps("userId")}
+                  withAsterisk
+                  data={userSelectData}
+                  searchable
+                  label={"User Name"}
+                />
+
+                <Select
+                  {...form.getInputProps("projectId")}
+                  withAsterisk
+                  data={projectSelectData}
+                  label={"Project Name"}
+                />
+
+                <Select
+                  {...form.getInputProps("expenseType")}
+                  withAsterisk
+                  data={expenseTypes}
+                  searchable
+                  label={"Expense Type"}
+                />
+
+                <DateInput
+                  {...form.getInputProps("expenseDate")}
+                  withAsterisk
+                  label={"Expense Date"}
+                />
+
+                <NumberInput
+                  {...form.getInputProps("totalPrice")}
+                  withAsterisk
+                  label={"Total Price"}
+                  hideControls
+                />
+
+                <Select
+                  {...form.getInputProps("currency")}
+                  withAsterisk
+                  data={expenseCurrencyTypes}
+                  searchable
+                  label={"Currency"}
+                />
+
+                <TextInput
+                  {...form.getInputProps("tripDescription")}
+                  label={"Trip Description"}
+                />
+
+                <Select
+                  {...form.getInputProps("outOfOffice")}
+                  withAsterisk
+                  data={["true", "false"]}
+                  label={"Out Of Office"}
+                />
+
+                <Select
+                  {...form.getInputProps("reportId")}
+                  withAsterisk
+                  data={reportSelectData}
+                  searchable
+                  label={"Report Name"}
+                />
+              </SimpleGrid>
+              <Card shadow={"md"} radius={"md"} withBorder>
+                <Group grow>
                   <Select
-                    {...form.getInputProps("userId")}
+                    {...overtimeMemberForm.getInputProps("userId")}
                     withAsterisk
                     data={userSelectData}
                     searchable
                     label={"User Name"}
                   />
 
-                  <Select
-                    {...form.getInputProps("projectId")}
-                    withAsterisk
-                    data={projectSelectData}
-                    label={"Project Name"}
-                  />
-
-                  <Select
-                    {...form.getInputProps("expenseType")}
-                    withAsterisk
-                    data={expenseTypes}
-                    searchable
-                    label={"Expense Type"}
-                  />
-
-                  <DateInput
-                    {...form.getInputProps("expenseDate")}
-                    withAsterisk
-                    label={"Expense Date"}
-                  />
-
                   <NumberInput
-                    {...form.getInputProps("totalPrice")}
+                    {...overtimeMemberForm.getInputProps("price")}
                     withAsterisk
-                    label={"Total Price"}
+                    label="Price"
                     hideControls
                   />
 
-                  <Select
-                    {...form.getInputProps("currency")}
-                    withAsterisk
-                    data={expenseCurrencyTypes}
-                    searchable
-                    label={"Currency"}
-                  />
-
-                  <TextInput
-                    {...form.getInputProps("tripDescription")}
-                    label={"Trip Description"}
-                  />
-
-                  <Select
-                    {...form.getInputProps("outOfOffice")}
-                    withAsterisk
-                    data={["true", "false"]}
-                    label={"Out Of Office"}
-                  />
-
-                  <Select
-                    {...form.getInputProps("reportId")}
-                    withAsterisk
-                    data={reportSelectData}
-                    searchable
-                    label={"Report Name"}
-                  />
-                </SimpleGrid>
-                <Card shadow={"md"} radius={"md"} withBorder>
-                  <form>
-                    <Group grow>
-                      <Select
-                        {...overtimeMemberForm.getInputProps("userId")}
-                        withAsterisk
-                        data={userSelectData}
-                        searchable
-                        label={"User Name"}
-                      />
-
-                      <NumberInput
-                        {...overtimeMemberForm.getInputProps("price")}
-                        withAsterisk
-                        label="Price"
-                        hideControls
-                      />
-
-                      <Button
-                        onClick={overtimeMemberSave}
-                        variant={"light"}
-                        style={{ marginTop: "25px" }}
-                      >
-                        Add Overtime Member
-                      </Button>
-                    </Group>
-                  </form>
-                  <Table
-                    stickyHeader
-                    highlightOnHover
-                    withTableBorder
-                    withColumnBorders
-                    mt={16}
+                  <Button
+                    onClick={overtimeMemberSave}
+                    variant={"light"}
+                    style={{ marginTop: "25px" }}
                   >
-                    <ScrollArea h={150} scrollbarSize={8}>
-                      <Table.Thead>
-                        <Table.Tr>
-                          <Table.Th>User Name</Table.Th>
-                          <Table.Th>Price</Table.Th>
-                          <Table.Th>Create User</Table.Th>
-                          <Table.Th>Create Date</Table.Th>
-                          <Table.Th></Table.Th>
-                        </Table.Tr>
-                      </Table.Thead>
+                    Add Overtime Member
+                  </Button>
+                </Group>
+                <Table
+                  stickyHeader
+                  highlightOnHover
+                  withTableBorder
+                  withColumnBorders
+                  mt={16}
+                >
+                  <ScrollArea h={150} scrollbarSize={8}>
+                    <Table.Thead>
+                      <Table.Tr>
+                        <Table.Th>User Name</Table.Th>
+                        <Table.Th>Price</Table.Th>
+                        <Table.Th>Create User</Table.Th>
+                        <Table.Th>Create Date</Table.Th>
+                        <Table.Th></Table.Th>
+                      </Table.Tr>
+                    </Table.Thead>
 
-                      <Table.Tbody>{memoizedOvertimeMembers}</Table.Tbody>
-                    </ScrollArea>
-                  </Table>
-                </Card>
-              </SimpleGrid>
-            </Group>
-          </form>
+                    <Table.Tbody>{memoizedOvertimeMembers}</Table.Tbody>
+                  </ScrollArea>
+                </Table>
+              </Card>
+            </SimpleGrid>
+          </Group>
           <Button onClick={handleSave} variant={"light"}>
             Add New Expense
           </Button>

@@ -47,25 +47,23 @@ function EditProjectModal({ project, updateProject }: EditProjectProps) {
 
     if (!projectForm.isValid()) return;
 
-    if (projectForm.isDirty()) {
-      const patchDocument = createJsonPatchDocumentFromDirtyForm(
-        projectForm,
-        projectForm.values
-      );
-      const response = await handleDataRequest<
-        JsonPatchKeyValuePair[],
-        ProjectResponse
-      >(`${urls.project}/${project.id}`, RequestType.Patch, patchDocument);
+    const patchDocument = createJsonPatchDocumentFromDirtyForm(
+      projectForm,
+      projectForm.values
+    );
+    const response = await handleDataRequest<
+      JsonPatchKeyValuePair[],
+      ProjectResponse
+    >(`${urls.project}/${project.id}`, RequestType.Patch, patchDocument);
 
-      if (response.isSuccess) {
-        initialValues.current = projectForm.values;
+    if (response.isSuccess) {
+      initialValues.current = projectForm.values;
 
-        updateProject(projectForm.values);
+      updateProject(projectForm.values);
 
-        toast.success("Project edited successfully.");
+      toast.success("Project edited successfully.");
 
-        modals.closeAll();
-      }
+      modals.closeAll();
     }
   };
 
@@ -89,7 +87,11 @@ function EditProjectModal({ project, updateProject }: EditProjectProps) {
         withAsterisk
         label={"Code"}
       />
-      <Button onClick={(e) => handleSave(e)}>Edit</Button>
+      {projectForm.isDirty() ? (
+        <Button onClick={(e) => handleSave(e)}>Edit</Button>
+      ) : (
+        <Button disabled>Edit</Button>
+      )}
     </Flex>
   );
 }

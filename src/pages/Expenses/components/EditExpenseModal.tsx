@@ -28,9 +28,15 @@ interface EditExpenseProps {
 function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
   const { handleDataRequest } = useRequestHandler();
 
-  const { fetchUsers, userSelectData } = useUsers();
-  const { fetchProjects, projectSelectData } = useProjects();
-  const { fetchReports, reportSelectData } = useReports();
+  const { userSelectData } = useUsers({
+    hasValueLabel: true,
+  });
+  const { projectSelectData } = useProjects({
+    hasValueLabel: true,
+  });
+  const { reportSelectData } = useReports({
+    hasValueLabel: true,
+  });
 
   const expenseForm = useForm({
     initialValues: {
@@ -62,26 +68,24 @@ function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
 
     if (!expenseForm.isValid()) return;
 
-    if (expenseForm.isDirty()) {
-      const patchDocument = createJsonPatchDocumentFromDirtyForm(
-        expenseForm,
-        expenseForm.values
-      );
+    const patchDocument = createJsonPatchDocumentFromDirtyForm(
+      expenseForm,
+      expenseForm.values
+    );
 
-      const response = await handleDataRequest<
-        JsonPatchKeyValuePair[],
-        ExpenseResponse
-      >(`${urls.expense}/${expense.id}`, RequestType.Patch, patchDocument);
+    const response = await handleDataRequest<
+      JsonPatchKeyValuePair[],
+      ExpenseResponse
+    >(`${urls.expense}/${expense.id}`, RequestType.Patch, patchDocument);
 
-      if (response.isSuccess) {
-        initialValues.current = expenseForm.values;
+    if (response.isSuccess) {
+      initialValues.current = expenseForm.values;
 
-        updateExpense(expenseForm.values);
+      updateExpense(expenseForm.values);
 
-        toast.success("Expense edited successfully.");
+      toast.success("Expense edited successfully.");
 
-        modals.closeAll();
-      }
+      modals.closeAll();
     }
   };
 
@@ -89,9 +93,6 @@ function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
     if (nameInputRef.current) {
       nameInputRef.current.focus();
     }
-    fetchUsers();
-    fetchProjects();
-    fetchReports();
   }, []);
 
   return (
@@ -159,7 +160,11 @@ function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
         data={reportSelectData}
         label={"Report Name"}
       />
-      <Button onClick={(e) => handleSave(e)}>Edit</Button>
+      {expenseForm.isDirty() ? (
+        <Button onClick={(e) => handleSave(e)}>Edit</Button>
+      ) : (
+        <Button disabled>Edit</Button>
+      )}
     </Flex>
   );
 }

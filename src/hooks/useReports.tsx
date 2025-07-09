@@ -6,7 +6,11 @@ import { Report, ReportRequest, ReportResponse } from "../types/report";
 import toast from "react-hot-toast";
 import { SelectItem } from "../types/select-item";
 
-function useReports() {
+interface UseReportsProps {
+  hasValueLabel: boolean;
+}
+
+function useReports({ hasValueLabel }: UseReportsProps) {
   const [reports, setReports] = useState<Report[]>([]);
 
   const [reportSelectData, setReportSelectData] = useState<SelectItem[]>([]);
@@ -83,9 +87,11 @@ function useReports() {
     );
     if (response.isSuccess) {
       setReports(response.value);
-      setReportSelectData(
-        response.value.map((x) => ({ value: x.id, label: x.name }))
-      );
+      if (hasValueLabel) {
+        setReportSelectData(
+          response.value.map((x) => ({ value: x.id, label: x.name }))
+        );
+      }
     }
   };
 

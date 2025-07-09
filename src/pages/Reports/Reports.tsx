@@ -21,7 +21,9 @@ import useReports from "../../hooks/useReports";
 
 function Reports() {
   const { reports, addReport, downloadReport, updateReport, deleteReport } =
-    useReports();
+    useReports({
+      hasValueLabel: false,
+    });
 
   const form = useForm({
     initialValues: {
@@ -104,15 +106,13 @@ function Reports() {
       <Divider my={15} />
       <Card shadow={"md"} radius={"md"} withBorder>
         <Flex gap={10} direction={"column"}>
-          <form>
-            <Group grow>
-              <TextInput
-                {...form.getInputProps("name")}
-                withAsterisk
-                label={"Name"}
-              />
-            </Group>
-          </form>
+          <Group grow>
+            <TextInput
+              {...form.getInputProps("name")}
+              withAsterisk
+              label={"Name"}
+            />
+          </Group>
           <Button onClick={handleSave} variant={"light"}>
             Add New Report
           </Button>

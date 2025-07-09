@@ -22,7 +22,7 @@ interface EditUserProps {
 function EditUserModal({ user, updateUser }: EditUserProps) {
   const { handleDataRequest } = useRequestHandler();
 
-  const { teamSelectData } = useTeams();
+  const { teamSelectData } = useTeams({ hasValueLabel: true });
 
   const userForm = useForm({
     initialValues: {
@@ -57,26 +57,24 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
 
     if (!userForm.isValid()) return;
 
-    if (userForm.isDirty()) {
-      const patchDocument = createJsonPatchDocumentFromDirtyForm(
-        userForm,
-        userForm.values
-      );
+    const patchDocument = createJsonPatchDocumentFromDirtyForm(
+      userForm,
+      userForm.values
+    );
 
-      const response = await handleDataRequest<
-        JsonPatchKeyValuePair[],
-        UserResponse
-      >(`${urls.user}/${user.id}`, RequestType.Patch, patchDocument);
+    const response = await handleDataRequest<
+      JsonPatchKeyValuePair[],
+      UserResponse
+    >(`${urls.user}/${user.id}`, RequestType.Patch, patchDocument);
 
-      if (response.isSuccess) {
-        initialValues.current = userForm.values;
+    if (response.isSuccess) {
+      initialValues.current = userForm.values;
 
-        updateUser(userForm.values);
+      updateUser(userForm.values);
 
-        toast.success("User edited successfully.");
+      toast.success("User edited successfully.");
 
-        modals.closeAll();
-      }
+      modals.closeAll();
     }
   };
 
@@ -94,13 +92,11 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
         withAsterisk
         label={"Name"}
       />
-
       <TextInput
         {...userForm.getInputProps("surname")}
         withAsterisk
         label={"Surname"}
       />
-
       <Select
         {...userForm.getInputProps("teamId")}
         withAsterisk
@@ -108,7 +104,6 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
         searchable
         label={"Team Name"}
       />
-
       <Select
         {...userForm.getInputProps("gender")}
         withAsterisk
@@ -116,19 +111,16 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
         searchable
         label={"Gender"}
       />
-
       <TextInput
         {...userForm.getInputProps("cardNumber")}
         withAsterisk
         label={"Card Number"}
       />
-
       <PasswordInput
         {...userForm.getInputProps("password")}
         withAsterisk
         label={"Password"}
       />
-
       <Select
         {...userForm.getInputProps("role")}
         withAsterisk
@@ -136,8 +128,11 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
         searchable
         label={"Role"}
       />
-
-      <Button onClick={(e) => handleSave(e)}>Edit</Button>
+      {userForm.isDirty() ? (
+        <Button onClick={(e) => handleSave(e)}>Edit</Button>
+      ) : (
+        <Button disabled>Edit</Button>
+      )}
     </Flex>
   );
 }

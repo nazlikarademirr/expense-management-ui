@@ -46,26 +46,24 @@ function EditReportModal({ report, updateReport }: EditReportProps) {
 
     if (!reportForm.isValid()) return;
 
-    if (reportForm.isDirty()) {
-      const patchDocument = createJsonPatchDocumentFromDirtyForm(
-        reportForm,
-        reportForm.values
-      );
+    const patchDocument = createJsonPatchDocumentFromDirtyForm(
+      reportForm,
+      reportForm.values
+    );
 
-      const response = await handleDataRequest<
-        JsonPatchKeyValuePair[],
-        ReportResponse
-      >(`${urls.report}/${report.id}`, RequestType.Patch, patchDocument);
+    const response = await handleDataRequest<
+      JsonPatchKeyValuePair[],
+      ReportResponse
+    >(`${urls.report}/${report.id}`, RequestType.Patch, patchDocument);
 
-      if (response.isSuccess) {
-        initialValues.current = reportForm.values;
+    if (response.isSuccess) {
+      initialValues.current = reportForm.values;
 
-        updateReport(reportForm.values);
+      updateReport(reportForm.values);
 
-        toast.success("Report edited successfully.");
+      toast.success("Report edited successfully.");
 
-        modals.closeAll();
-      }
+      modals.closeAll();
     }
   };
 
@@ -83,7 +81,11 @@ function EditReportModal({ report, updateReport }: EditReportProps) {
         withAsterisk
         label={"Name"}
       />
-      <Button onClick={(e) => handleSave(e)}>Edit</Button>
+      {reportForm.isDirty() ? (
+        <Button onClick={(e) => handleSave(e)}>Edit</Button>
+      ) : (
+        <Button disabled>Edit</Button>
+      )}
     </Flex>
   );
 }

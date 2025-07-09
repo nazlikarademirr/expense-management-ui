@@ -46,25 +46,23 @@ function EditTeamModal({ team, updateTeam }: EditTeamProps) {
 
     if (!teamForm.isValid()) return;
 
-    if (teamForm.isDirty()) {
-      const patchDocument = createJsonPatchDocumentFromDirtyForm(
-        teamForm,
-        teamForm.values
-      );
-      const response = await handleDataRequest<
-        JsonPatchKeyValuePair[],
-        TeamResponse
-      >(`${urls.team}/${team.id}`, RequestType.Patch, patchDocument);
+    const patchDocument = createJsonPatchDocumentFromDirtyForm(
+      teamForm,
+      teamForm.values
+    );
+    const response = await handleDataRequest<
+      JsonPatchKeyValuePair[],
+      TeamResponse
+    >(`${urls.team}/${team.id}`, RequestType.Patch, patchDocument);
 
-      if (response.isSuccess) {
-        initialValues.current = teamForm.values;
+    if (response.isSuccess) {
+      initialValues.current = teamForm.values;
 
-        updateTeam(teamForm.values);
+      updateTeam(teamForm.values);
 
-        toast.success("Team edited successfully.");
+      toast.success("Team edited successfully.");
 
-        modals.closeAll();
-      }
+      modals.closeAll();
     }
   };
 
@@ -82,7 +80,11 @@ function EditTeamModal({ team, updateTeam }: EditTeamProps) {
         withAsterisk
         label={"Name"}
       />
-      <Button onClick={(e) => handleSave(e)}>Edit</Button>
+      {teamForm.isDirty() ? (
+        <Button onClick={(e) => handleSave(e)}>Edit</Button>
+      ) : (
+        <Button disabled>Edit</Button>
+      )}
     </Flex>
   );
 }

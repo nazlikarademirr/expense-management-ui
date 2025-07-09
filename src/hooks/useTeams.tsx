@@ -6,7 +6,11 @@ import RequestType from "../request-handler/request-type";
 import toast from "react-hot-toast";
 import { SelectItem } from "../types/select-item";
 
-function useTeams() {
+interface UseTeamsProps {
+  hasValueLabel: boolean;
+}
+
+function useTeams({ hasValueLabel }: UseTeamsProps) {
   const [teams, setTeams] = useState<Team[]>([]);
 
   const [teamSelectData, setTeamSelectData] = useState<SelectItem[]>([]);
@@ -83,9 +87,11 @@ function useTeams() {
         createDate: x.createDate,
       }));
       setTeams(teams);
-      setTeamSelectData(
-        response.value.map((x) => ({ value: x.id, label: x.name }))
-      );
+      if (hasValueLabel) {
+        setTeamSelectData(
+          response.value.map((x) => ({ value: x.id, label: x.name }))
+        );
+      }
     }
   };
 

@@ -24,9 +24,13 @@ import { genders, roles } from "../../constants/static-data.ts";
 import useTeams from "../../hooks/useTeams.tsx";
 
 function Users() {
-  const { users, addUser, deleteUser, updateUser } = useUsers();
+  const { users, addUser, deleteUser, updateUser } = useUsers({
+    hasValueLabel: false,
+  });
 
-  const { teamSelectData } = useTeams();
+  const { teamSelectData } = useTeams({
+    hasValueLabel: true,
+  });
 
   const form = useForm({
     initialValues: {
@@ -118,63 +122,61 @@ function Users() {
       <Divider my={15} />
       <Card shadow={"md"} radius={"md"} withBorder>
         <Flex gap={10} direction={"column"}>
-          <form>
-            <Group grow>
-              <TextInput
-                {...form.getInputProps("name")}
-                withAsterisk
-                label={"Name"}
-              />
+          <Group grow>
+            <TextInput
+              {...form.getInputProps("name")}
+              withAsterisk
+              label={"Name"}
+            />
 
-              <TextInput
-                {...form.getInputProps("surname")}
-                withAsterisk
-                label={"Surname"}
-              />
+            <TextInput
+              {...form.getInputProps("surname")}
+              withAsterisk
+              label={"Surname"}
+            />
 
-              <Select
-                {...form.getInputProps("teamId")}
-                withAsterisk
-                data={teamSelectData}
-                searchable
-                label={"Team Name"}
-              />
+            <Select
+              {...form.getInputProps("teamId")}
+              withAsterisk
+              data={teamSelectData}
+              searchable
+              label={"Team Name"}
+            />
 
-              <Select
-                {...form.getInputProps("gender")}
-                withAsterisk
-                data={genders}
-                searchable
-                label={"Gender"}
-              />
+            <Select
+              {...form.getInputProps("gender")}
+              withAsterisk
+              data={genders}
+              searchable
+              label={"Gender"}
+            />
 
-              <TextInput
-                {...form.getInputProps("cardNumber")}
-                withAsterisk
-                label={"Card Number"}
-              />
+            <TextInput
+              {...form.getInputProps("cardNumber")}
+              withAsterisk
+              label={"Card Number"}
+            />
 
-              <TextInput
-                {...form.getInputProps("email")}
-                withAsterisk
-                label={"Email"}
-              />
+            <TextInput
+              {...form.getInputProps("email")}
+              withAsterisk
+              label={"Email"}
+            />
 
-              <PasswordInput
-                {...form.getInputProps("password")}
-                withAsterisk
-                label={"Password"}
-              />
+            <PasswordInput
+              {...form.getInputProps("password")}
+              withAsterisk
+              label={"Password"}
+            />
 
-              <Select
-                {...form.getInputProps("role")}
-                withAsterisk
-                data={roles}
-                searchable
-                label={"Role"}
-              />
-            </Group>
-          </form>
+            <Select
+              {...form.getInputProps("role")}
+              withAsterisk
+              data={roles}
+              searchable
+              label={"Role"}
+            />
+          </Group>
           <Button onClick={handleSave} variant={"light"}>
             Add New User
           </Button>

@@ -20,7 +20,9 @@ import toast from "react-hot-toast";
 import EditProjectModal from "./components/EditProjectModal";
 
 function Projects() {
-  const { projects, addProject, deleteProject, updateProject } = useProjects();
+  const { projects, addProject, deleteProject, updateProject } = useProjects({
+    hasValueLabel: false,
+  });
 
   const form = useForm({
     initialValues: {
@@ -99,22 +101,20 @@ function Projects() {
       <Divider my={15} />
       <Card shadow={"md"} radius={"md"} withBorder>
         <Flex gap={10} direction={"column"}>
-          <form>
-            <Group grow>
-              <TextInput
-                key={form.key("name")}
-                {...form.getInputProps("name")}
-                withAsterisk
-                label={"Name"}
-              />
+          <Group grow>
+            <TextInput
+              key={form.key("name")}
+              {...form.getInputProps("name")}
+              withAsterisk
+              label={"Name"}
+            />
 
-              <TextInput
-                {...form.getInputProps("code")}
-                withAsterisk
-                label={"Code"}
-              />
-            </Group>
-          </form>
+            <TextInput
+              {...form.getInputProps("code")}
+              withAsterisk
+              label={"Code"}
+            />
+          </Group>
           <Button onClick={handleSave} variant={"light"}>
             Add New Project
           </Button>
