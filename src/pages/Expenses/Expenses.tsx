@@ -1,5 +1,4 @@
 import { useForm } from "@mantine/form";
-import useRequestHandler from "../../hooks/useRequestHandler";
 import {
   ActionIcon,
   Button,
@@ -15,35 +14,30 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import { useEffect, useMemo, useState } from "react";
 import { modals } from "@mantine/modals";
 import { Expense } from "../../types/expense";
-import ExpenseType from "../../enums/expense-type";
-import ExpenseCurrencyType from "../../enums/expense-currency-type";
 import useExpenses from "./hooks/useExpenses";
 import { IconEdit, IconTrash } from "@tabler/icons-react";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
-import urls from "../../constants/urls";
-import RequestType from "../../request-handler/request-type";
-import { SelectItem } from "../../types/select-item";
-import { UserResponse } from "../../types/user";
-import { ProjectResponse } from "../../types/project";
-import { ReportResponse } from "../../types/report";
-import EditExpense from "./components/EditExpense";
 import { DateInput } from "@mantine/dates";
 import { OvertimeMember } from "../../types/overtime-member";
+import EditExpenseModal from "./components/EditExpenseModal";
+import { useMemo } from "react";
+import useProjects from "../../hooks/useProjects";
+import {
+  expenseCurrencyTypes,
+  expenseTypes,
+} from "../../constants/static-data";
+import useUsers from "../../hooks/useUsers";
+import useReports from "../../hooks/useReports";
 
 function Expenses() {
-  const { expenses, addExpense, deleteExpense, partiallyUpdateExpense } =
-    useExpenses();
+  const { expenses, addExpense, deleteExpense, updateExpense } = useExpenses();
 
-  const [userSelectData, setUserSelectData] = useState<SelectItem[]>([]);
-  const [projectSelectData, setProjectSelectData] = useState<SelectItem[]>([]);
-  const [reportSelectData, setReportSelectData] = useState<SelectItem[]>([]);
-
-  const { handleDataRequest } = useRequestHandler();
-
+  const { userSelectData } = useUsers();
+  const { projectSelectData } = useProjects();
+  const { reportSelectData } = useReports();
   const form = useForm<Expense>({
     initialValues: {
       id: crypto.randomUUID(),
@@ -87,49 +81,10 @@ function Expenses() {
       title: "Edit Expense",
       size: "xl",
       children: (
-        <EditExpense
-          expense={expense}
-          partiallyUpdateExpense={partiallyUpdateExpense}
-        />
+        <EditExpenseModal expense={expense} updateExpense={updateExpense} />
       ),
     });
   };
-
-  const expenseTypesData = useMemo(
-    () => [
-      {
-        value: ExpenseType.Food,
-        label: "Food",
-      },
-      {
-        value: ExpenseType.Transportation,
-        label: "Transportation",
-      },
-    ],
-    []
-  );
-
-  const expenseCurrencyTypesData = useMemo(
-    () => [
-      {
-        value: ExpenseCurrencyType.TL,
-        label: "TL",
-      },
-      {
-        value: ExpenseCurrencyType.Euro,
-        label: "Euro",
-      },
-      {
-        value: ExpenseCurrencyType.Dollar,
-        label: "Dollar",
-      },
-      {
-        value: ExpenseCurrencyType.MalaysianRinggit,
-        label: "Malaysian Ringgit",
-      },
-    ],
-    []
-  );
 
   const deleteOvertimeMember = (id: string) => {
     const overtimeMembers = form.values.overtimeMembers.filter(
@@ -150,15 +105,12 @@ function Expenses() {
             {projectSelectData.find((y) => y.value === x.projectId)?.label}
           </Table.Td>
           <Table.Td>
-            {expenseTypesData.find((y) => y.value === x.expenseType)?.label}
+            {expenseTypes.find((y) => y.value === x.expenseType)?.label}
           </Table.Td>
           <Table.Td>{format(x.expenseDate, "dd/MM/yyyy")}</Table.Td>
           <Table.Td> {x.totalPrice} </Table.Td>
           <Table.Td>
-            {
-              expenseCurrencyTypesData.find((y) => y.value === x.currency)
-                ?.label
-            }
+            {expenseCurrencyTypes.find((y) => y.value === x.currency)?.label}
           </Table.Td>
           <Table.Td> {x.tripDescription} </Table.Td>
           <Table.Td> {String(x.outOfOffice)} </Table.Td>
@@ -218,17 +170,19 @@ function Expenses() {
   );
 
   const overtimeMemberSave = async () => {
+    overtimeMemberForm.validate();
+
     if (!overtimeMemberForm.isValid()) return;
 
     form.setFieldValue("overtimeMembers", [
       ...form.values.overtimeMembers,
       overtimeMemberForm.values,
     ]);
-
-    overtimeMemberForm;
   };
 
   const handleSave = async () => {
+    form.validate();
+
     if (!form.isValid()) return;
 
     overtimeMemberSave();
@@ -241,69 +195,17 @@ function Expenses() {
     }
   };
 
-  const fetchUsers = async () => {
-    var users = await handleDataRequest<never, UserResponse[]>(
-      urls.user,
-      RequestType.Get
-    );
-    if (users.isSuccess) {
-      var usersData: SelectItem[] = users.value.map((x) => ({
-        value: x.id,
-        label: x.name + " " + x.surname,
-      }));
-
-      setUserSelectData(usersData);
-    }
-  };
-
-  const fetchProjects = async () => {
-    var projects = await handleDataRequest<never, ProjectResponse[]>(
-      urls.project,
-      RequestType.Get
-    );
-    if (projects.isSuccess) {
-      var projectsData: SelectItem[] = projects.value.map((x) => ({
-        value: x.id,
-        label: x.name,
-      }));
-
-      setProjectSelectData(projectsData);
-    }
-  };
-
-  const fetchReports = async () => {
-    var reports = await handleDataRequest<never, ReportResponse[]>(
-      urls.report,
-      RequestType.Get
-    );
-    if (reports.isSuccess) {
-      var reportsData: SelectItem[] = reports.value.map((x) => ({
-        value: x.id,
-        label: x.name,
-      }));
-
-      setReportSelectData(reportsData);
-    }
-  };
-
-  useEffect(() => {
-    fetchUsers();
-    fetchProjects();
-    fetchReports();
-  }, []);
-
   return (
     <div>
       <Title order={3}>Expenses</Title>
       <Divider my={15} />
       <Card shadow={"md"} radius={"md"} withBorder>
         <Flex gap={10} direction={"column"}>
-          <form onSubmit={form.onSubmit((values) => console.log(values))}>
+          <form>
             <Group grow>
               <SimpleGrid cols={2}>
                 <SimpleGrid cols={3}>
                   <Select
-                    key={form.key("userId")}
                     {...form.getInputProps("userId")}
                     withAsterisk
                     data={userSelectData}
@@ -321,7 +223,7 @@ function Expenses() {
                   <Select
                     {...form.getInputProps("expenseType")}
                     withAsterisk
-                    data={expenseTypesData}
+                    data={expenseTypes}
                     searchable
                     label={"Expense Type"}
                   />
@@ -342,7 +244,7 @@ function Expenses() {
                   <Select
                     {...form.getInputProps("currency")}
                     withAsterisk
-                    data={expenseCurrencyTypesData}
+                    data={expenseCurrencyTypes}
                     searchable
                     label={"Currency"}
                   />
@@ -368,37 +270,32 @@ function Expenses() {
                   />
                 </SimpleGrid>
                 <Card shadow={"md"} radius={"md"} withBorder>
-                  <form
-                    onSubmit={overtimeMemberForm.onSubmit((values) =>
-                      console.log(values)
-                    )}
-                  ></form>
-                  <Group grow>
-                    <Select
-                      key={overtimeMemberForm.key("id")}
-                      {...overtimeMemberForm.getInputProps("userId")}
-                      withAsterisk
-                      data={userSelectData}
-                      searchable
-                      label={"User Name"}
-                    />
+                  <form>
+                    <Group grow>
+                      <Select
+                        {...overtimeMemberForm.getInputProps("userId")}
+                        withAsterisk
+                        data={userSelectData}
+                        searchable
+                        label={"User Name"}
+                      />
 
-                    <NumberInput
-                      {...overtimeMemberForm.getInputProps("price")}
-                      withAsterisk
-                      label="Price"
-                      hideControls
-                    />
+                      <NumberInput
+                        {...overtimeMemberForm.getInputProps("price")}
+                        withAsterisk
+                        label="Price"
+                        hideControls
+                      />
 
-                    <Button
-                      onClick={overtimeMemberSave}
-                      variant={"light"}
-                      style={{ marginTop: "25px" }}
-                    >
-                      Add Overtime Member
-                    </Button>
-                  </Group>
-
+                      <Button
+                        onClick={overtimeMemberSave}
+                        variant={"light"}
+                        style={{ marginTop: "25px" }}
+                      >
+                        Add Overtime Member
+                      </Button>
+                    </Group>
+                  </form>
                   <Table
                     stickyHeader
                     highlightOnHover

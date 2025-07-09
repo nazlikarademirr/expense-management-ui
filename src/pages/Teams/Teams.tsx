@@ -1,7 +1,7 @@
 import { useForm } from "@mantine/form";
 import { Team } from "../../types/team";
 import { modals } from "@mantine/modals";
-import useTeams from "./hooks/useTeams";
+import useTeams from "../../hooks/useTeams";
 import {
   ActionIcon,
   Button,
@@ -17,10 +17,10 @@ import { IconEdit, IconTrash } from "@tabler/icons-react";
 import { format } from "date-fns";
 import { useMemo } from "react";
 import toast from "react-hot-toast";
-import EditTeam from "./components/EditTeam";
+import EditTeamModal from "./components/EditTeamModal";
 
 function Teams() {
-  const { teams, addTeam, deleteTeam, partiallyUpdateTeam } = useTeams();
+  const { teams, addTeam, deleteTeam, updateTeam } = useTeams();
 
   const form = useForm({
     initialValues: {
@@ -41,9 +41,7 @@ function Teams() {
     modals.open({
       title: "Edit Team",
       size: "xl",
-      children: (
-        <EditTeam team={team} partiallyUpdateTeam={partiallyUpdateTeam} />
-      ),
+      children: <EditTeamModal team={team} updateTeam={updateTeam} />,
     });
   };
 
@@ -79,6 +77,8 @@ function Teams() {
   );
 
   const handleSave = async () => {
+    form.validate();
+
     if (!form.isValid()) return;
 
     const retVal = await addTeam(form.values);
@@ -95,10 +95,9 @@ function Teams() {
       <Divider my={15} />
       <Card shadow={"md"} radius={"md"} withBorder>
         <Flex gap={10} direction={"column"}>
-          <form onSubmit={form.onSubmit((values) => console.log(values))}>
+          <form>
             <Group grow>
               <TextInput
-                key={form.key("name")}
                 {...form.getInputProps("name")}
                 withAsterisk
                 label={"Name"}

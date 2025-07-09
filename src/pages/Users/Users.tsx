@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { User } from "../../types/user.ts";
-import EditUser from "./components/EditUser.tsx";
+import EditUserModal from "./components/EditUserModal.tsx";
 import {
   ActionIcon,
   Button,
@@ -16,24 +16,17 @@ import {
 } from "@mantine/core";
 import { IconEdit, IconTrash } from "@tabler/icons-react";
 import { modals } from "@mantine/modals";
-import useUsers from "./hooks/useUsers.tsx";
-import useRequestHandler from "../../hooks/useRequestHandler.tsx";
-import urls from "../../constants/urls.ts";
-import { SelectItem } from "../../types/select-item.ts";
-import { TeamResponse } from "../../types/team.ts";
-import Gender from "../../enums/gender.ts";
-import Role from "../../enums/role.ts";
-import RequestType from "../../request-handler/request-type.ts";
+import useUsers from "../../hooks/useUsers.tsx";
 import { useForm } from "@mantine/form";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
+import { genders, roles } from "../../constants/static-data.ts";
+import useTeams from "../../hooks/useTeams.tsx";
 
 function Users() {
-  const { users, addUser, deleteUser, partiallyUpdateUser } = useUsers();
+  const { users, addUser, deleteUser, updateUser } = useUsers();
 
-  const [teamSelectData, setTeamSelectData] = useState<SelectItem[]>([]);
-
-  const { handleDataRequest } = useRequestHandler();
+  const { teamSelectData } = useTeams();
 
   const form = useForm({
     initialValues: {
@@ -57,45 +50,11 @@ function Users() {
     },
   });
 
-  const gendersData = useMemo(
-    () => [
-      {
-        value: Gender.Male,
-        label: "Male",
-      },
-      {
-        value: Gender.Female,
-        label: "Female",
-      },
-    ],
-    []
-  );
-
-  const rolesData = useMemo(
-    () => [
-      {
-        value: Role.Admin,
-        label: "Admin",
-      },
-      {
-        value: Role.Manager,
-        label: "Manager",
-      },
-      {
-        value: Role.User,
-        label: "User",
-      },
-    ],
-    []
-  );
-
   const openEditUser = (user: User) => {
     modals.open({
       title: "Edit User",
       size: "xl",
-      children: (
-        <EditUser user={user} partiallyUpdateUser={partiallyUpdateUser} />
-      ),
+      children: <EditUserModal user={user} updateUser={updateUser} />,
     });
   };
 
@@ -109,13 +68,11 @@ function Users() {
             {teamSelectData.find((y) => y.value === x.teamId)?.label}
           </Table.Td>
           <Table.Td>
-            {gendersData.find((y) => y.value === x.gender)?.label}
+            {genders.find((y) => y.value === x.gender)?.label}
           </Table.Td>
           <Table.Td> {x.cardNumber} </Table.Td>
           <Table.Td> {x.email} </Table.Td>
-          <Table.Td>
-            {rolesData.find((y) => y.value === x.gender)?.label}
-          </Table.Td>
+          <Table.Td>{roles.find((y) => y.value === x.gender)?.label}</Table.Td>
           <Table.Td> {"true"} </Table.Td>
           <Table.Td> {x.createUser} </Table.Td>
           <Table.Td>{format(x.createDate, "dd/MM/yyyy HH:mm")}</Table.Td>
@@ -143,6 +100,8 @@ function Users() {
   );
 
   const handleSave = async () => {
+    form.validate();
+
     if (!form.isValid()) return;
 
     const retVal = await addUser(form.values);
@@ -153,35 +112,15 @@ function Users() {
     }
   };
 
-  const fetchTeams = async () => {
-    var teams = await handleDataRequest<never, TeamResponse[]>(
-      urls.team,
-      RequestType.Get
-    );
-    if (teams.isSuccess) {
-      var teamsData: SelectItem[] = teams.value.map((x) => ({
-        value: x.id,
-        label: x.name,
-      }));
-
-      setTeamSelectData(teamsData);
-    }
-  };
-
-  useEffect(() => {
-    fetchTeams();
-  }, []);
-
   return (
     <div>
       <Title order={3}>Users</Title>
       <Divider my={15} />
       <Card shadow={"md"} radius={"md"} withBorder>
         <Flex gap={10} direction={"column"}>
-          <form onSubmit={form.onSubmit((values) => console.log(values))}>
+          <form>
             <Group grow>
               <TextInput
-                key={form.key("name")}
                 {...form.getInputProps("name")}
                 withAsterisk
                 label={"Name"}
@@ -204,7 +143,7 @@ function Users() {
               <Select
                 {...form.getInputProps("gender")}
                 withAsterisk
-                data={gendersData}
+                data={genders}
                 searchable
                 label={"Gender"}
               />
@@ -230,7 +169,7 @@ function Users() {
               <Select
                 {...form.getInputProps("role")}
                 withAsterisk
-                data={rolesData}
+                data={roles}
                 searchable
                 label={"Role"}
               />

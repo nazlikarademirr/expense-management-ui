@@ -15,18 +15,13 @@ import {
 import { IconDownload, IconEdit, IconTrash } from "@tabler/icons-react";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
-import useReports from "./hooks/useReports";
 import { modals } from "@mantine/modals";
-import EditReport from "./components/EditReport";
+import EditReportModal from "./components/EditReportModal";
+import useReports from "../../hooks/useReports";
 
 function Reports() {
-  const {
-    reports,
-    addReport,
-    downloadReport,
-    partiallyUpdateReport,
-    deleteReport,
-  } = useReports();
+  const { reports, addReport, downloadReport, updateReport, deleteReport } =
+    useReports();
 
   const form = useForm({
     initialValues: {
@@ -47,12 +42,7 @@ function Reports() {
     modals.open({
       title: "Edit Report",
       size: "xl",
-      children: (
-        <EditReport
-          report={report}
-          partiallyUpdateReport={partiallyUpdateReport}
-        />
-      ),
+      children: <EditReportModal report={report} updateReport={updateReport} />,
     });
   };
 
@@ -96,6 +86,8 @@ function Reports() {
   );
 
   const handleSave = async () => {
+    form.validate();
+
     if (!form.isValid()) return;
 
     const retVal = await addReport(form.values);
@@ -112,10 +104,9 @@ function Reports() {
       <Divider my={15} />
       <Card shadow={"md"} radius={"md"} withBorder>
         <Flex gap={10} direction={"column"}>
-          <form onSubmit={form.onSubmit((values) => console.log(values))}>
+          <form>
             <Group grow>
               <TextInput
-                key={form.key("name")}
                 {...form.getInputProps("name")}
                 withAsterisk
                 label={"Name"}

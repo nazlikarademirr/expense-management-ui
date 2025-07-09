@@ -1,7 +1,7 @@
 import { useForm } from "@mantine/form";
 import { Project } from "../../types/project";
 import { modals } from "@mantine/modals";
-import useProjects from "./hooks/useProjects";
+import useProjects from "../../hooks/useProjects";
 import { useMemo } from "react";
 import {
   ActionIcon,
@@ -17,11 +17,10 @@ import {
 import { IconEdit, IconTrash } from "@tabler/icons-react";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
-import EditProject from "./components/EditProject";
+import EditProjectModal from "./components/EditProjectModal";
 
 function Projects() {
-  const { projects, addProject, deleteProject, partiallyUpdateProject } =
-    useProjects();
+  const { projects, addProject, deleteProject, updateProject } = useProjects();
 
   const form = useForm({
     initialValues: {
@@ -44,10 +43,7 @@ function Projects() {
       title: "Edit Project",
       size: "xl",
       children: (
-        <EditProject
-          project={project}
-          partiallyUpdateProject={partiallyUpdateProject}
-        />
+        <EditProjectModal project={project} updateProject={updateProject} />
       ),
     });
   };
@@ -85,6 +81,8 @@ function Projects() {
   );
 
   const handleSave = async () => {
+    form.validate();
+
     if (!form.isValid()) return;
 
     const retVal = await addProject(form.values);
@@ -101,7 +99,7 @@ function Projects() {
       <Divider my={15} />
       <Card shadow={"md"} radius={"md"} withBorder>
         <Flex gap={10} direction={"column"}>
-          <form onSubmit={form.onSubmit((values) => console.log(values))}>
+          <form>
             <Group grow>
               <TextInput
                 key={form.key("name")}

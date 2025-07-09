@@ -12,15 +12,15 @@ import {
   JsonPatchKeyValuePair,
 } from "../../../types/json-patch-document";
 
-interface EditReport {
+interface EditReportProps {
   report: Report;
-  partiallyUpdateReport: (formEditedReport: Report) => void;
+  updateReport: (formEditedReport: Report) => void;
 }
 
-function EditReport({ report, partiallyUpdateReport }: EditReport) {
+function EditReportModal({ report, updateReport }: EditReportProps) {
   const { handleDataRequest } = useRequestHandler();
 
-  const formEditedReport = useForm({
+  const reportForm = useForm({
     initialValues: {
       id: report.id,
       name: report.name,
@@ -35,30 +35,32 @@ function EditReport({ report, partiallyUpdateReport }: EditReport) {
     },
   });
 
-  const initialValues = useRef<Report>(formEditedReport.values);
+  const initialValues = useRef<Report>(reportForm.values);
 
-  const userInputRef = useRef<HTMLInputElement>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
   const handleSave = async (e: React.MouseEvent) => {
     e.preventDefault();
 
-    formEditedReport.validate();
+    reportForm.validate();
 
-    if (formEditedReport.isDirty()) {
+    if (!reportForm.isValid()) return;
+
+    if (reportForm.isDirty()) {
       const patchDocument = createJsonPatchDocumentFromDirtyForm(
-        formEditedReport,
-        formEditedReport.values
+        reportForm,
+        reportForm.values
       );
 
       const response = await handleDataRequest<
         JsonPatchKeyValuePair[],
         ReportResponse
-      >(urls.report + "/" + report.id, RequestType.Patch, patchDocument);
+      >(`${urls.report}/${report.id}`, RequestType.Patch, patchDocument);
 
       if (response.isSuccess) {
-        initialValues.current = formEditedReport.values;
+        initialValues.current = reportForm.values;
 
-        partiallyUpdateReport(formEditedReport.values);
+        updateReport(reportForm.values);
 
         toast.success("Report edited successfully.");
 
@@ -68,17 +70,16 @@ function EditReport({ report, partiallyUpdateReport }: EditReport) {
   };
 
   useEffect(() => {
-    if (userInputRef.current) {
-      userInputRef.current.focus();
+    if (nameInputRef.current) {
+      nameInputRef.current.focus();
     }
   }, []);
 
   return (
     <Flex direction={"column"} gap={10}>
       <TextInput
-        ref={userInputRef}
-        key={formEditedReport.key("id")}
-        {...formEditedReport.getInputProps("name")}
+        ref={nameInputRef}
+        {...reportForm.getInputProps("name")}
         withAsterisk
         label={"Name"}
       />
@@ -87,4 +88,4 @@ function EditReport({ report, partiallyUpdateReport }: EditReport) {
   );
 }
 
-export default EditReport;
+export default EditReportModal;

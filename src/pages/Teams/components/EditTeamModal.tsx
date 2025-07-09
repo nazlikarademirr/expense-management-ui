@@ -12,15 +12,15 @@ import urls from "../../../constants/urls";
 import toast from "react-hot-toast";
 import { modals } from "@mantine/modals";
 
-interface EditTeam {
+interface EditTeamProps {
   team: Team;
-  partiallyUpdateTeam: (formEditedTeam: Team) => void;
+  updateTeam: (teamForm: Team) => void;
 }
 
-function EditTeam({ team, partiallyUpdateTeam }: EditTeam) {
+function EditTeamModal({ team, updateTeam }: EditTeamProps) {
   const { handleDataRequest } = useRequestHandler();
 
-  const formEditedTeam = useForm({
+  const teamForm = useForm({
     initialValues: {
       id: team.id,
       name: team.name,
@@ -35,29 +35,31 @@ function EditTeam({ team, partiallyUpdateTeam }: EditTeam) {
     },
   });
 
-  const initialValues = useRef<Team>(formEditedTeam.values);
+  const initialValues = useRef<Team>(teamForm.values);
 
-  const userInputRef = useRef<HTMLInputElement>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
   const handleSave = async (e: React.MouseEvent) => {
     e.preventDefault();
 
-    formEditedTeam.validate();
+    teamForm.validate();
 
-    if (formEditedTeam.isDirty()) {
+    if (!teamForm.isValid()) return;
+
+    if (teamForm.isDirty()) {
       const patchDocument = createJsonPatchDocumentFromDirtyForm(
-        formEditedTeam,
-        formEditedTeam.values
+        teamForm,
+        teamForm.values
       );
       const response = await handleDataRequest<
         JsonPatchKeyValuePair[],
         TeamResponse
-      >(urls.team + "/" + team.id, RequestType.Patch, patchDocument);
+      >(`${urls.team}/${team.id}`, RequestType.Patch, patchDocument);
 
       if (response.isSuccess) {
-        initialValues.current = formEditedTeam.values;
+        initialValues.current = teamForm.values;
 
-        partiallyUpdateTeam(formEditedTeam.values);
+        updateTeam(teamForm.values);
 
         toast.success("Team edited successfully.");
 
@@ -67,17 +69,16 @@ function EditTeam({ team, partiallyUpdateTeam }: EditTeam) {
   };
 
   useEffect(() => {
-    if (userInputRef.current) {
-      userInputRef.current.focus();
+    if (nameInputRef.current) {
+      nameInputRef.current.focus();
     }
   }, []);
 
   return (
     <Flex direction={"column"} gap={10}>
       <TextInput
-        ref={userInputRef}
-        key={formEditedTeam.key("id")}
-        {...formEditedTeam.getInputProps("name")}
+        ref={nameInputRef}
+        {...teamForm.getInputProps("name")}
         withAsterisk
         label={"Name"}
       />
@@ -86,4 +87,4 @@ function EditTeam({ team, partiallyUpdateTeam }: EditTeam) {
   );
 }
 
-export default EditTeam;
+export default EditTeamModal;

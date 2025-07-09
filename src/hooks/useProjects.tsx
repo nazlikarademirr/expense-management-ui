@@ -1,16 +1,15 @@
 import { useEffect, useState } from "react";
-import {
-  Project,
-  ProjectRequest,
-  ProjectResponse,
-} from "../../../types/project";
-import useRequestHandler from "../../../hooks/useRequestHandler";
-import urls from "../../../constants/urls";
-import RequestType from "../../../request-handler/request-type";
+import { Project, ProjectRequest, ProjectResponse } from "../types/project";
+import useRequestHandler from "./useRequestHandler";
+import urls from "../constants/urls";
+import RequestType from "../request-handler/request-type";
 import toast from "react-hot-toast";
+import { SelectItem } from "../types/select-item";
 
 function useProjects() {
   const [projects, setProjects] = useState<Project[]>([]);
+
+  const [projectSelectData, setProjectSelectData] = useState<SelectItem[]>([]);
 
   const { handleDataRequest } = useRequestHandler();
 
@@ -20,7 +19,7 @@ function useProjects() {
       code: project.code,
     };
 
-    var response = await handleDataRequest<ProjectRequest, ProjectResponse>(
+    const response = await handleDataRequest<ProjectRequest, ProjectResponse>(
       urls.project,
       RequestType.Post,
       projectRequest
@@ -38,7 +37,7 @@ function useProjects() {
   };
 
   const deleteProject = async (id: string) => {
-    var response = await handleDataRequest<string, never>(
+    const response = await handleDataRequest<string, never>(
       urls.project,
       RequestType.Delete,
       undefined,
@@ -54,35 +53,7 @@ function useProjects() {
     return false;
   };
 
-  const updateProject = async (project: Project) => {
-    const updateProjects = projects.map((x) => {
-      if (x.id === project.id) {
-        return project;
-      }
-
-      return x;
-    });
-
-    const projectRequest: ProjectRequest = {
-      name: project.name,
-      code: project.code,
-    };
-
-    var response = await handleDataRequest<ProjectRequest, ProjectResponse>(
-      urls.project + "/" + project.id,
-      RequestType.Patch,
-      projectRequest
-    );
-
-    if (response.isSuccess) {
-      setProjects(updateProjects);
-      return true;
-    }
-
-    return false;
-  };
-
-  const partiallyUpdateProject = (updatedProject: Project) => {
+  const updateProject = (updatedProject: Project) => {
     const replacedProjects = projects.map((x) => {
       if (x.id === updatedProject.id) {
         return updatedProject;
@@ -97,34 +68,29 @@ function useProjects() {
   };
 
   const fetchProjects = async () => {
-    var response = await handleDataRequest<never, ProjectResponse[]>(
+    const response = await handleDataRequest<never, ProjectResponse[]>(
       urls.project,
       RequestType.Get
     );
     if (response.isSuccess) {
-      var projects: Project[] = response.value.map((x) => ({
-        id: x.id,
-        name: x.name,
-        code: x.code,
-        searchText: x.searchText,
-        isActive: x.isActive,
-        createUser: x.createUser,
-        createDate: x.createDate,
-      }));
-      setProjects(projects);
+      setProjects(response.value);
+      setProjectSelectData(
+        response.value.map((x) => ({ value: x.id, label: x.name }))
+      );
     }
   };
 
   useEffect(() => {
     fetchProjects();
-  });
+  }, []);
 
   return {
     projects,
+    projectSelectData,
+    fetchProjects,
     addProject,
     updateProject,
     replaceProject,
-    partiallyUpdateProject,
     deleteProject,
   };
 }

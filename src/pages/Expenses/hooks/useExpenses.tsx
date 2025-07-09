@@ -28,7 +28,7 @@ function useExpenses() {
       overtimeMembers: expense.overtimeMembers,
     };
 
-    var response = await handleDataRequest<ExpenseRequest, ExpenseResponse>(
+    const response = await handleDataRequest<ExpenseRequest, ExpenseResponse>(
       urls.expense,
       RequestType.Post,
       expenseRequest
@@ -49,7 +49,7 @@ function useExpenses() {
   };
 
   const deleteExpense = async (id: string) => {
-    var response = await handleDataRequest<string, never>(
+    const response = await handleDataRequest<string, never>(
       urls.expense,
       RequestType.Delete,
       undefined,
@@ -65,41 +65,7 @@ function useExpenses() {
     return false;
   };
 
-  const updateExpense = async (expense: Expense) => {
-    const updateExpenses = expenses.map((x) => {
-      if (x.id === expense.id) {
-        return expense;
-      }
-
-      return x;
-    });
-
-    const expenseRequest: ExpenseRequest = {
-      userId: expense.userId,
-      projectId: expense.projectId,
-      expenseType: Number(expense.expenseType),
-      expenseDate: expense.expenseDate,
-      totalPrice: expense.totalPrice,
-      currency: Number(expense.currency),
-      tripDescription: expense.tripDescription,
-      outOfOffice: expense.outOfOffice,
-      reportId: expense.reportId,
-      overtimeMembers: expense.overtimeMembers,
-    };
-
-    var response = await handleDataRequest<ExpenseRequest, ExpenseResponse>(
-      urls.expense + "/" + expense.id,
-      RequestType.Patch,
-      expenseRequest
-    );
-    if (response.isSuccess) {
-      setExpenses(updateExpenses);
-      return true;
-    }
-    return false;
-  };
-
-  const partiallyUpdateExpense = (updatedExpense: Expense) => {
+  const updateExpense = (updatedExpense: Expense) => {
     const replacedExpense = expenses.map((x) => {
       if (x.id === updatedExpense.id) {
         return updatedExpense;
@@ -114,12 +80,12 @@ function useExpenses() {
   };
 
   const fetchExpenses = async () => {
-    var response = await handleDataRequest<never, ExpenseResponse[]>(
+    const response = await handleDataRequest<never, ExpenseResponse[]>(
       urls.expense,
       RequestType.Get
     );
     if (response.isSuccess) {
-      var expenses: Expense[] = response.value.map((x) => ({
+      const expenses: Expense[] = response.value.map((x) => ({
         id: x.id,
         userId: x.userId,
         projectId: x.projectId,
@@ -149,7 +115,6 @@ function useExpenses() {
     deleteExpense,
     updateExpense,
     replaceExpense,
-    partiallyUpdateExpense,
   };
 }
 

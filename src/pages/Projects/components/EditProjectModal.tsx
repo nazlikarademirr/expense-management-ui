@@ -12,15 +12,15 @@ import urls from "../../../constants/urls";
 import RequestType from "../../../request-handler/request-type";
 import toast from "react-hot-toast";
 
-interface EditProject {
+interface EditProjectProps {
   project: Project;
-  partiallyUpdateProject: (formEditedProject: Project) => void;
+  updateProject: (updateProject: Project) => void;
 }
 
-function EditProject({ project, partiallyUpdateProject }: EditProject) {
+function EditProjectModal({ project, updateProject }: EditProjectProps) {
   const { handleDataRequest } = useRequestHandler();
 
-  const formEditedProject = useForm({
+  const projectForm = useForm({
     initialValues: {
       id: project.id,
       name: project.name,
@@ -36,29 +36,31 @@ function EditProject({ project, partiallyUpdateProject }: EditProject) {
     },
   });
 
-  const initialValues = useRef<Project>(formEditedProject.values);
+  const initialValues = useRef<Project>(projectForm.values);
 
-  const userInputRef = useRef<HTMLInputElement>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
   const handleSave = async (e: React.MouseEvent) => {
     e.preventDefault();
 
-    formEditedProject.validate();
+    projectForm.validate();
 
-    if (formEditedProject.isDirty()) {
+    if (!projectForm.isValid()) return;
+
+    if (projectForm.isDirty()) {
       const patchDocument = createJsonPatchDocumentFromDirtyForm(
-        formEditedProject,
-        formEditedProject.values
+        projectForm,
+        projectForm.values
       );
       const response = await handleDataRequest<
         JsonPatchKeyValuePair[],
         ProjectResponse
-      >(urls.project + "/" + project.id, RequestType.Patch, patchDocument);
+      >(`${urls.project}/${project.id}`, RequestType.Patch, patchDocument);
 
       if (response.isSuccess) {
-        initialValues.current = formEditedProject.values;
+        initialValues.current = projectForm.values;
 
-        partiallyUpdateProject(formEditedProject.values);
+        updateProject(projectForm.values);
 
         toast.success("Project edited successfully.");
 
@@ -68,23 +70,22 @@ function EditProject({ project, partiallyUpdateProject }: EditProject) {
   };
 
   useEffect(() => {
-    if (userInputRef.current) {
-      userInputRef.current.focus();
+    if (nameInputRef.current) {
+      nameInputRef.current.focus();
     }
   }, []);
 
   return (
     <Flex direction={"column"} gap={10}>
       <TextInput
-        ref={userInputRef}
-        key={formEditedProject.key("id")}
-        {...formEditedProject.getInputProps("name")}
+        ref={nameInputRef}
+        {...projectForm.getInputProps("name")}
         withAsterisk
         label={"Name"}
       />
 
       <TextInput
-        {...formEditedProject.getInputProps("code")}
+        {...projectForm.getInputProps("code")}
         withAsterisk
         label={"Code"}
       />
@@ -93,4 +94,4 @@ function EditProject({ project, partiallyUpdateProject }: EditProject) {
   );
 }
 
-export default EditProject;
+export default EditProjectModal;
