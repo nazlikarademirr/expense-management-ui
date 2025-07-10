@@ -7,25 +7,28 @@ import {
   Card,
   Divider,
   Flex,
-  Group,
   Table,
   TextInput,
   Title,
 } from "@mantine/core";
-import { IconDownload, IconTrash } from "@tabler/icons-react";
+import { IconDownload, IconEdit, IconTrash } from "@tabler/icons-react";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
-import useReports from "./hooks/useReports";
+import { modals } from "@mantine/modals";
+import EditReportModal from "./components/EditReportModal";
+import useReports from "../../hooks/useReports";
 
 function Reports() {
-  const { reports, addReport, downloadReport, deleteReport } = useReports();
+  const { reports, addReport, downloadReport, updateReport, deleteReport } =
+    useReports({
+      hasValueLabel: false,
+    });
 
   const form = useForm({
     initialValues: {
       id: crypto.randomUUID(),
       name: "",
       lastReportDate: new Date(),
-      searchText: "",
       isActive: false,
       createUser: "",
       createDate: new Date(),
@@ -35,6 +38,14 @@ function Reports() {
         value.length < 2 ? "Name must have at least 2 letters" : null,
     },
   });
+
+  const openEditReport = (report: Report) => {
+    modals.open({
+      title: "Edit Report",
+      size: "xl",
+      children: <EditReportModal report={report} updateReport={updateReport} />,
+    });
+  };
 
   const memoizedReports = useMemo(
     () =>
@@ -55,6 +66,13 @@ function Reports() {
                 <IconDownload />
               </ActionIcon>
               <ActionIcon
+                onClick={() => openEditReport(x)}
+                variant={"light"}
+                color={"blue"}
+              >
+                <IconEdit />
+              </ActionIcon>
+              <ActionIcon
                 onClick={() => deleteReport(x.id)}
                 variant={"light"}
                 color={"red"}
@@ -69,6 +87,8 @@ function Reports() {
   );
 
   const handleSave = async () => {
+    form.validate();
+
     if (!form.isValid()) return;
 
     const retVal = await addReport(form.values);
@@ -85,16 +105,11 @@ function Reports() {
       <Divider my={15} />
       <Card shadow={"md"} radius={"md"} withBorder>
         <Flex gap={10} direction={"column"}>
-          <form onSubmit={form.onSubmit((values) => console.log(values))}>
-            <Group grow>
-              <TextInput
-                key={form.key("name")}
-                {...form.getInputProps("name")}
-                withAsterisk
-                label={"Name"}
-              />
-            </Group>
-          </form>
+          <TextInput
+            {...form.getInputProps("name")}
+            withAsterisk
+            label={"Name"}
+          />
           <Button onClick={handleSave} variant={"light"}>
             Add New Report
           </Button>

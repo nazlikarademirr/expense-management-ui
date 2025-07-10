@@ -1,14 +1,13 @@
 import { useForm } from "@mantine/form";
 import { Team } from "../../types/team";
 import { modals } from "@mantine/modals";
-import useTeams from "./hooks/useTeams";
+import useTeams from "../../hooks/useTeams";
 import {
   ActionIcon,
   Button,
   Card,
   Divider,
   Flex,
-  Group,
   Table,
   TextInput,
   Title,
@@ -17,10 +16,12 @@ import { IconEdit, IconTrash } from "@tabler/icons-react";
 import { format } from "date-fns";
 import { useMemo } from "react";
 import toast from "react-hot-toast";
-import EditTeam from "./components/EditTeam";
+import EditTeamModal from "./components/EditTeamModal";
 
 function Teams() {
-  const { teams, addTeam, updateTeam, deleteTeam } = useTeams();
+  const { teams, addTeam, deleteTeam, updateTeam } = useTeams({
+    hasValueLabel: false,
+  });
 
   const form = useForm({
     initialValues: {
@@ -33,7 +34,7 @@ function Teams() {
     },
     validate: {
       name: (value) =>
-        value.length < 2 ? "First name must have at least 2 letters" : null,
+        value.length < 2 ? "Name must have at least 2 letters" : null,
     },
   });
 
@@ -41,7 +42,7 @@ function Teams() {
     modals.open({
       title: "Edit Team",
       size: "xl",
-      children: <EditTeam team={team} updateTeam={updateTeam} />,
+      children: <EditTeamModal team={team} updateTeam={updateTeam} />,
     });
   };
 
@@ -77,6 +78,8 @@ function Teams() {
   );
 
   const handleSave = async () => {
+    form.validate();
+
     if (!form.isValid()) return;
 
     const retVal = await addTeam(form.values);
@@ -93,16 +96,11 @@ function Teams() {
       <Divider my={15} />
       <Card shadow={"md"} radius={"md"} withBorder>
         <Flex gap={10} direction={"column"}>
-          <form onSubmit={form.onSubmit((values) => console.log(values))}>
-            <Group grow>
-              <TextInput
-                key={form.key("name")}
-                {...form.getInputProps("name")}
-                withAsterisk
-                label={"Name"}
-              />
-            </Group>
-          </form>
+          <TextInput
+            {...form.getInputProps("name")}
+            withAsterisk
+            label={"Name"}
+          />
           <Button onClick={handleSave} variant={"light"}>
             Add New Team
           </Button>

@@ -1,21 +1,28 @@
 import { useEffect, useState } from "react";
-import useRequestHandler from "../../../hooks/useRequestHandler";
-import urls from "../../../constants/urls";
-import RequestType from "../../../request-handler/request.type";
-import { Report, ReportRequest, ReportResponse } from "../../../types/report";
+import useRequestHandler from "./useRequestHandler";
+import urls from "../constants/urls";
+import RequestType from "../request-handler/request-type";
+import { Report, ReportRequest, ReportResponse } from "../types/report";
 import toast from "react-hot-toast";
+import { SelectItem } from "../types/select-item";
 
-function useReports() {
+interface UseReportsProps {
+  hasValueLabel: boolean;
+}
+
+function useReports({ hasValueLabel }: UseReportsProps) {
   const [reports, setReports] = useState<Report[]>([]);
+
+  const [reportSelectData, setReportSelectData] = useState<SelectItem[]>([]);
 
   const { handleDataRequest } = useRequestHandler();
 
   const addReport = async (report: Report) => {
     const reportRequest: ReportRequest = {
-      name: report.name,
+      ...report,
     };
 
-    var response = await handleDataRequest<ReportRequest, ReportResponse>(
+    const response = await handleDataRequest<ReportRequest, ReportResponse>(
       urls.report,
       RequestType.Post,
       reportRequest
@@ -33,7 +40,7 @@ function useReports() {
   };
 
   const downloadReport = async (reportId: string) => {
-    var response = await handleDataRequest<string, undefined>(
+    const response = await handleDataRequest<string, undefined>(
       urls.expenseExcel,
       RequestType.Post,
       undefined,
@@ -41,12 +48,22 @@ function useReports() {
     );
 
     if (response.isSuccess) {
-      response.value;
+      // response.value;
     }
   };
 
+  const updateReport = (updatedReport: Report) => {
+    const replacedReports = reports.map((x) => {
+      if (x.id === updatedReport.id) {
+        return updatedReport;
+      }
+      return x;
+    });
+    setReports(replacedReports);
+  };
+
   const deleteReport = async (id: string) => {
-    var response = await handleDataRequest<string, never>(
+    const response = await handleDataRequest<string, never>(
       urls.report,
       RequestType.Delete,
       undefined,
@@ -64,31 +81,31 @@ function useReports() {
   };
 
   const fetchReports = async () => {
-    var response = await handleDataRequest<never, ReportResponse[]>(
+    const response = await handleDataRequest<never, ReportResponse[]>(
       urls.report,
       RequestType.Get
     );
     if (response.isSuccess) {
-      var reports: Report[] = response.value.map((x) => ({
-        id: x.id,
-        name: x.name,
-        lastReportDate: x.lastReportDate,
-        isActive: x.isActive,
-        createUser: x.createUser,
-        createDate: x.createDate,
-      }));
-      setReports(reports);
+      setReports(response.value);
+      if (hasValueLabel) {
+        setReportSelectData(
+          response.value.map((x) => ({ value: x.id, label: x.name }))
+        );
+      }
     }
   };
 
   useEffect(() => {
     fetchReports();
-  });
+  }, []);
 
   return {
     reports,
+    reportSelectData,
+    fetchReports,
     addReport,
     downloadReport,
+    updateReport,
     deleteReport,
   };
 }

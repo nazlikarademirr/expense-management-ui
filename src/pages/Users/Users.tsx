@@ -1,13 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { User } from "../../types/user.ts";
-import EditUser from "./components/EditUser.tsx";
+import EditUserModal from "./components/EditUserModal.tsx";
 import {
   ActionIcon,
   Button,
   Card,
   Divider,
   Flex,
-  Group,
   PasswordInput,
   Select,
   Table,
@@ -16,24 +15,21 @@ import {
 } from "@mantine/core";
 import { IconEdit, IconTrash } from "@tabler/icons-react";
 import { modals } from "@mantine/modals";
-import useUsers from "./hooks/useUsers.tsx";
-import useRequestHandler from "../../hooks/useRequestHandler.tsx";
-import urls from "../../constants/urls.ts";
-import { SelectItem } from "../../types/select-item.ts";
-import { TeamResponse } from "../../types/team.ts";
-import Gender from "../../enums/gender.ts";
-import Role from "../../enums/role.ts";
-import RequestType from "../../request-handler/request.type.ts";
+import useUsers from "../../hooks/useUsers.tsx";
 import { useForm } from "@mantine/form";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
+import { genders, roles } from "../../constants/static-data.ts";
+import useTeams from "../../hooks/useTeams.tsx";
 
 function Users() {
-  const { users, addUser, updateUser, deleteUser } = useUsers();
+  const { users, addUser, deleteUser, updateUser } = useUsers({
+    hasValueLabel: false,
+  });
 
-  const [teamSelectData, setTeamSelectData] = useState<SelectItem[]>([]);
-
-  const { handleDataRequest } = useRequestHandler();
+  const { teamSelectData } = useTeams({
+    hasValueLabel: true,
+  });
 
   const form = useForm({
     initialValues: {
@@ -53,65 +49,15 @@ function Users() {
     },
     validate: {
       name: (value) =>
-        value.length < 2 ? "First name must have at least 2 letters" : null,
+        value.length < 2 ? "Name must have at least 2 letters" : null,
     },
   });
-
-  // const handleSetUser = (user: User) => {
-  //   form.setValues({
-  //     id: user.id,
-  //     name: user.name,
-  //     surname: user.surname,
-  //     teamId: user.teamId,
-  //     gender: user.gender,
-  //     cardNumber: user.cardNumber,
-  //     email: user.email,
-  //     password: user.password,
-  //     role: user.role,
-  //     searchText: user.searchText,
-  //     isActive: user.isActive,
-  //     creareUser: user.createUser,
-  //     createDate: user.createDate,
-  //   });
-  // };
-
-  const gendersData = useMemo(
-    () => [
-      {
-        value: Gender.Male,
-        label: "Male",
-      },
-      {
-        value: Gender.Female,
-        label: "Female",
-      },
-    ],
-    []
-  );
-
-  const rolesData = useMemo(
-    () => [
-      {
-        value: Role.Admin,
-        label: "Admin",
-      },
-      {
-        value: Role.Manager,
-        label: "Manager",
-      },
-      {
-        value: Role.User,
-        label: "User",
-      },
-    ],
-    []
-  );
 
   const openEditUser = (user: User) => {
     modals.open({
       title: "Edit User",
       size: "xl",
-      children: <EditUser user={user} updateUser={updateUser} />,
+      children: <EditUserModal user={user} updateUser={updateUser} />,
     });
   };
 
@@ -125,13 +71,11 @@ function Users() {
             {teamSelectData.find((y) => y.value === x.teamId)?.label}
           </Table.Td>
           <Table.Td>
-            {gendersData.find((y) => y.value === x.gender)?.label}
+            {genders.find((y) => y.value === x.gender)?.label}
           </Table.Td>
           <Table.Td> {x.cardNumber} </Table.Td>
           <Table.Td> {x.email} </Table.Td>
-          <Table.Td>
-            {rolesData.find((y) => y.value === x.gender)?.label}
-          </Table.Td>
+          <Table.Td>{roles.find((y) => y.value === x.gender)?.label}</Table.Td>
           <Table.Td> {"true"} </Table.Td>
           <Table.Td> {x.createUser} </Table.Td>
           <Table.Td>{format(x.createDate, "dd/MM/yyyy HH:mm")}</Table.Td>
@@ -159,6 +103,8 @@ function Users() {
   );
 
   const handleSave = async () => {
+    form.validate();
+
     if (!form.isValid()) return;
 
     const retVal = await addUser(form.values);
@@ -169,90 +115,85 @@ function Users() {
     }
   };
 
-  const fetchTeams = async () => {
-    var teams = await handleDataRequest<unknown, TeamResponse[]>(
-      urls.team,
-      RequestType.Get
-    );
-    if (teams.isSuccess) {
-      var teamsData: SelectItem[] = teams.value.map((x) => ({
-        value: x.id,
-        label: x.name,
-      }));
-
-      setTeamSelectData(teamsData);
-    }
-  };
-
-  useEffect(() => {
-    fetchTeams();
-  }, []);
-
   return (
     <div>
       <Title order={3}>Users</Title>
       <Divider my={15} />
       <Card shadow={"md"} radius={"md"} withBorder>
-        <Flex gap={10} direction={"column"}>
-          <form onSubmit={form.onSubmit((values) => console.log(values))}>
-            <Group grow>
-              <TextInput
-                key={form.key("name")}
-                {...form.getInputProps("name")}
-                withAsterisk
-                label={"Name"}
-              />
+        <Flex gap={"xl"} direction={"row"}>
+          <Flex gap={"xl"} direction={"column"} style={{ flexGrow: 1 }}>
+            <TextInput
+              {...form.getInputProps("name")}
+              withAsterisk
+              style={{ flexGrow: 1 }}
+              label={"Name"}
+            />
 
-              <TextInput
-                {...form.getInputProps("surname")}
-                withAsterisk
-                label={"Surname"}
-              />
+            <TextInput
+              {...form.getInputProps("cardNumber")}
+              withAsterisk
+              style={{ flexGrow: 1 }}
+              label={"Card Number"}
+            />
+          </Flex>
+          <Flex gap={"xl"} direction={"column"} style={{ flexGrow: 1 }}>
+            <TextInput
+              {...form.getInputProps("surname")}
+              withAsterisk
+              style={{ flexGrow: 1 }}
+              label={"Surname"}
+            />
 
-              <Select
-                {...form.getInputProps("teamId")}
-                withAsterisk
-                data={teamSelectData}
-                searchable
-                label={"Team Name"}
-              />
+            <TextInput
+              {...form.getInputProps("email")}
+              withAsterisk
+              style={{ flexGrow: 1 }}
+              label={"Email"}
+            />
+          </Flex>
+          <Flex gap={"xl"} direction={"column"} style={{ flexGrow: 1 }}>
+            <Select
+              {...form.getInputProps("teamId")}
+              withAsterisk
+              data={teamSelectData}
+              searchable
+              style={{ flexGrow: 1 }}
+              label={"Team Name"}
+            />
 
-              <Select
-                {...form.getInputProps("gender")}
-                withAsterisk
-                data={gendersData}
-                searchable
-                label={"Gender"}
-              />
+            <PasswordInput
+              {...form.getInputProps("password")}
+              withAsterisk
+              style={{ flexGrow: 1 }}
+              label={"Password"}
+            />
+          </Flex>
+          <Flex gap={"xl"} direction={"column"} style={{ flexGrow: 1 }}>
+            <Select
+              {...form.getInputProps("gender")}
+              withAsterisk
+              data={genders}
+              searchable
+              style={{ flexGrow: 1 }}
+              label={"Gender"}
+            />
 
-              <TextInput
-                {...form.getInputProps("cardNumber")}
-                withAsterisk
-                label={"Card Number"}
-              />
-
-              <TextInput
-                {...form.getInputProps("email")}
-                withAsterisk
-                label={"Email"}
-              />
-
-              <PasswordInput
-                {...form.getInputProps("password")}
-                withAsterisk
-                label={"Password"}
-              />
-
-              <Select
-                {...form.getInputProps("role")}
-                withAsterisk
-                data={rolesData}
-                searchable
-                label={"Role"}
-              />
-            </Group>
-          </form>
-          <Button onClick={handleSave} variant={"light"}>
+            <Select
+              {...form.getInputProps("role")}
+              withAsterisk
+              data={roles}
+              searchable
+              style={{ flexGrow: 1 }}
+              label={"Role"}
+            />
+          </Flex>
+        </Flex>
+        <Flex>
+          <Button
+            onClick={handleSave}
+            variant={"light"}
+            style={{ flexGrow: 1, marginTop: "10px" }}
+          >
             Add New User
           </Button>
         </Flex>

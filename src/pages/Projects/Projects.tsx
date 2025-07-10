@@ -1,7 +1,7 @@
 import { useForm } from "@mantine/form";
 import { Project } from "../../types/project";
 import { modals } from "@mantine/modals";
-import useProjects from "./hooks/useProjects";
+import useProjects from "../../hooks/useProjects";
 import { useMemo } from "react";
 import {
   ActionIcon,
@@ -9,7 +9,6 @@ import {
   Card,
   Divider,
   Flex,
-  Group,
   Table,
   TextInput,
   Title,
@@ -17,10 +16,12 @@ import {
 import { IconEdit, IconTrash } from "@tabler/icons-react";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
-import EditProject from "./components/EditProject";
+import EditProjectModal from "./components/EditProjectModal";
 
 function Projects() {
-  const { projects, addProject, updateProject, deleteProject } = useProjects();
+  const { projects, addProject, deleteProject, updateProject } = useProjects({
+    hasValueLabel: false,
+  });
 
   const form = useForm({
     initialValues: {
@@ -42,7 +43,9 @@ function Projects() {
     modals.open({
       title: "Edit Project",
       size: "xl",
-      children: <EditProject project={project} updateProject={updateProject} />,
+      children: (
+        <EditProjectModal project={project} updateProject={updateProject} />
+      ),
     });
   };
 
@@ -79,7 +82,7 @@ function Projects() {
   );
 
   const handleSave = async () => {
-    // form.validate();
+    form.validate();
 
     if (!form.isValid()) return;
 
@@ -96,24 +99,28 @@ function Projects() {
       <Title order={3}>Projects</Title>
       <Divider my={15} />
       <Card shadow={"md"} radius={"md"} withBorder>
-        <Flex gap={10} direction={"column"}>
-          <form onSubmit={form.onSubmit((values) => console.log(values))}>
-            <Group grow>
-              <TextInput
-                key={form.key("name")}
-                {...form.getInputProps("name")}
-                withAsterisk
-                label={"Name"}
-              />
+        <Flex gap="xl" direction="row">
+          <TextInput
+            key={form.key("name")}
+            {...form.getInputProps("name")}
+            withAsterisk
+            style={{ flexGrow: 1 }}
+            label={"Name"}
+          />
 
-              <TextInput
-                {...form.getInputProps("code")}
-                withAsterisk
-                label={"Code"}
-              />
-            </Group>
-          </form>
-          <Button onClick={handleSave} variant={"light"}>
+          <TextInput
+            {...form.getInputProps("code")}
+            withAsterisk
+            style={{ flexGrow: 1 }}
+            label={"Code"}
+          />
+        </Flex>
+        <Flex gap="xl" direction="column">
+          <Button
+            onClick={handleSave}
+            variant={"light"}
+            style={{ flexGrow: 2, marginTop: "15px" }}
+          >
             Add New Project
           </Button>
         </Flex>

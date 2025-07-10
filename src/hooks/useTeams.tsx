@@ -1,21 +1,28 @@
 import { useEffect, useState } from "react";
-import { Team, TeamRequest, TeamResponse } from "../../../types/team";
-import useRequestHandler from "../../../hooks/useRequestHandler";
-import urls from "../../../constants/urls";
-import RequestType from "../../../request-handler/request.type";
+import { Team, TeamRequest, TeamResponse } from "../types/team";
+import useRequestHandler from "./useRequestHandler";
+import urls from "../constants/urls";
+import RequestType from "../request-handler/request-type";
 import toast from "react-hot-toast";
+import { SelectItem } from "../types/select-item";
 
-function useTeams() {
+interface UseTeamsProps {
+  hasValueLabel: boolean;
+}
+
+function useTeams({ hasValueLabel }: UseTeamsProps) {
   const [teams, setTeams] = useState<Team[]>([]);
+
+  const [teamSelectData, setTeamSelectData] = useState<SelectItem[]>([]);
 
   const { handleDataRequest } = useRequestHandler();
 
   const addTeam = async (team: Team) => {
     const teamRequest: TeamRequest = {
-      name: team.name,
+      ...team,
     };
 
-    var response = await handleDataRequest<TeamRequest, TeamResponse>(
+    const response = await handleDataRequest<TeamRequest, TeamResponse>(
       urls.team,
       RequestType.Post,
       teamRequest
@@ -24,7 +31,6 @@ function useTeams() {
     if (response.isSuccess) {
       const newTeam: Team = {
         ...response.value,
-        searchText: response.value.searhText,
       };
       setTeams([newTeam, ...teams]);
       return true;
@@ -34,7 +40,7 @@ function useTeams() {
   };
 
   const deleteTeam = async (id: string) => {
-    var response = await handleDataRequest<string, never>(
+    const response = await handleDataRequest<string, never>(
       urls.team,
       RequestType.Delete,
       undefined,
@@ -50,29 +56,15 @@ function useTeams() {
     return false;
   };
 
-  const updateTeam = async (team: Team) => {
-    const updateTeams = teams.map((x) => {
-      if (x.id === team.id) {
-        return team;
+  const updateTeam = (updatedTeam: Team) => {
+    const replacedTeams = teams.map((x) => {
+      if (x.id === updatedTeam.id) {
+        return updatedTeam;
       }
 
       return x;
     });
-
-    const teamRequest: TeamRequest = {
-      name: team.name,
-    };
-
-    var response = await handleDataRequest<TeamRequest, TeamResponse>(
-      urls.team + "/" + team.id,
-      RequestType.Patch,
-      teamRequest
-    );
-    if (response.isSuccess) {
-      setTeams(updateTeams);
-      return true;
-    }
-    return false;
+    setTeams(replacedTeams);
   };
 
   const replaceTeam = (list: Team[]) => {
@@ -80,20 +72,20 @@ function useTeams() {
   };
 
   const fetchTeams = async () => {
-    var response = await handleDataRequest<never, TeamResponse[]>(
+    const response = await handleDataRequest<never, TeamResponse[]>(
       urls.team,
       RequestType.Get
     );
     if (response.isSuccess) {
-      var teams: Team[] = response.value.map((x) => ({
-        id: x.id,
-        name: x.name,
-        searchText: x.searhText,
-        isActive: x.isActive,
-        createUser: x.createUser,
-        createDate: x.createDate,
+      const teams: Team[] = response.value.map((x) => ({
+        ...x,
       }));
       setTeams(teams);
+      if (hasValueLabel) {
+        setTeamSelectData(
+          response.value.map((x) => ({ value: x.id, label: x.name }))
+        );
+      }
     }
   };
 
@@ -103,6 +95,8 @@ function useTeams() {
 
   return {
     teams,
+    teamSelectData,
+    fetchTeams,
     addTeam,
     deleteTeam,
     updateTeam,
