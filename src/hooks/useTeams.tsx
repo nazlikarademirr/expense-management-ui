@@ -31,7 +31,6 @@ function useTeams({ hasValueLabel }: UseTeamsProps) {
     if (response.isSuccess) {
       const newTeam: Team = {
         ...response.value,
-        searchText: response.value.searchText,
       };
       setTeams([newTeam, ...teams]);
       return true;
