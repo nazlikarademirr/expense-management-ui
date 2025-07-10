@@ -137,7 +137,7 @@ function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
       />
 
       <Checkbox
-        {...expenseForm.getInputProps("outOfOffice")}
+        {...expenseForm.getInputProps("outOfOffice", { type: "checkbox" })}
         label={"Out Of Office"}
       />
 

@@ -272,7 +272,7 @@ function Expenses() {
             />
 
             <Checkbox
-              {...form.getInputProps("outOfOffice")}
+              {...form.getInputProps("outOfOffice", { type: "checkbox" })}
               label={"Out Of Office"}
               style={{ flexGrow: 1, marginBottom: "10px" }}
             />
