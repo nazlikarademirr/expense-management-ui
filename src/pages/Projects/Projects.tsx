@@ -9,7 +9,6 @@ import {
   Card,
   Divider,
   Flex,
-  Group,
   Table,
   TextInput,
   Title,
@@ -100,22 +99,28 @@ function Projects() {
       <Title order={3}>Projects</Title>
       <Divider my={15} />
       <Card shadow={"md"} radius={"md"} withBorder>
-        <Flex gap={10} direction={"column"}>
-          <Group grow>
-            <TextInput
-              key={form.key("name")}
-              {...form.getInputProps("name")}
-              withAsterisk
-              label={"Name"}
-            />
+        <Flex gap="xl" direction="row">
+          <TextInput
+            key={form.key("name")}
+            {...form.getInputProps("name")}
+            withAsterisk
+            style={{ flexGrow: 1 }}
+            label={"Name"}
+          />
 
-            <TextInput
-              {...form.getInputProps("code")}
-              withAsterisk
-              label={"Code"}
-            />
-          </Group>
-          <Button onClick={handleSave} variant={"light"}>
+          <TextInput
+            {...form.getInputProps("code")}
+            withAsterisk
+            style={{ flexGrow: 1 }}
+            label={"Code"}
+          />
+        </Flex>
+        <Flex gap="xl" direction="column">
+          <Button
+            onClick={handleSave}
+            variant={"light"}
+            style={{ flexGrow: 2, marginTop: "15px" }}
+          >
             Add New Project
           </Button>
         </Flex>

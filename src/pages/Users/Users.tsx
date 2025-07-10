@@ -7,7 +7,6 @@ import {
   Card,
   Divider,
   Flex,
-  Group,
   PasswordInput,
   Select,
   Table,
@@ -121,52 +120,62 @@ function Users() {
       <Title order={3}>Users</Title>
       <Divider my={15} />
       <Card shadow={"md"} radius={"md"} withBorder>
-        <Flex gap={10} direction={"column"}>
-          <Group grow>
+        <Flex gap={"xl"} direction={"row"}>
+          <Flex gap={"xl"} direction={"column"} style={{ flexGrow: 1 }}>
             <TextInput
               {...form.getInputProps("name")}
               withAsterisk
+              style={{ flexGrow: 1 }}
               label={"Name"}
-            />
-
-            <TextInput
-              {...form.getInputProps("surname")}
-              withAsterisk
-              label={"Surname"}
-            />
-
-            <Select
-              {...form.getInputProps("teamId")}
-              withAsterisk
-              data={teamSelectData}
-              searchable
-              label={"Team Name"}
-            />
-
-            <Select
-              {...form.getInputProps("gender")}
-              withAsterisk
-              data={genders}
-              searchable
-              label={"Gender"}
             />
 
             <TextInput
               {...form.getInputProps("cardNumber")}
               withAsterisk
+              style={{ flexGrow: 1 }}
               label={"Card Number"}
+            />
+          </Flex>
+          <Flex gap={"xl"} direction={"column"} style={{ flexGrow: 1 }}>
+            <TextInput
+              {...form.getInputProps("surname")}
+              withAsterisk
+              style={{ flexGrow: 1 }}
+              label={"Surname"}
             />
 
             <TextInput
               {...form.getInputProps("email")}
               withAsterisk
+              style={{ flexGrow: 1 }}
               label={"Email"}
+            />
+          </Flex>
+          <Flex gap={"xl"} direction={"column"} style={{ flexGrow: 1 }}>
+            <Select
+              {...form.getInputProps("teamId")}
+              withAsterisk
+              data={teamSelectData}
+              searchable
+              style={{ flexGrow: 1 }}
+              label={"Team Name"}
             />
 
             <PasswordInput
               {...form.getInputProps("password")}
               withAsterisk
+              style={{ flexGrow: 1 }}
               label={"Password"}
+            />
+          </Flex>
+          <Flex gap={"xl"} direction={"column"} style={{ flexGrow: 1 }}>
+            <Select
+              {...form.getInputProps("gender")}
+              withAsterisk
+              data={genders}
+              searchable
+              style={{ flexGrow: 1 }}
+              label={"Gender"}
             />
 
             <Select
@@ -174,10 +183,17 @@ function Users() {
               withAsterisk
               data={roles}
               searchable
+              style={{ flexGrow: 1 }}
               label={"Role"}
             />
-          </Group>
-          <Button onClick={handleSave} variant={"light"}>
+          </Flex>
+        </Flex>
+        <Flex>
+          <Button
+            onClick={handleSave}
+            variant={"light"}
+            style={{ flexGrow: 1, marginTop: "10px" }}
+          >
             Add New User
           </Button>
         </Flex>

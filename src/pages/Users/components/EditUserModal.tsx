@@ -26,19 +26,7 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
 
   const userForm = useForm({
     initialValues: {
-      id: user.id,
-      name: user.name,
-      surname: user.surname,
-      teamId: user.teamId,
-      gender: user.gender,
-      cardNumber: user.cardNumber,
-      email: user.email,
-      password: user.password,
-      role: user.role,
-      searchText: user.searchText,
-      isActive: user.isActive,
-      createUser: user.createUser,
-      createDate: user.createDate,
+      ...user,
     },
     validate: {
       name: (value) =>
@@ -128,11 +116,9 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
         searchable
         label={"Role"}
       />
-      {userForm.isDirty() ? (
-        <Button onClick={(e) => handleSave(e)}>Edit</Button>
-      ) : (
-        <Button disabled>Edit</Button>
-      )}
+      <Button disabled={!userForm.isDirty()} onClick={(e) => handleSave(e)}>
+        Edit
+      </Button>
     </Flex>
   );
 }

@@ -1,4 +1,4 @@
-import ExpenseCurrencyType from "../enums/expense-currency-type";
+import CurrencyType from "../enums/currency-type";
 import ExpenseType from "../enums/expense-type";
 import Gender from "../enums/gender";
 import Role from "../enums/role";
@@ -40,23 +40,23 @@ const expenseTypes = [
   },
 ];
 
-const expenseCurrencyTypes = [
+const currencyTypes = [
   {
-    value: ExpenseCurrencyType.TL,
+    value: CurrencyType.TL,
     label: "TL",
   },
   {
-    value: ExpenseCurrencyType.Euro,
+    value: CurrencyType.Euro,
     label: "Euro",
   },
   {
-    value: ExpenseCurrencyType.Dollar,
+    value: CurrencyType.Dollar,
     label: "Dollar",
   },
   {
-    value: ExpenseCurrencyType.MalaysianRinggit,
+    value: CurrencyType.MalaysianRinggit,
     label: "MalaysianRinggit",
   },
 ];
 
-export { genders, roles, expenseTypes, expenseCurrencyTypes };
+export { genders, roles, expenseTypes, currencyTypes };

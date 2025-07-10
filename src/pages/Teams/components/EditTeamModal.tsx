@@ -22,12 +22,7 @@ function EditTeamModal({ team, updateTeam }: EditTeamProps) {
 
   const teamForm = useForm({
     initialValues: {
-      id: team.id,
-      name: team.name,
-      searchText: team.searchText,
-      isActive: team.isActive,
-      createUser: team.createUser,
-      createDate: team.createDate,
+      ...team,
     },
     validate: {
       name: (value) =>
@@ -80,11 +75,9 @@ function EditTeamModal({ team, updateTeam }: EditTeamProps) {
         withAsterisk
         label={"Name"}
       />
-      {teamForm.isDirty() ? (
-        <Button onClick={(e) => handleSave(e)}>Edit</Button>
-      ) : (
-        <Button disabled>Edit</Button>
-      )}
+      <Button disabled={!teamForm.isDirty()} onClick={(e) => handleSave(e)}>
+        Edit
+      </Button>
     </Flex>
   );
 }

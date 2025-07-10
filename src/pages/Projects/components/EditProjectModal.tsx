@@ -22,13 +22,7 @@ function EditProjectModal({ project, updateProject }: EditProjectProps) {
 
   const projectForm = useForm({
     initialValues: {
-      id: project.id,
-      name: project.name,
-      code: project.code,
-      searchText: project.searchText,
-      isActive: project.isActive,
-      createUser: project.createUser,
-      createDate: project.createDate,
+      ...project,
     },
     validate: {
       name: (value) =>
@@ -87,11 +81,9 @@ function EditProjectModal({ project, updateProject }: EditProjectProps) {
         withAsterisk
         label={"Code"}
       />
-      {projectForm.isDirty() ? (
-        <Button onClick={(e) => handleSave(e)}>Edit</Button>
-      ) : (
-        <Button disabled>Edit</Button>
-      )}
+      <Button disabled={!projectForm.isDirty()} onClick={(e) => handleSave(e)}>
+        Edit
+      </Button>
     </Flex>
   );
 }

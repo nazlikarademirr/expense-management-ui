@@ -7,7 +7,6 @@ import {
   Card,
   Divider,
   Flex,
-  Group,
   Table,
   TextInput,
   Title,
@@ -106,13 +105,11 @@ function Reports() {
       <Divider my={15} />
       <Card shadow={"md"} radius={"md"} withBorder>
         <Flex gap={10} direction={"column"}>
-          <Group grow>
-            <TextInput
-              {...form.getInputProps("name")}
-              withAsterisk
-              label={"Name"}
-            />
-          </Group>
+          <TextInput
+            {...form.getInputProps("name")}
+            withAsterisk
+            label={"Name"}
+          />
           <Button onClick={handleSave} variant={"light"}>
             Add New Report
           </Button>

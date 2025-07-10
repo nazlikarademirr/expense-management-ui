@@ -16,16 +16,9 @@ function useExpenses() {
 
   const addExpense = async (expense: Expense) => {
     const expenseRequest: ExpenseRequest = {
-      userId: expense.userId,
-      projectId: expense.projectId,
-      expenseType: Number(expense.expenseType),
-      expenseDate: expense.expenseDate,
-      totalPrice: expense.totalPrice,
+      ...expense,
+      expenseType: Number(expense.expenseDate),
       currency: Number(expense.currency),
-      tripDescription: expense.tripDescription,
-      outOfOffice: expense.outOfOffice,
-      reportId: expense.reportId,
-      overtimeMembers: expense.overtimeMembers,
     };
 
     const response = await handleDataRequest<ExpenseRequest, ExpenseResponse>(
@@ -39,7 +32,6 @@ function useExpenses() {
         ...response.value,
         expenseType: String(response.value.expenseType),
         currency: String(response.value.currency),
-        outOfOffice: response.value.outOfOffice,
       };
       setExpenses([newExpense, ...expenses]);
       return true;
@@ -86,20 +78,9 @@ function useExpenses() {
     );
     if (response.isSuccess) {
       const expenses: Expense[] = response.value.map((x) => ({
-        id: x.id,
-        userId: x.userId,
-        projectId: x.projectId,
+        ...x,
         expenseType: String(x.expenseType),
-        expenseDate: x.expenseDate,
-        totalPrice: x.totalPrice,
         currency: String(x.currency),
-        tripDescription: x.tripDescription,
-        outOfOffice: x.outOfOffice,
-        reportId: x.reportId,
-        overtimeMembers: x.overtimeMembers,
-        isActive: x.isActive,
-        createUser: x.createUser,
-        createDate: x.createDate,
       }));
       setExpenses(expenses);
     }

@@ -19,13 +19,9 @@ function useUsers({ hasValueLabel }: UseUsersProps) {
 
   const addUser = async (user: User) => {
     const userRequest: UserRequest = {
-      name: user.name,
-      surname: user.surname,
+      ...user,
       teamId: user.teamId ?? "",
       gender: Number(user.gender),
-      cardNumber: user.cardNumber,
-      email: user.email,
-      password: user.password,
       role: Number(user.role),
     };
 
@@ -86,19 +82,9 @@ function useUsers({ hasValueLabel }: UseUsersProps) {
     );
     if (response.isSuccess) {
       const users: User[] = response.value.map((x) => ({
-        id: x.id,
-        name: x.name,
-        surname: x.surname,
-        teamId: x.teamId,
+        ...x,
         gender: String(x.gender),
-        cardNumber: x.cardNumber,
-        email: x.email,
-        password: x.password,
         role: String(x.role),
-        searchText: x.searchText,
-        isActive: x.isActive,
-        createUser: x.createUser,
-        createDate: x.createDate,
       }));
       setUsers(users);
       if (hasValueLabel) {

@@ -22,12 +22,7 @@ function EditReportModal({ report, updateReport }: EditReportProps) {
 
   const reportForm = useForm({
     initialValues: {
-      id: report.id,
-      name: report.name,
-      lastReportDate: report.lastReportDate,
-      isActive: report.isActive,
-      createUser: report.createUser,
-      createDate: report.createDate,
+      ...report,
     },
     validate: {
       name: (value) =>
@@ -81,11 +76,9 @@ function EditReportModal({ report, updateReport }: EditReportProps) {
         withAsterisk
         label={"Name"}
       />
-      {reportForm.isDirty() ? (
-        <Button onClick={(e) => handleSave(e)}>Edit</Button>
-      ) : (
-        <Button disabled>Edit</Button>
-      )}
+      <Button disabled={!reportForm.isDirty()} onClick={(e) => handleSave(e)}>
+        Edit
+      </Button>
     </Flex>
   );
 }

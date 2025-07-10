@@ -19,8 +19,7 @@ function useProjects({ hasValueLabel }: UseProjectsProps) {
 
   const addProject = async (project: Project) => {
     const projectRequest: ProjectRequest = {
-      name: project.name,
-      code: project.code,
+      ...project,
     };
 
     const response = await handleDataRequest<ProjectRequest, ProjectResponse>(

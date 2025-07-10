@@ -19,7 +19,7 @@ function useTeams({ hasValueLabel }: UseTeamsProps) {
 
   const addTeam = async (team: Team) => {
     const teamRequest: TeamRequest = {
-      name: team.name,
+      ...team,
     };
 
     const response = await handleDataRequest<TeamRequest, TeamResponse>(
@@ -31,7 +31,7 @@ function useTeams({ hasValueLabel }: UseTeamsProps) {
     if (response.isSuccess) {
       const newTeam: Team = {
         ...response.value,
-        searchText: response.value.searhText,
+        searchText: response.value.searchText,
       };
       setTeams([newTeam, ...teams]);
       return true;
@@ -79,12 +79,7 @@ function useTeams({ hasValueLabel }: UseTeamsProps) {
     );
     if (response.isSuccess) {
       const teams: Team[] = response.value.map((x) => ({
-        id: x.id,
-        name: x.name,
-        searchText: x.searhText,
-        isActive: x.isActive,
-        createUser: x.createUser,
-        createDate: x.createDate,
+        ...x,
       }));
       setTeams(teams);
       if (hasValueLabel) {

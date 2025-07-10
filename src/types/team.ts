@@ -14,7 +14,7 @@ type TeamRequest = {
 type TeamResponse = {
   id: string;
   name: string;
-  searhText: string;
+  searchText: string;
   isActive: boolean;
   createUser: string;
   createDate: Date;

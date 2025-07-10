@@ -3,13 +3,12 @@ import {
   ActionIcon,
   Button,
   Card,
+  Checkbox,
   Divider,
   Flex,
-  Group,
   NumberInput,
   ScrollArea,
   Select,
-  SimpleGrid,
   Table,
   TextInput,
   Title,
@@ -25,10 +24,7 @@ import { OvertimeMember } from "../../types/overtime-member";
 import EditExpenseModal from "./components/EditExpenseModal";
 import { useMemo } from "react";
 import useProjects from "../../hooks/useProjects";
-import {
-  expenseCurrencyTypes,
-  expenseTypes,
-} from "../../constants/static-data";
+import { currencyTypes, expenseTypes } from "../../constants/static-data";
 import useUsers from "../../hooks/useUsers";
 import useReports from "../../hooks/useReports";
 
@@ -116,7 +112,7 @@ function Expenses() {
           <Table.Td>{format(x.expenseDate, "dd/MM/yyyy")}</Table.Td>
           <Table.Td> {x.totalPrice} </Table.Td>
           <Table.Td>
-            {expenseCurrencyTypes.find((y) => y.value === x.currency)?.label}
+            {currencyTypes.find((y) => y.value === x.currency)?.label}
           </Table.Td>
           <Table.Td> {x.tripDescription} </Table.Td>
           <Table.Td> {String(x.outOfOffice)} </Table.Td>
@@ -206,127 +202,140 @@ function Expenses() {
       <Title order={3}>Expenses</Title>
       <Divider my={15} />
       <Card shadow={"md"} radius={"md"} withBorder>
-        <Flex gap={10} direction={"column"}>
-          <Group grow>
-            <SimpleGrid cols={2}>
-              <SimpleGrid cols={3}>
+        <Flex gap={"xl"} direction={"row"}>
+          <Flex gap={"xl"} direction={"column"} style={{ flexGrow: 1 }}>
+            <Select
+              {...form.getInputProps("userId")}
+              withAsterisk
+              style={{ flexGrow: 1 }}
+              data={userSelectData}
+              searchable
+              label={"User Name"}
+            />
+
+            <DateInput
+              {...form.getInputProps("expenseDate")}
+              withAsterisk
+              style={{ flexGrow: 1 }}
+              label={"Expense Date"}
+            />
+
+            <TextInput
+              {...form.getInputProps("tripDescription")}
+              label={"Trip Description"}
+              style={{ flexGrow: 1 }}
+            />
+          </Flex>
+          <Flex gap={"xl"} direction={"column"} style={{ flexGrow: 1 }}>
+            <Select
+              {...form.getInputProps("projectId")}
+              withAsterisk
+              style={{ flexGrow: 1 }}
+              data={projectSelectData}
+              label={"Project Name"}
+            />
+
+            <NumberInput
+              {...form.getInputProps("totalPrice")}
+              withAsterisk
+              style={{ flexGrow: 1 }}
+              label={"Total Price"}
+              hideControls
+            />
+
+            <Select
+              {...form.getInputProps("reportId")}
+              withAsterisk
+              style={{ flexGrow: 1 }}
+              data={reportSelectData}
+              searchable
+              label={"Report Name"}
+            />
+          </Flex>
+          <Flex gap={"xl"} direction={"column"} style={{ flexGrow: 1 }}>
+            <Select
+              {...form.getInputProps("expenseType")}
+              withAsterisk
+              style={{ flexGrow: 1 }}
+              data={expenseTypes}
+              searchable
+              label={"Expense Type"}
+            />
+
+            <Select
+              {...form.getInputProps("currency")}
+              withAsterisk
+              style={{ flexGrow: 1, marginBottom: "30px" }}
+              data={currencyTypes}
+              searchable
+              label={"Currency"}
+            />
+
+            <Checkbox
+              {...form.getInputProps("outOfOffice")}
+              label={"Out Of Office"}
+              style={{ flexGrow: 1, marginBottom: "10px" }}
+            />
+          </Flex>
+          <Flex gap={"xl"} direction={"column"} style={{ flexGrow: 1 }}>
+            <Card shadow={"md"} radius={"md"} withBorder>
+              <Flex gap="xl" direction="row">
                 <Select
-                  {...form.getInputProps("userId")}
+                  {...overtimeMemberForm.getInputProps("userId")}
                   withAsterisk
+                  style={{ flexGrow: 1 }}
                   data={userSelectData}
                   searchable
                   label={"User Name"}
                 />
 
-                <Select
-                  {...form.getInputProps("projectId")}
-                  withAsterisk
-                  data={projectSelectData}
-                  label={"Project Name"}
-                />
-
-                <Select
-                  {...form.getInputProps("expenseType")}
-                  withAsterisk
-                  data={expenseTypes}
-                  searchable
-                  label={"Expense Type"}
-                />
-
-                <DateInput
-                  {...form.getInputProps("expenseDate")}
-                  withAsterisk
-                  label={"Expense Date"}
-                />
-
                 <NumberInput
-                  {...form.getInputProps("totalPrice")}
+                  {...overtimeMemberForm.getInputProps("price")}
                   withAsterisk
-                  label={"Total Price"}
+                  style={{ flexGrow: 1 }}
+                  label="Price"
                   hideControls
                 />
 
-                <Select
-                  {...form.getInputProps("currency")}
-                  withAsterisk
-                  data={expenseCurrencyTypes}
-                  searchable
-                  label={"Currency"}
-                />
-
-                <TextInput
-                  {...form.getInputProps("tripDescription")}
-                  label={"Trip Description"}
-                />
-
-                <Select
-                  {...form.getInputProps("outOfOffice")}
-                  withAsterisk
-                  data={["true", "false"]}
-                  label={"Out Of Office"}
-                />
-
-                <Select
-                  {...form.getInputProps("reportId")}
-                  withAsterisk
-                  data={reportSelectData}
-                  searchable
-                  label={"Report Name"}
-                />
-              </SimpleGrid>
-              <Card shadow={"md"} radius={"md"} withBorder>
-                <Group grow>
-                  <Select
-                    {...overtimeMemberForm.getInputProps("userId")}
-                    withAsterisk
-                    data={userSelectData}
-                    searchable
-                    label={"User Name"}
-                  />
-
-                  <NumberInput
-                    {...overtimeMemberForm.getInputProps("price")}
-                    withAsterisk
-                    label="Price"
-                    hideControls
-                  />
-
-                  <Button
-                    onClick={overtimeMemberSave}
-                    variant={"light"}
-                    style={{ marginTop: "25px" }}
-                  >
-                    Add Overtime Member
-                  </Button>
-                </Group>
-                <Table
-                  stickyHeader
-                  highlightOnHover
-                  withTableBorder
-                  withColumnBorders
-                  mt={16}
+                <Button
+                  onClick={overtimeMemberSave}
+                  variant={"light"}
+                  style={{ marginTop: "25px", flexGrow: 1 }}
                 >
-                  <ScrollArea h={150} scrollbarSize={8}>
-                    <Table.Thead>
-                      <Table.Tr>
-                        <Table.Th>User Name</Table.Th>
-                        <Table.Th>Price</Table.Th>
-                        <Table.Th>Create User</Table.Th>
-                        <Table.Th>Create Date</Table.Th>
-                        <Table.Th></Table.Th>
-                      </Table.Tr>
-                    </Table.Thead>
+                  Add Overtime Member
+                </Button>
+              </Flex>
+              <Table
+                stickyHeader
+                highlightOnHover
+                withTableBorder
+                withColumnBorders
+                mt={16}
+              >
+                <ScrollArea h={150} scrollbarSize={8}>
+                  <Table.Thead>
+                    <Table.Tr>
+                      <Table.Th>User Name</Table.Th>
+                      <Table.Th>Price</Table.Th>
+                      <Table.Th>Create User</Table.Th>
+                      <Table.Th>Create Date</Table.Th>
+                      <Table.Th></Table.Th>
+                    </Table.Tr>
+                  </Table.Thead>
 
-                    <Table.Tbody>{memoizedOvertimeMembers}</Table.Tbody>
-                  </ScrollArea>
-                </Table>
-              </Card>
-            </SimpleGrid>
-          </Group>
-          <Button onClick={handleSave} variant={"light"}>
-            Add New Expense
-          </Button>
+                  <Table.Tbody>{memoizedOvertimeMembers}</Table.Tbody>
+                </ScrollArea>
+              </Table>
+            </Card>
+          </Flex>
         </Flex>
+        <Button
+          onClick={handleSave}
+          variant={"light"}
+          style={{ marginTop: "10px" }}
+        >
+          Add New Expense
+        </Button>
       </Card>
       <Table
         stickyHeader

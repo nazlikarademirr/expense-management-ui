@@ -19,7 +19,7 @@ function useReports({ hasValueLabel }: UseReportsProps) {
 
   const addReport = async (report: Report) => {
     const reportRequest: ReportRequest = {
-      name: report.name,
+      ...report,
     };
 
     const response = await handleDataRequest<ReportRequest, ReportResponse>(
