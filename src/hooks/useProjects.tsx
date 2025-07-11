@@ -5,15 +5,15 @@ import urls from "../constants/urls";
 import RequestType from "../request-handler/request-type";
 import toast from "react-hot-toast";
 import { SelectItem } from "../types/select-item";
-import expenseReducer from "../expense-reducer/expense-reducer";
 import ReducerActions from "../enums/reducer-action";
+import projectReducer from "../pages/Projects/project-reducer";
 
 interface UseProjectsProps {
   hasValueLabel: boolean;
 }
 
 function useProjects({ hasValueLabel }: UseProjectsProps) {
-  const [projects, dispatch] = useReducer(expenseReducer<Project>, []);
+  const [projects, dispatch] = useReducer(projectReducer, []);
 
   const [projectSelectData, setProjectSelectData] = useState<SelectItem[]>([]);
 
@@ -88,7 +88,7 @@ function useProjects({ hasValueLabel }: UseProjectsProps) {
         ...x,
       }));
       dispatch({
-        type: ReducerActions.Fetch,
+        type: ReducerActions.Replace,
         payload: projects,
       });
       if (hasValueLabel) {

@@ -1,5 +1,4 @@
 enum ReducerActions {
-  Fetch = "fetch",
   Add = "add",
   Update = "update",
   Delete = "delete",

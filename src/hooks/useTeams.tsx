@@ -5,15 +5,15 @@ import urls from "../constants/urls";
 import RequestType from "../request-handler/request-type";
 import toast from "react-hot-toast";
 import { SelectItem } from "../types/select-item";
-import expenseReducer from "../expense-reducer/expense-reducer";
 import ReducerActions from "../enums/reducer-action";
+import teamReducer from "../pages/Teams/team-reducer";
 
 interface UseTeamsProps {
   hasValueLabel: boolean;
 }
 
 function useTeams({ hasValueLabel }: UseTeamsProps) {
-  const [teams, dispatch] = useReducer(expenseReducer<Team>, []);
+  const [teams, dispatch] = useReducer(teamReducer, []);
 
   const [teamSelectData, setTeamSelectData] = useState<SelectItem[]>([]);
 
@@ -88,7 +88,7 @@ function useTeams({ hasValueLabel }: UseTeamsProps) {
         ...x,
       }));
       dispatch({
-        type: ReducerActions.Fetch,
+        type: ReducerActions.Replace,
         payload: teams,
       });
       if (hasValueLabel) {

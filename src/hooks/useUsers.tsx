@@ -5,15 +5,15 @@ import urls from "../constants/urls";
 import RequestType from "../request-handler/request-type";
 import toast from "react-hot-toast";
 import { SelectItem } from "../types/select-item";
-import expenseReducer from "../expense-reducer/expense-reducer";
 import ReducerActions from "../enums/reducer-action";
+import userReducer from "../pages/Users/user-reducer";
 
 interface UseUsersProps {
   hasValueLabel: boolean;
 }
 
 function useUsers({ hasValueLabel }: UseUsersProps) {
-  const [users, dispatch] = useReducer(expenseReducer<User>, []);
+  const [users, dispatch] = useReducer(userReducer, []);
 
   const [userSelectData, setUserSelectData] = useState<SelectItem[]>([]);
 
@@ -95,7 +95,7 @@ function useUsers({ hasValueLabel }: UseUsersProps) {
         role: String(x.role),
       }));
       dispatch({
-        type: ReducerActions.Fetch,
+        type: ReducerActions.Replace,
         payload: users,
       });
 

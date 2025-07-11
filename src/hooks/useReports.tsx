@@ -6,14 +6,14 @@ import { Report, ReportRequest, ReportResponse } from "../types/report";
 import toast from "react-hot-toast";
 import { SelectItem } from "../types/select-item";
 import ReducerActions from "../enums/reducer-action";
-import expenseReducer from "../expense-reducer/expense-reducer";
+import reportReducer from "../pages/Reports/report-reducer";
 
 interface UseReportsProps {
   hasValueLabel: boolean;
 }
 
 function useReports({ hasValueLabel }: UseReportsProps) {
-  const [reports, dispatch] = useReducer(expenseReducer<Report>, []);
+  const [reports, dispatch] = useReducer(reportReducer, []);
 
   const [reportSelectData, setReportSelectData] = useState<SelectItem[]>([]);
 
@@ -95,7 +95,7 @@ function useReports({ hasValueLabel }: UseReportsProps) {
         ...x,
       }));
       dispatch({
-        type: ReducerActions.Fetch,
+        type: ReducerActions.Replace,
         payload: reports,
       });
 

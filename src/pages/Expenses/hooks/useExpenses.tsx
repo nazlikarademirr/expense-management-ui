@@ -8,11 +8,11 @@ import useRequestHandler from "../../../hooks/useRequestHandler";
 import urls from "../../../constants/urls";
 import RequestType from "../../../request-handler/request-type";
 import toast from "react-hot-toast";
-import expenseReducer from "../../../expense-reducer/expense-reducer";
 import ReducerActions from "../../../enums/reducer-action";
+import expenseReducer from "../expense-reducer";
 
 function useExpenses() {
-  const [expenses, dispatch] = useReducer(expenseReducer<Expense>, []);
+  const [expenses, dispatch] = useReducer(expenseReducer, []);
 
   const { handleDataRequest } = useRequestHandler();
 
@@ -91,7 +91,7 @@ function useExpenses() {
         currency: String(x.currency),
       }));
       dispatch({
-        type: ReducerActions.Fetch,
+        type: ReducerActions.Replace,
         payload: expenses,
       });
     }
