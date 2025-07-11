@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useReducer } from "react";
 import {
   Expense,
   ExpenseRequest,
@@ -8,9 +8,11 @@ import useRequestHandler from "../../../hooks/useRequestHandler";
 import urls from "../../../constants/urls";
 import RequestType from "../../../request-handler/request-type";
 import toast from "react-hot-toast";
+import expenseReducer from "../../../expense-reducer/expense-reducer";
+import ReducerActions from "../../../enums/reducer-action";
 
 function useExpenses() {
-  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [expenses, dispatch] = useReducer(expenseReducer<Expense>, []);
 
   const { handleDataRequest } = useRequestHandler();
 
@@ -33,7 +35,10 @@ function useExpenses() {
         expenseType: String(response.value.expenseType),
         currency: String(response.value.currency),
       };
-      setExpenses([newExpense, ...expenses]);
+      dispatch({
+        type: ReducerActions.Add,
+        payload: newExpense,
+      });
       return true;
     }
 
@@ -49,7 +54,10 @@ function useExpenses() {
     );
 
     if (response.isSuccess) {
-      setExpenses(expenses.filter((x) => x.id !== id));
+      dispatch({
+        type: ReducerActions.Delete,
+        payload: id,
+      });
       toast.success("Expense has been deleted successfully!");
       return true;
     }
@@ -58,17 +66,17 @@ function useExpenses() {
   };
 
   const updateExpense = (updatedExpense: Expense) => {
-    const replacedExpense = expenses.map((x) => {
-      if (x.id === updatedExpense.id) {
-        return updatedExpense;
-      }
-      return x;
+    dispatch({
+      type: ReducerActions.Update,
+      payload: updatedExpense,
     });
-    setExpenses(replacedExpense);
   };
 
   const replaceExpense = (list: Expense[]) => {
-    setExpenses(list);
+    dispatch({
+      type: ReducerActions.Replace,
+      payload: list,
+    });
   };
 
   const fetchExpenses = async () => {
@@ -82,7 +90,10 @@ function useExpenses() {
         expenseType: String(x.expenseType),
         currency: String(x.currency),
       }));
-      setExpenses(expenses);
+      dispatch({
+        type: ReducerActions.Fetch,
+        payload: expenses,
+      });
     }
   };
 

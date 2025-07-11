@@ -1,17 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { Project, ProjectRequest, ProjectResponse } from "../types/project";
 import useRequestHandler from "./useRequestHandler";
 import urls from "../constants/urls";
 import RequestType from "../request-handler/request-type";
 import toast from "react-hot-toast";
 import { SelectItem } from "../types/select-item";
+import expenseReducer from "../expense-reducer/expense-reducer";
+import ReducerActions from "../enums/reducer-action";
 
 interface UseProjectsProps {
   hasValueLabel: boolean;
 }
 
 function useProjects({ hasValueLabel }: UseProjectsProps) {
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [projects, dispatch] = useReducer(expenseReducer<Project>, []);
 
   const [projectSelectData, setProjectSelectData] = useState<SelectItem[]>([]);
 
@@ -32,7 +34,10 @@ function useProjects({ hasValueLabel }: UseProjectsProps) {
       const newProject: Project = {
         ...response.value,
       };
-      setProjects([newProject, ...projects]);
+      dispatch({
+        type: ReducerActions.Add,
+        payload: newProject,
+      });
       return true;
     }
 
@@ -48,7 +53,10 @@ function useProjects({ hasValueLabel }: UseProjectsProps) {
     );
 
     if (response.isSuccess) {
-      setProjects(projects.filter((x) => x.id !== id));
+      dispatch({
+        type: ReducerActions.Delete,
+        payload: id,
+      });
       toast.success("Project has been deleted successfully!");
       return true;
     }
@@ -57,17 +65,17 @@ function useProjects({ hasValueLabel }: UseProjectsProps) {
   };
 
   const updateProject = (updatedProject: Project) => {
-    const replacedProjects = projects.map((x) => {
-      if (x.id === updatedProject.id) {
-        return updatedProject;
-      }
-      return x;
+    dispatch({
+      type: ReducerActions.Update,
+      payload: updatedProject,
     });
-    setProjects(replacedProjects);
   };
 
   const replaceProject = (list: Project[]) => {
-    setProjects(list);
+    dispatch({
+      type: ReducerActions.Replace,
+      payload: list,
+    });
   };
 
   const fetchProjects = async () => {
@@ -76,7 +84,13 @@ function useProjects({ hasValueLabel }: UseProjectsProps) {
       RequestType.Get
     );
     if (response.isSuccess) {
-      setProjects(response.value);
+      const projects: Project[] = response.value.map((x) => ({
+        ...x,
+      }));
+      dispatch({
+        type: ReducerActions.Fetch,
+        payload: projects,
+      });
       if (hasValueLabel) {
         setProjectSelectData(
           response.value.map((x) => ({ value: x.id, label: x.name }))

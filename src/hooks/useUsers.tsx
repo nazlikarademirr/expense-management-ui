@@ -1,17 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { User, UserRequest, UserResponse } from "../types/user";
 import useRequestHandler from "./useRequestHandler";
 import urls from "../constants/urls";
 import RequestType from "../request-handler/request-type";
 import toast from "react-hot-toast";
 import { SelectItem } from "../types/select-item";
+import expenseReducer from "../expense-reducer/expense-reducer";
+import ReducerActions from "../enums/reducer-action";
 
 interface UseUsersProps {
   hasValueLabel: boolean;
 }
 
 function useUsers({ hasValueLabel }: UseUsersProps) {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, dispatch] = useReducer(expenseReducer<User>, []);
 
   const [userSelectData, setUserSelectData] = useState<SelectItem[]>([]);
 
@@ -37,7 +39,10 @@ function useUsers({ hasValueLabel }: UseUsersProps) {
         gender: String(response.value.gender),
         role: String(response.value.role),
       };
-      setUsers([newUser, ...users]);
+      dispatch({
+        type: ReducerActions.Add,
+        payload: newUser,
+      });
       return true;
     }
 
@@ -53,7 +58,10 @@ function useUsers({ hasValueLabel }: UseUsersProps) {
     );
 
     if (response.isSuccess) {
-      setUsers(users.filter((x) => x.id !== id));
+      dispatch({
+        type: ReducerActions.Delete,
+        payload: id,
+      });
       toast.success("User has been deleted successfully!");
       return true;
     }
@@ -62,17 +70,17 @@ function useUsers({ hasValueLabel }: UseUsersProps) {
   };
 
   const updateUser = (updatedUser: User) => {
-    const replacedUsers = users.map((x) => {
-      if (x.id === updatedUser.id) {
-        return updatedUser;
-      }
-      return x;
+    dispatch({
+      type: ReducerActions.Update,
+      payload: updatedUser,
     });
-    setUsers(replacedUsers);
   };
 
   const replaceUser = (list: User[]) => {
-    setUsers(list);
+    dispatch({
+      type: ReducerActions.Replace,
+      payload: list,
+    });
   };
 
   const fetchUsers = async () => {
@@ -86,7 +94,11 @@ function useUsers({ hasValueLabel }: UseUsersProps) {
         gender: String(x.gender),
         role: String(x.role),
       }));
-      setUsers(users);
+      dispatch({
+        type: ReducerActions.Fetch,
+        payload: users,
+      });
+
       if (hasValueLabel) {
         setUserSelectData(
           response.value.map((x) => ({

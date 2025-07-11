@@ -1,17 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { Team, TeamRequest, TeamResponse } from "../types/team";
 import useRequestHandler from "./useRequestHandler";
 import urls from "../constants/urls";
 import RequestType from "../request-handler/request-type";
 import toast from "react-hot-toast";
 import { SelectItem } from "../types/select-item";
+import expenseReducer from "../expense-reducer/expense-reducer";
+import ReducerActions from "../enums/reducer-action";
 
 interface UseTeamsProps {
   hasValueLabel: boolean;
 }
 
 function useTeams({ hasValueLabel }: UseTeamsProps) {
-  const [teams, setTeams] = useState<Team[]>([]);
+  const [teams, dispatch] = useReducer(expenseReducer<Team>, []);
 
   const [teamSelectData, setTeamSelectData] = useState<SelectItem[]>([]);
 
@@ -32,7 +34,10 @@ function useTeams({ hasValueLabel }: UseTeamsProps) {
       const newTeam: Team = {
         ...response.value,
       };
-      setTeams([newTeam, ...teams]);
+      dispatch({
+        type: ReducerActions.Add,
+        payload: newTeam,
+      });
       return true;
     }
 
@@ -48,7 +53,10 @@ function useTeams({ hasValueLabel }: UseTeamsProps) {
     );
 
     if (response.isSuccess) {
-      setTeams(teams.filter((x) => x.id !== id));
+      dispatch({
+        type: ReducerActions.Delete,
+        payload: id,
+      });
       toast.success("Team has been deleted successfully!");
       return true;
     }
@@ -57,18 +65,17 @@ function useTeams({ hasValueLabel }: UseTeamsProps) {
   };
 
   const updateTeam = (updatedTeam: Team) => {
-    const replacedTeams = teams.map((x) => {
-      if (x.id === updatedTeam.id) {
-        return updatedTeam;
-      }
-
-      return x;
+    dispatch({
+      type: ReducerActions.Update,
+      payload: updatedTeam,
     });
-    setTeams(replacedTeams);
   };
 
   const replaceTeam = (list: Team[]) => {
-    setTeams(list);
+    dispatch({
+      type: ReducerActions.Replace,
+      payload: list,
+    });
   };
 
   const fetchTeams = async () => {
@@ -80,7 +87,10 @@ function useTeams({ hasValueLabel }: UseTeamsProps) {
       const teams: Team[] = response.value.map((x) => ({
         ...x,
       }));
-      setTeams(teams);
+      dispatch({
+        type: ReducerActions.Fetch,
+        payload: teams,
+      });
       if (hasValueLabel) {
         setTeamSelectData(
           response.value.map((x) => ({ value: x.id, label: x.name }))
