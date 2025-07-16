@@ -10,7 +10,7 @@ type Action =
 function expenseReducer(state: Expense[], action: Action) {
   switch (action.type) {
     case ReducerActions.Add: {
-      return [action.payload, ...state];
+      return [...state, action.payload];
     }
 
     case ReducerActions.Update: {
