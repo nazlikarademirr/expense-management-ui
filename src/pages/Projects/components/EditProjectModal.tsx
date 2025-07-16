@@ -26,7 +26,21 @@ function EditProjectModal({ project, updateProject }: EditProjectProps) {
     },
     validate: {
       name: (value) =>
-        value.length < 2 ? "Name must have at least 2 letters" : null,
+        value.length === 0
+          ? "Name cannot be empty."
+          : value.length < 2
+            ? "Name must have at least 2 letters."
+            : value.length > 128
+              ? "Name cannot exceed 128 characters."
+              : null,
+      code: (value) =>
+        value.length === 0
+          ? "Code cannot be empty."
+          : value.length < 2
+            ? "Code must have at least 2 letters."
+            : value.length > 128
+              ? "Code cannot exceed 128 characters."
+              : null,
     },
   });
 
