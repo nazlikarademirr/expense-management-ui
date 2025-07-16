@@ -51,6 +51,7 @@ function EditTeamModal({ team, updateTeam }: EditTeamProps) {
       teamForm,
       teamForm.values
     );
+
     const response = await handleDataRequest<
       JsonPatchKeyValuePair[],
       TeamResponse

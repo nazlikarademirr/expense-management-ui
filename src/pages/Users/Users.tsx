@@ -65,9 +65,9 @@ function Users() {
               ? "Surname cannot exceed 128 characters."
               : null,
       teamId: (value) =>
-        value === null ? "Team id cannot be null." : undefined,
+        value === null ? "Team must be selected." : undefined,
       gender: (value) =>
-        value === null ? "Gender cannot be null." : undefined,
+        value === null ? "Gender must be selected." : undefined,
       cardNumber: (value) =>
         value.length === 0
           ? "Card number cannot be empty."
@@ -88,7 +88,7 @@ function Users() {
             : value.length > 32
               ? "Password cannot exceed 32 characters."
               : null,
-      role: (value) => (value === null ? "Role cannot be null." : undefined),
+      role: (value) => (value === null ? "Role must be selected." : undefined),
     },
   });
 

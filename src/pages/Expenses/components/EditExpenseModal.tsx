@@ -41,18 +41,17 @@ function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
       expenseDate: new Date(expense.expenseDate),
     },
     validate: {
-      userId: (value) =>
-        value.length === 0 ? "User id cannot be empty." : null,
+      userId: (value) => (value.length === 0 ? "User must be selected." : null),
       projectId: (value) =>
-        value.length === 0 ? "Project id cannot be empty." : null,
+        value.length === 0 ? "Project must be selected." : null,
       expenseType: (value) =>
-        value === null ? "Expense type cannot be null." : undefined,
+        value?.length === 0 ? "Expense type must be selected." : undefined,
       expenseDate: (value) =>
-        value === null ? "Expense date cannot be null." : undefined,
+        value === null ? "Expense date must be selected." : undefined,
       totalPrice: (value) =>
-        value === null ? "Total price cannot be null." : undefined,
+        value === null ? "Total price cannot be empty." : undefined,
       currency: (value) =>
-        value === null ? "Currency cannot be null." : undefined,
+        value?.length === 0 ? "Currency must be selected." : undefined,
       tripDescription: (value) =>
         value.length > 256
           ? "Trip description cannot exceed 256 characters."
