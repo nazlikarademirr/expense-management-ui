@@ -76,7 +76,7 @@ function useUsers({ hasValueLabel }: UseUsersProps) {
     });
   };
 
-  const replaceUser = (list: User[]) => {
+  const replaceUsers = (list: User[]) => {
     dispatch({
       type: ReducerActions.Replace,
       payload: list,
@@ -120,7 +120,7 @@ function useUsers({ hasValueLabel }: UseUsersProps) {
     fetchUsers,
     addUser,
     deleteUser,
-    replaceUser,
+    replaceUsers,
     updateUser,
   };
 }

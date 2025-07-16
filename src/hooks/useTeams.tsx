@@ -71,7 +71,7 @@ function useTeams({ hasValueLabel }: UseTeamsProps) {
     });
   };
 
-  const replaceTeam = (list: Team[]) => {
+  const replaceTeams = (list: Team[]) => {
     dispatch({
       type: ReducerActions.Replace,
       payload: list,
@@ -110,7 +110,7 @@ function useTeams({ hasValueLabel }: UseTeamsProps) {
     addTeam,
     deleteTeam,
     updateTeam,
-    replaceTeam,
+    replaceTeams,
   };
 }
 

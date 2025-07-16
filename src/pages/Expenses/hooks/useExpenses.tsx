@@ -72,7 +72,7 @@ function useExpenses() {
     });
   };
 
-  const replaceExpense = (list: Expense[]) => {
+  const replaceExpenses = (list: Expense[]) => {
     dispatch({
       type: ReducerActions.Replace,
       payload: list,
@@ -106,7 +106,7 @@ function useExpenses() {
     addExpense,
     deleteExpense,
     updateExpense,
-    replaceExpense,
+    replaceExpenses,
   };
 }
 

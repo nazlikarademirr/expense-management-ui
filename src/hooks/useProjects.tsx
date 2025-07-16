@@ -71,7 +71,7 @@ function useProjects({ hasValueLabel }: UseProjectsProps) {
     });
   };
 
-  const replaceProject = (list: Project[]) => {
+  const replaceProjects = (list: Project[]) => {
     dispatch({
       type: ReducerActions.Replace,
       payload: list,
@@ -109,7 +109,7 @@ function useProjects({ hasValueLabel }: UseProjectsProps) {
     fetchProjects,
     addProject,
     updateProject,
-    replaceProject,
+    replaceProjects,
     deleteProject,
   };
 }
