@@ -36,7 +36,28 @@ function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
   });
 
   const expenseForm = useForm({
-    initialValues: { ...expense, expenseDate: new Date(expense.expenseDate) },
+    initialValues: {
+      ...expense,
+      expenseDate: new Date(expense.expenseDate),
+    },
+    validate: {
+      userId: (value) =>
+        value.length === 0 ? "User id cannot be empty." : null,
+      projectId: (value) =>
+        value.length === 0 ? "Project id cannot be empty." : null,
+      expenseType: (value) =>
+        value === null ? "Expense type cannot be null." : undefined,
+      expenseDate: (value) =>
+        value === null ? "Expense date cannot be null." : undefined,
+      totalPrice: (value) =>
+        value === null ? "Total price cannot be null." : undefined,
+      currency: (value) =>
+        value === null ? "Currency cannot be null." : undefined,
+      tripDescription: (value) =>
+        value.length > 256
+          ? "Trip description cannot exceed 256 characters."
+          : null,
+    },
   });
 
   const initialValues = useRef<Expense>(expenseForm.values);

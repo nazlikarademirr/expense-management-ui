@@ -49,7 +49,46 @@ function Users() {
     },
     validate: {
       name: (value) =>
-        value.length < 2 ? "Name must have at least 2 letters" : null,
+        value.length === 0
+          ? "Name cannot be empty."
+          : value.length < 2
+            ? "Name must have at least 2 letters."
+            : value.length > 128
+              ? "Name cannot exceed 128 characters."
+              : null,
+      surname: (value) =>
+        value.length === 0
+          ? "Surname cannot be empty."
+          : value.length < 2
+            ? "Surname must have at least 2 letters."
+            : value.length > 128
+              ? "Surname cannot exceed 128 characters."
+              : null,
+      teamId: (value) =>
+        value === null ? "Team id cannot be null." : undefined,
+      gender: (value) =>
+        value === null ? "Gender cannot be null." : undefined,
+      cardNumber: (value) =>
+        value.length === 0
+          ? "Card number cannot be empty."
+          : value.length > 8
+            ? "Card number cannot exceed 8 characters."
+            : null,
+      email: (value) =>
+        value.length === 0
+          ? "Email cannot be empty."
+          : value.length > 128
+            ? "Email cannot exceed 128 characters."
+            : null,
+      password: (value) =>
+        value.length === 0
+          ? "Password cannot be empty."
+          : value.length < 8
+            ? "Password cannot be less than 8 characters."
+            : value.length > 32
+              ? "Password cannot exceed 32 characters."
+              : null,
+      role: (value) => (value === null ? "Role cannot be null." : undefined),
     },
   });
 
