@@ -1,17 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import useRequestHandler from "./useRequestHandler";
 import urls from "../constants/urls";
 import RequestType from "../request-handler/request-type";
 import { Report, ReportRequest, ReportResponse } from "../types/report";
 import toast from "react-hot-toast";
 import { SelectItem } from "../types/select-item";
+import ReducerActions from "../enums/reducer-action";
+import reportReducer from "../pages/Reports/report-reducer";
 
 interface UseReportsProps {
   hasValueLabel: boolean;
 }
 
 function useReports({ hasValueLabel }: UseReportsProps) {
-  const [reports, setReports] = useState<Report[]>([]);
+  const [reports, dispatch] = useReducer(reportReducer, []);
 
   const [reportSelectData, setReportSelectData] = useState<SelectItem[]>([]);
 
@@ -32,7 +34,10 @@ function useReports({ hasValueLabel }: UseReportsProps) {
       const newReport: Report = {
         ...response.value,
       };
-      setReports([newReport, ...reports]);
+      dispatch({
+        type: ReducerActions.Add,
+        payload: newReport,
+      });
       return true;
     }
 
@@ -53,13 +58,10 @@ function useReports({ hasValueLabel }: UseReportsProps) {
   };
 
   const updateReport = (updatedReport: Report) => {
-    const replacedReports = reports.map((x) => {
-      if (x.id === updatedReport.id) {
-        return updatedReport;
-      }
-      return x;
+    dispatch({
+      type: ReducerActions.Update,
+      payload: updatedReport,
     });
-    setReports(replacedReports);
   };
 
   const deleteReport = async (id: string) => {
@@ -71,7 +73,10 @@ function useReports({ hasValueLabel }: UseReportsProps) {
     );
 
     if (response.isSuccess) {
-      setReports(reports.filter((x) => x.id !== id));
+      dispatch({
+        type: ReducerActions.Delete,
+        payload: id,
+      });
       toast.success("Report has been deleted successfully!");
 
       return true;
@@ -86,7 +91,14 @@ function useReports({ hasValueLabel }: UseReportsProps) {
       RequestType.Get
     );
     if (response.isSuccess) {
-      setReports(response.value);
+      const reports: Report[] = response.value.map((x) => ({
+        ...x,
+      }));
+      dispatch({
+        type: ReducerActions.Replace,
+        payload: reports,
+      });
+
       if (hasValueLabel) {
         setReportSelectData(
           response.value.map((x) => ({ value: x.id, label: x.name }))
