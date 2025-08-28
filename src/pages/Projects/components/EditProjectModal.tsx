@@ -1,10 +1,10 @@
 import { useEffect, useRef } from "react";
 import { Project, ProjectResponse } from "../../../types/project";
 import { modals } from "@mantine/modals";
-import { Button, Flex, TextInput } from "@mantine/core";
+import { Button, Flex, Select, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import {
-  createJsonPatchDocumentFromDirtyForm,
+  createJsonPatchDocumentFromObjectOrDirtyForm,
   JsonPatchKeyValuePair,
 } from "../../../types/json-patch-document";
 import useRequestHandler from "../../../hooks/useRequestHandler";
@@ -41,6 +41,8 @@ function EditProjectModal({ project, updateProject }: EditProjectProps) {
             : value.length > 128
               ? "Code cannot exceed 128 characters."
               : null,
+      isActive: (value) =>
+        value === null ? "Project must be selected." : undefined,
     },
   });
 
@@ -55,9 +57,9 @@ function EditProjectModal({ project, updateProject }: EditProjectProps) {
 
     if (!projectForm.isValid()) return;
 
-    const patchDocument = createJsonPatchDocumentFromDirtyForm(
-      projectForm,
-      projectForm.values
+    const patchDocument = createJsonPatchDocumentFromObjectOrDirtyForm(
+      projectForm.values,
+      projectForm
     );
     const response = await handleDataRequest<
       JsonPatchKeyValuePair[],
@@ -94,6 +96,13 @@ function EditProjectModal({ project, updateProject }: EditProjectProps) {
         {...projectForm.getInputProps("code")}
         withAsterisk
         label={"Code"}
+      />
+
+      <Select
+        {...projectForm.getInputProps("isActive")}
+        withAsterisk
+        data={["true", "false"]}
+        label={"Is Active"}
       />
       <Button disabled={!projectForm.isDirty()} onClick={(e) => handleSave(e)}>
         Edit

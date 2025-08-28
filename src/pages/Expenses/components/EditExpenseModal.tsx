@@ -7,7 +7,7 @@ import useRequestHandler from "../../../hooks/useRequestHandler";
 import urls from "../../../constants/urls";
 import { useForm } from "@mantine/form";
 import {
-  createJsonPatchDocumentFromDirtyForm,
+  createJsonPatchDocumentFromObjectOrDirtyForm,
   JsonPatchKeyValuePair,
 } from "../../../types/json-patch-document";
 import toast from "react-hot-toast";
@@ -70,9 +70,9 @@ function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
 
     if (!expenseForm.isValid()) return;
 
-    const patchDocument = createJsonPatchDocumentFromDirtyForm(
-      expenseForm,
-      expenseForm.values
+    const patchDocument = createJsonPatchDocumentFromObjectOrDirtyForm(
+      expenseForm.values,
+      expenseForm
     );
 
     const response = await handleDataRequest<

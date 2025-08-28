@@ -38,16 +38,16 @@ export function createJsonPatchDocument(patchList: JsonPatchKeyValuePair[]) {
   return operationList;
 }
 
-export function createJsonPatchDocumentFromDirtyForm<T>(
-  form: UseFormReturnType<T>,
-  obj: T
+export function createJsonPatchDocumentFromObjectOrDirtyForm<T>(
+  obj: T,
+  form?: UseFormReturnType<T>
 ): JsonPatchKeyValuePair[] {
   const jsonPatchList: JsonPatchKeyValuePair[] = [];
 
   let property: keyof typeof obj;
 
   for (property in obj) {
-    if (form.isDirty(property)) {
+    if (form === undefined || form?.isDirty(property)) {
       jsonPatchList.push({ path: property, value: String(obj[property]) });
     }
   }

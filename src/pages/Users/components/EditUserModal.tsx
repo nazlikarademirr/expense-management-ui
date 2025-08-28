@@ -7,7 +7,7 @@ import useRequestHandler from "../../../hooks/useRequestHandler";
 import urls from "../../../constants/urls";
 import RequestType from "../../../request-handler/request-type";
 import {
-  createJsonPatchDocumentFromDirtyForm,
+  createJsonPatchDocumentFromObjectOrDirtyForm,
   JsonPatchKeyValuePair,
 } from "../../../types/json-patch-document";
 import toast from "react-hot-toast";
@@ -70,6 +70,8 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
               ? "Password cannot exceed 32 characters."
               : null,
       role: (value) => (value === null ? "Role must be selected." : undefined),
+      isActive: (value) =>
+        value === null ? "Activity must be selected." : undefined,
     },
   });
 
@@ -84,9 +86,9 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
 
     if (!userForm.isValid()) return;
 
-    const patchDocument = createJsonPatchDocumentFromDirtyForm(
-      userForm,
-      userForm.values
+    const patchDocument = createJsonPatchDocumentFromObjectOrDirtyForm(
+      userForm.values,
+      userForm
     );
 
     const response = await handleDataRequest<
@@ -154,6 +156,12 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
         data={roles}
         searchable
         label={"Role"}
+      />
+      <Select
+        {...userForm.getInputProps("isActive")}
+        withAsterisk
+        data={["true", "false"]}
+        label={"Is Active"}
       />
       <Button disabled={!userForm.isDirty()} onClick={(e) => handleSave(e)}>
         Edit

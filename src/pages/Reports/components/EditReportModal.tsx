@@ -2,13 +2,13 @@ import { useForm } from "@mantine/form";
 import useRequestHandler from "../../../hooks/useRequestHandler";
 import { Report, ReportResponse } from "../../../types/report";
 import { useEffect, useRef } from "react";
-import { Button, Flex, TextInput } from "@mantine/core";
+import { Button, Flex, Select, TextInput } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import toast from "react-hot-toast";
 import RequestType from "../../../request-handler/request-type";
 import urls from "../../../constants/urls";
 import {
-  createJsonPatchDocumentFromDirtyForm,
+  createJsonPatchDocumentFromObjectOrDirtyForm,
   JsonPatchKeyValuePair,
 } from "../../../types/json-patch-document";
 
@@ -33,6 +33,8 @@ function EditReportModal({ report, updateReport }: EditReportProps) {
             : value.length > 128
               ? "Name cannot exceed 128 characters."
               : null,
+      isApproved: (value) =>
+        value === null ? "Approval must be selected." : undefined,
     },
   });
 
@@ -47,9 +49,9 @@ function EditReportModal({ report, updateReport }: EditReportProps) {
 
     if (!reportForm.isValid()) return;
 
-    const patchDocument = createJsonPatchDocumentFromDirtyForm(
-      reportForm,
-      reportForm.values
+    const patchDocument = createJsonPatchDocumentFromObjectOrDirtyForm(
+      reportForm.values,
+      reportForm
     );
 
     const response = await handleDataRequest<
@@ -81,6 +83,12 @@ function EditReportModal({ report, updateReport }: EditReportProps) {
         {...reportForm.getInputProps("name")}
         withAsterisk
         label={"Name"}
+      />
+      <Select
+        {...reportForm.getInputProps("isApproved")}
+        withAsterisk
+        data={["true", "false"]}
+        label={"Is Approved"}
       />
       <Button disabled={!reportForm.isDirty()} onClick={(e) => handleSave(e)}>
         Edit

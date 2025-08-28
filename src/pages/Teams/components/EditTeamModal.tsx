@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
 import { Team, TeamResponse } from "../../../types/team";
-import { Button, Flex, TextInput } from "@mantine/core";
+import { Button, Flex, Select, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import {
-  createJsonPatchDocumentFromDirtyForm,
+  createJsonPatchDocumentFromObjectOrDirtyForm,
   JsonPatchKeyValuePair,
 } from "../../../types/json-patch-document";
 import useRequestHandler from "../../../hooks/useRequestHandler";
@@ -33,6 +33,8 @@ function EditTeamModal({ team, updateTeam }: EditTeamProps) {
             : value.length > 128
               ? "Name cannot exceed 128 characters."
               : null,
+      isActive: (value) =>
+        value === null ? "Activity must be selected." : undefined,
     },
   });
 
@@ -47,9 +49,9 @@ function EditTeamModal({ team, updateTeam }: EditTeamProps) {
 
     if (!teamForm.isValid()) return;
 
-    const patchDocument = createJsonPatchDocumentFromDirtyForm(
-      teamForm,
-      teamForm.values
+    const patchDocument = createJsonPatchDocumentFromObjectOrDirtyForm(
+      teamForm.values,
+      teamForm
     );
 
     const response = await handleDataRequest<
@@ -81,6 +83,12 @@ function EditTeamModal({ team, updateTeam }: EditTeamProps) {
         {...teamForm.getInputProps("name")}
         withAsterisk
         label={"Name"}
+      />
+      <Select
+        {...teamForm.getInputProps("isActive")}
+        withAsterisk
+        data={["true", "false"]}
+        label={"Is Active"}
       />
       <Button disabled={!teamForm.isDirty()} onClick={(e) => handleSave(e)}>
         Edit

@@ -1,5 +1,5 @@
 import { useForm } from "@mantine/form";
-import { Project } from "../../types/project";
+import { Project, ProjectResponse } from "../../types/project";
 import { modals } from "@mantine/modals";
 import useProjects from "../../hooks/useProjects";
 import { useMemo } from "react";
@@ -17,11 +17,20 @@ import { IconEdit, IconTrash } from "@tabler/icons-react";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import EditProjectModal from "./components/EditProjectModal";
+import {
+  createJsonPatchDocumentFromObjectOrDirtyForm,
+  JsonPatchKeyValuePair,
+} from "../../types/json-patch-document";
+import urls from "../../constants/urls";
+import RequestType from "../../request-handler/request-type";
+import useRequestHandler from "../../hooks/useRequestHandler";
 
 function Projects() {
-  const { projects, addProject, deleteProject, updateProject } = useProjects({
+  const { projects, addProject, updateProject } = useProjects({
     hasValueLabel: false,
   });
+
+  const { handleDataRequest } = useRequestHandler();
 
   const form = useForm({
     initialValues: {
@@ -63,13 +72,30 @@ function Projects() {
     });
   };
 
+  const disableProject = async (project: Project) => {
+    const patchDocument = createJsonPatchDocumentFromObjectOrDirtyForm({
+      isActive: false,
+    });
+
+    const response = await handleDataRequest<
+      JsonPatchKeyValuePair[],
+      ProjectResponse
+    >(`${urls.project}/${project.id}`, RequestType.Patch, patchDocument);
+
+    if (response.isSuccess) {
+      updateProject({ ...project, isActive: false });
+
+      toast.success("Project deleted successfully.");
+    }
+  };
+
   const memoizedProjects = useMemo(
     () =>
       projects.map((x: Project) => (
         <Table.Tr key={x.id}>
           <Table.Td> {x.name} </Table.Td>
           <Table.Td> {x.code} </Table.Td>
-          <Table.Td> {"true"} </Table.Td>
+          <Table.Td> {String(x.isActive)} </Table.Td>
           <Table.Td> {x.createUser} </Table.Td>
           <Table.Td>{format(x.createDate, "dd/MM/yyyy HH:mm")}</Table.Td>
           <Table.Td>
@@ -82,7 +108,7 @@ function Projects() {
                 <IconEdit />
               </ActionIcon>
               <ActionIcon
-                onClick={() => deleteProject(x.id)}
+                onClick={() => disableProject(x)}
                 variant={"light"}
                 color={"red"}
               >

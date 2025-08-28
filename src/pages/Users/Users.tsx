@@ -1,5 +1,4 @@
-import { useMemo } from "react";
-import { User } from "../../types/user.ts";
+import { User, UserResponse } from "../../types/user.ts";
 import EditUserModal from "./components/EditUserModal.tsx";
 import {
   ActionIcon,
@@ -21,15 +20,25 @@ import toast from "react-hot-toast";
 import { format } from "date-fns";
 import { genders, roles } from "../../constants/static-data.ts";
 import useTeams from "../../hooks/useTeams.tsx";
+import {
+  createJsonPatchDocumentFromObjectOrDirtyForm,
+  JsonPatchKeyValuePair,
+} from "../../types/json-patch-document.ts";
+import useRequestHandler from "../../hooks/useRequestHandler.tsx";
+import urls from "../../constants/urls.ts";
+import RequestType from "../../request-handler/request-type.ts";
+import { useMemo } from "react";
 
 function Users() {
-  const { users, addUser, deleteUser, updateUser } = useUsers({
+  const { users, addUser, updateUser } = useUsers({
     hasValueLabel: false,
   });
 
   const { teamSelectData } = useTeams({
     hasValueLabel: true,
   });
+
+  const { handleDataRequest } = useRequestHandler();
 
   const form = useForm({
     initialValues: {
@@ -100,6 +109,23 @@ function Users() {
     });
   };
 
+  const disableUser = async (user: User) => {
+    const patchDocument = createJsonPatchDocumentFromObjectOrDirtyForm({
+      isActive: false,
+    });
+
+    const response = await handleDataRequest<
+      JsonPatchKeyValuePair[],
+      UserResponse
+    >(`${urls.user}/${user.id}`, RequestType.Patch, patchDocument);
+
+    if (response.isSuccess) {
+      updateUser({ ...user, isActive: false });
+
+      toast.success("User deleted successfully.");
+    }
+  };
+
   const memoizedUsers = useMemo(
     () =>
       users.map((x: User) => (
@@ -114,8 +140,8 @@ function Users() {
           </Table.Td>
           <Table.Td> {x.cardNumber} </Table.Td>
           <Table.Td> {x.email} </Table.Td>
-          <Table.Td>{roles.find((y) => y.value === x.gender)?.label}</Table.Td>
-          <Table.Td> {"true"} </Table.Td>
+          <Table.Td>{roles.find((y) => y.value === x.role)?.label}</Table.Td>
+          <Table.Td> {String(x.isActive)} </Table.Td>
           <Table.Td> {x.createUser} </Table.Td>
           <Table.Td>{format(x.createDate, "dd/MM/yyyy HH:mm")}</Table.Td>
           <Table.Td>
@@ -128,7 +154,7 @@ function Users() {
                 <IconEdit />
               </ActionIcon>
               <ActionIcon
-                onClick={() => deleteUser(x.id)}
+                onClick={() => disableUser(x)}
                 variant={"light"}
                 color={"red"}
               >
