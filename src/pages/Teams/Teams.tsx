@@ -59,7 +59,7 @@ function Teams() {
           <Table.Td> {x.name} </Table.Td>
           <Table.Td> {"true"} </Table.Td>
           <Table.Td> {x.createUser} </Table.Td>
-          <Table.Td>{format(x.createDate, "dd/MM/yyyy HH:mm")}</Table.Td>
+          <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
           <Table.Td>
             <Flex justify={"center"} gap={5}>
               <ActionIcon

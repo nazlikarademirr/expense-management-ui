@@ -41,17 +41,24 @@ function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
       expenseDate: new Date(expense.expenseDate),
     },
     validate: {
-      userId: (value) => (value.length === 0 ? "User must be selected." : null),
+      userId: (value) =>
+        value === null || value.length === 0 ? "User must be selected." : null,
       projectId: (value) =>
-        value.length === 0 ? "Project must be selected." : null,
+        value === null || value.length === 0
+          ? "Project must be selected."
+          : null,
       expenseType: (value) =>
-        value?.length === 0 ? "Expense type must be selected." : undefined,
+        value === null || value.length === 0
+          ? "Expense type must be selected."
+          : undefined,
       expenseDate: (value) =>
         value === null ? "Expense date must be selected." : undefined,
       totalPrice: (value) =>
         value === null ? "Total price cannot be empty." : undefined,
       currency: (value) =>
-        value?.length === 0 ? "Currency must be selected." : undefined,
+        value === null || value.length === 0
+          ? "Currency must be selected."
+          : undefined,
       tripDescription: (value) =>
         value.length > 256
           ? "Trip description cannot exceed 256 characters."
@@ -127,6 +134,7 @@ function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
       <DateInput
         {...expenseForm.getInputProps("expenseDate")}
         withAsterisk
+        valueFormat="DD MMMM YYYY"
         label={"Expense Date"}
       />
 
@@ -145,7 +153,6 @@ function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
 
       <TextInput
         {...expenseForm.getInputProps("tripDescription")}
-        withAsterisk
         label={"Trip Description"}
       />
 

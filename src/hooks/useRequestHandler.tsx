@@ -197,6 +197,15 @@ function useRequestHandler() {
             } as FailureResponse;
           }
 
+          if (responseJson.detail !== undefined) {
+            toast.error(responseJson.detail);
+
+            return {
+              isSuccess: false,
+              error: responseJson.detail,
+            } as FailureResponse;
+          }
+
           if (response.status === 500) {
             if (responseJson.traceId !== undefined) {
               return {

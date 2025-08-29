@@ -2,15 +2,16 @@ import { OvertimeMember } from "./overtime-member";
 
 type Expense = {
   id: string;
-  userId: string;
-  projectId: string;
+  userId: string | null;
+  projectId: string | null;
   expenseType: string | null;
   expenseDate: Date;
   totalPrice: number;
   currency: string | null;
   tripDescription: string;
   outOfOffice: boolean;
-  reportId: string;
+  reportId: string | null;
+  isApproved: boolean;
   overtimeMembers: OvertimeMember[];
   isActive: boolean;
   createUser: string;
@@ -41,6 +42,7 @@ type ExpenseResponse = {
   tripDescription: string;
   outOfOffice: boolean;
   reportId: string;
+  isApproved: boolean;
   overtimeMembers: OvertimeMember[];
   isActive: boolean;
   createUser: string;
