@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { modals } from "@mantine/modals";
-import { Button, Flex, PasswordInput, Select, TextInput } from "@mantine/core";
+import { Button, Flex, Select, TextInput } from "@mantine/core";
 import { User, UserResponse } from "../../../types/user";
 import { useForm } from "@mantine/form";
 import useRequestHandler from "../../../hooks/useRequestHandler";
@@ -61,14 +61,6 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
           : value.length > 128
             ? "Email cannot exceed 128 characters."
             : null,
-      password: (value) =>
-        value.length === 0
-          ? "Password cannot be empty."
-          : value.length < 8
-            ? "Password cannot be less than 8 characters."
-            : value.length > 32
-              ? "Password cannot exceed 32 characters."
-              : null,
       role: (value) => (value === null ? "Role must be selected." : undefined),
     },
   });
@@ -143,10 +135,10 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
         withAsterisk
         label={"Card Number"}
       />
-      <PasswordInput
-        {...userForm.getInputProps("password")}
+      <TextInput
+        {...userForm.getInputProps("email")}
         withAsterisk
-        label={"Password"}
+        label={"Email"}
       />
       <Select
         {...userForm.getInputProps("role")}
