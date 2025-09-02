@@ -129,7 +129,7 @@ function Reports() {
         <Table.Thead>
           <Table.Tr>
             <Table.Th>Name</Table.Th>
-            <Table.Th>Is Approved</Table.Th>
+            <Table.Th>Approved</Table.Th>
             <Table.Th>Create User</Table.Th>
             <Table.Th>Create Date</Table.Th>
           </Table.Tr>

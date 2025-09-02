@@ -18,7 +18,7 @@ import { useMemo } from "react";
 import toast from "react-hot-toast";
 import EditTeamModal from "./components/EditTeamModal";
 import {
-  createJsonPatchDocumentFromObjectOrDirtyForm,
+  createJsonPatchDocumentFromObject,
   JsonPatchKeyValuePair,
 } from "../../types/json-patch-document";
 import RequestType from "../../request-handler/request-type";
@@ -62,7 +62,7 @@ function Teams() {
   };
 
   const disableTeam = async (team: Team) => {
-    const patchDocument = createJsonPatchDocumentFromObjectOrDirtyForm({
+    const patchDocument = createJsonPatchDocumentFromObject({
       isActive: false,
     });
 

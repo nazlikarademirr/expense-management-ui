@@ -1,10 +1,10 @@
 import { useEffect, useRef } from "react";
 import { Project, ProjectResponse } from "../../../types/project";
 import { modals } from "@mantine/modals";
-import { Button, Flex, Select, TextInput } from "@mantine/core";
+import { Button, Flex, Group, Radio, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import {
-  createJsonPatchDocumentFromObjectOrDirtyForm,
+  createJsonPatchDocumentFromDirtyForm,
   JsonPatchKeyValuePair,
 } from "../../../types/json-patch-document";
 import useRequestHandler from "../../../hooks/useRequestHandler";
@@ -57,9 +57,9 @@ function EditProjectModal({ project, updateProject }: EditProjectProps) {
 
     if (!projectForm.isValid()) return;
 
-    const patchDocument = createJsonPatchDocumentFromObjectOrDirtyForm(
-      projectForm.values,
-      projectForm
+    const patchDocument = createJsonPatchDocumentFromDirtyForm(
+      projectForm,
+      projectForm.values
     );
     const response = await handleDataRequest<
       JsonPatchKeyValuePair[],
@@ -88,22 +88,17 @@ function EditProjectModal({ project, updateProject }: EditProjectProps) {
       <TextInput
         ref={nameInputRef}
         {...projectForm.getInputProps("name")}
-        withAsterisk
         label={"Name"}
       />
 
-      <TextInput
-        {...projectForm.getInputProps("code")}
-        withAsterisk
-        label={"Code"}
-      />
+      <TextInput {...projectForm.getInputProps("code")} label={"Code"} />
 
-      <Select
-        {...projectForm.getInputProps("isActive")}
-        withAsterisk
-        data={["true", "false"]}
-        label={"Is Active"}
-      />
+      <Radio.Group label="Is Active" style={{ flexGrow: 1 }}>
+        <Group mt="xs">
+          <Radio value="True" label="True" />
+          <Radio value="False" label="False" />
+        </Group>
+      </Radio.Group>
       <Button disabled={!projectForm.isDirty()} onClick={(e) => handleSave(e)}>
         Edit
       </Button>

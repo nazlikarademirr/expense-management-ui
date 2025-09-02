@@ -6,7 +6,9 @@ import {
   Card,
   Divider,
   Flex,
+  Group,
   PasswordInput,
+  Radio,
   Select,
   Table,
   TextInput,
@@ -21,7 +23,7 @@ import { format } from "date-fns";
 import { genders, roles } from "../../constants/static-data.ts";
 import useTeams from "../../hooks/useTeams.tsx";
 import {
-  createJsonPatchDocumentFromObjectOrDirtyForm,
+  createJsonPatchDocumentFromObject,
   JsonPatchKeyValuePair,
 } from "../../types/json-patch-document.ts";
 import useRequestHandler from "../../hooks/useRequestHandler.tsx";
@@ -110,7 +112,7 @@ function Users() {
   };
 
   const disableUser = async (user: User) => {
-    const patchDocument = createJsonPatchDocumentFromObjectOrDirtyForm({
+    const patchDocument = createJsonPatchDocumentFromObject({
       isActive: false,
     });
 
@@ -135,12 +137,10 @@ function Users() {
           <Table.Td>
             {teamSelectData.find((y) => y.value === x.teamId)?.label}
           </Table.Td>
-          <Table.Td>
-            {genders.find((y) => y.value === x.gender)?.label}
-          </Table.Td>
+          <Table.Td>{x.gender ? genders[x.gender].label : ""}</Table.Td>
           <Table.Td> {x.cardNumber} </Table.Td>
           <Table.Td> {x.email} </Table.Td>
-          <Table.Td>{roles.find((y) => y.value === x.role)?.label}</Table.Td>
+          <Table.Td>{x.role ? roles[x.role].label : ""}</Table.Td>
           <Table.Td> {String(x.isActive)} </Table.Td>
           <Table.Td> {x.createUser} </Table.Td>
           <Table.Td>{format(x.createDate, "dd/MM/yyyy HH:mm")}</Table.Td>
@@ -234,23 +234,31 @@ function Users() {
             />
           </Flex>
           <Flex gap={"xl"} direction={"column"} style={{ flexGrow: 1 }}>
-            <Select
+            <Radio.Group
+              label="Gender"
+              withAsterisk
+              style={{ flexGrow: 1 }}
               {...form.getInputProps("gender")}
-              withAsterisk
-              data={genders}
-              searchable
-              style={{ flexGrow: 1 }}
-              label={"Gender"}
-            />
+            >
+              <Group mt="xs">
+                {genders.map((x) => (
+                  <Radio value={x.value.toString()} label={x.label}></Radio>
+                ))}
+              </Group>
+            </Radio.Group>
 
-            <Select
-              {...form.getInputProps("role")}
+            <Radio.Group
+              label="Role"
               withAsterisk
-              data={roles}
-              searchable
               style={{ flexGrow: 1 }}
-              label={"Role"}
-            />
+              {...form.getInputProps("role")}
+            >
+              <Group mt="xs">
+                {roles.map((x) => (
+                  <Radio value={x.value.toString()} label={x.label}></Radio>
+                ))}
+              </Group>
+            </Radio.Group>
           </Flex>
         </Flex>
         <Flex>

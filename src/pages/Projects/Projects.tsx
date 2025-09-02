@@ -18,7 +18,7 @@ import { format } from "date-fns";
 import toast from "react-hot-toast";
 import EditProjectModal from "./components/EditProjectModal";
 import {
-  createJsonPatchDocumentFromObjectOrDirtyForm,
+  createJsonPatchDocumentFromObject,
   JsonPatchKeyValuePair,
 } from "../../types/json-patch-document";
 import urls from "../../constants/urls";
@@ -73,7 +73,7 @@ function Projects() {
   };
 
   const disableProject = async (project: Project) => {
-    const patchDocument = createJsonPatchDocumentFromObjectOrDirtyForm({
+    const patchDocument = createJsonPatchDocumentFromObject({
       isActive: false,
     });
 

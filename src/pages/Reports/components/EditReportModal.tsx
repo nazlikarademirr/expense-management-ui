@@ -2,13 +2,13 @@ import { useForm } from "@mantine/form";
 import useRequestHandler from "../../../hooks/useRequestHandler";
 import { Report, ReportResponse } from "../../../types/report";
 import { useEffect, useRef } from "react";
-import { Button, Flex, Select, TextInput } from "@mantine/core";
+import { Button, Flex, Group, Radio, TextInput } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import toast from "react-hot-toast";
 import RequestType from "../../../request-handler/request-type";
 import urls from "../../../constants/urls";
 import {
-  createJsonPatchDocumentFromObjectOrDirtyForm,
+  createJsonPatchDocumentFromDirtyForm,
   JsonPatchKeyValuePair,
 } from "../../../types/json-patch-document";
 
@@ -49,9 +49,9 @@ function EditReportModal({ report, updateReport }: EditReportProps) {
 
     if (!reportForm.isValid()) return;
 
-    const patchDocument = createJsonPatchDocumentFromObjectOrDirtyForm(
-      reportForm.values,
-      reportForm
+    const patchDocument = createJsonPatchDocumentFromDirtyForm(
+      reportForm,
+      reportForm.values
     );
 
     const response = await handleDataRequest<
@@ -81,15 +81,14 @@ function EditReportModal({ report, updateReport }: EditReportProps) {
       <TextInput
         ref={nameInputRef}
         {...reportForm.getInputProps("name")}
-        withAsterisk
         label={"Name"}
       />
-      <Select
-        {...reportForm.getInputProps("isApproved")}
-        withAsterisk
-        data={["true", "false"]}
-        label={"Is Approved"}
-      />
+      <Radio.Group label="Approved" style={{ flexGrow: 1 }}>
+        <Group mt="xs">
+          <Radio value="True" label="True" />
+          <Radio value="False" label="False" />
+        </Group>
+      </Radio.Group>
       <Button disabled={!reportForm.isDirty()} onClick={(e) => handleSave(e)}>
         Edit
       </Button>

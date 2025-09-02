@@ -1,18 +1,26 @@
 import { useEffect, useRef } from "react";
 import { modals } from "@mantine/modals";
-import { Button, Flex, PasswordInput, Select, TextInput } from "@mantine/core";
+import {
+  Button,
+  Flex,
+  Group,
+  PasswordInput,
+  Radio,
+  Select,
+  TextInput,
+} from "@mantine/core";
 import { User, UserResponse } from "../../../types/user";
 import { useForm } from "@mantine/form";
 import useRequestHandler from "../../../hooks/useRequestHandler";
 import urls from "../../../constants/urls";
 import RequestType from "../../../request-handler/request-type";
 import {
-  createJsonPatchDocumentFromObjectOrDirtyForm,
+  createJsonPatchDocumentFromDirtyForm,
   JsonPatchKeyValuePair,
 } from "../../../types/json-patch-document";
 import toast from "react-hot-toast";
-import { genders, roles } from "../../../constants/static-data";
 import useTeams from "../../../hooks/useTeams";
+import { genders, roles } from "../../../constants/static-data";
 
 interface EditUserProps {
   user: User;
@@ -86,9 +94,9 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
 
     if (!userForm.isValid()) return;
 
-    const patchDocument = createJsonPatchDocumentFromObjectOrDirtyForm(
-      userForm.values,
-      userForm
+    const patchDocument = createJsonPatchDocumentFromDirtyForm(
+      userForm,
+      userForm.values
     );
 
     const response = await handleDataRequest<
@@ -133,13 +141,18 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
         searchable
         label={"Team Name"}
       />
-      <Select
-        {...userForm.getInputProps("gender")}
+      <Radio.Group
+        label="Gender"
         withAsterisk
-        data={genders}
-        searchable
-        label={"Gender"}
-      />
+        style={{ flexGrow: 1 }}
+        {...userForm.getInputProps("gender")}
+      >
+        <Group mt="xs">
+          {genders.map((x) => (
+            <Radio value={x.value.toString()} label={x.label}></Radio>
+          ))}
+        </Group>
+      </Radio.Group>
       <TextInput
         {...userForm.getInputProps("cardNumber")}
         withAsterisk
@@ -150,19 +163,29 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
         withAsterisk
         label={"Password"}
       />
-      <Select
+      <Radio.Group
+        label="Role"
+        withAsterisk
+        style={{ flexGrow: 1 }}
         {...userForm.getInputProps("role")}
+      >
+        <Group mt="xs">
+          {roles.map((x) => (
+            <Radio value={x.value.toString()} label={x.label}></Radio>
+          ))}
+        </Group>
+      </Radio.Group>
+      <Radio.Group
+        label="Is Active"
         withAsterisk
-        data={roles}
-        searchable
-        label={"Role"}
-      />
-      <Select
+        style={{ flexGrow: 1 }}
         {...userForm.getInputProps("isActive")}
-        withAsterisk
-        data={["true", "false"]}
-        label={"Is Active"}
-      />
+      >
+        <Group mt="xs">
+          <Radio value="True" label="True" />
+          <Radio value="False" label="False" />
+        </Group>
+      </Radio.Group>
       <Button disabled={!userForm.isDirty()} onClick={(e) => handleSave(e)}>
         Edit
       </Button>

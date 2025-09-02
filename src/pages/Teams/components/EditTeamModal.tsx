@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
 import { Team, TeamResponse } from "../../../types/team";
-import { Button, Flex, Select, TextInput } from "@mantine/core";
+import { Button, Flex, Group, Radio, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import {
-  createJsonPatchDocumentFromObjectOrDirtyForm,
+  createJsonPatchDocumentFromDirtyForm,
   JsonPatchKeyValuePair,
 } from "../../../types/json-patch-document";
 import useRequestHandler from "../../../hooks/useRequestHandler";
@@ -49,9 +49,9 @@ function EditTeamModal({ team, updateTeam }: EditTeamProps) {
 
     if (!teamForm.isValid()) return;
 
-    const patchDocument = createJsonPatchDocumentFromObjectOrDirtyForm(
-      teamForm.values,
-      teamForm
+    const patchDocument = createJsonPatchDocumentFromDirtyForm(
+      teamForm,
+      teamForm.values
     );
 
     const response = await handleDataRequest<
@@ -84,12 +84,12 @@ function EditTeamModal({ team, updateTeam }: EditTeamProps) {
         withAsterisk
         label={"Name"}
       />
-      <Select
-        {...teamForm.getInputProps("isActive")}
-        withAsterisk
-        data={["true", "false"]}
-        label={"Is Active"}
-      />
+      <Radio.Group label="Is Active" withAsterisk style={{ flexGrow: 1 }}>
+        <Group mt="xs">
+          <Radio value="true" label="True" />
+          <Radio value="false" label="False" />
+        </Group>
+      </Radio.Group>
       <Button disabled={!teamForm.isDirty()} onClick={(e) => handleSave(e)}>
         Edit
       </Button>
