@@ -209,7 +209,7 @@ function Expenses() {
     overtimeMemberForm.values.id = crypto.randomUUID();
 
     if (
-      form.values.overtimeMembers.find(
+      form.values.overtimeMembers.some(
         (x) => x.userId === overtimeMemberForm.values.userId
       )
     ) {

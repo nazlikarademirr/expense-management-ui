@@ -19,9 +19,9 @@ function useExpenses() {
   const addExpense = async (expense: Expense) => {
     const expenseRequest: ExpenseRequest = {
       ...expense,
-      userId: expense.userId !== null ? expense.userId : "",
-      projectId: expense.projectId !== null ? expense.projectId : "",
-      reportId: expense.reportId !== null ? expense.reportId : "",
+      userId: expense.userId ? expense.userId : "",
+      projectId: expense.projectId ? expense.projectId : "",
+      reportId: expense.reportId ? expense.reportId : "",
       expenseType: Number(expense.expenseType),
       currency: Number(expense.currency),
     };
