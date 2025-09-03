@@ -17,7 +17,7 @@ function useReports({ hasValueLabel }: UseReportsProps) {
 
   const [reportSelectData, setReportSelectData] = useState<SelectItem[]>([]);
 
-  const { handleDataRequest } = useRequestHandler();
+  const { downloadFile, handleDataRequest } = useRequestHandler();
 
   const addReport = async (report: Report) => {
     const reportRequest: ReportRequest = {
@@ -44,16 +44,17 @@ function useReports({ hasValueLabel }: UseReportsProps) {
     return false;
   };
 
-  const downloadReport = async (reportId: string) => {
-    const response = await handleDataRequest<string, undefined>(
+  const downloadReport = async (report: Report) => {
+    const reportId = report.id;
+    const response = await downloadFile(
       urls.expenseExcel,
-      RequestType.Post,
+      report.name,
       undefined,
       { reportId }
     );
 
-    if (response.isSuccess) {
-      // response.value;
+    if (!response) {
+      toast.error("File could not be downloaded.");
     }
   };
 
