@@ -61,7 +61,7 @@ export function createJsonPatchDocumentFromDirtyForm<T>(
   let property: keyof typeof obj;
 
   for (property in obj) {
-    if (form?.isDirty(property)) {
+    if (form.isDirty(property)) {
       jsonPatchList.push({ path: property, value: String(obj[property]) });
     }
   }
