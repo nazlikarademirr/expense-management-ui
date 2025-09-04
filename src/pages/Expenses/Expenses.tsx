@@ -111,15 +111,6 @@ function Expenses() {
     });
   };
 
-  const removeExpense = (expense: Expense) => {
-    if (expense.isApproved) {
-      toast.error("Expenses in the approved report cannot be deleted!");
-      return;
-    }
-
-    deleteExpense(expense.id);
-  };
-
   const deleteOvertimeMember = (id: string) => {
     const overtimeMembers = form.values.overtimeMembers.filter(
       (x) => x.id !== id
@@ -156,6 +147,7 @@ function Expenses() {
           <Table.Td>
             <Flex justify={"center"} gap={5}>
               <ActionIcon
+                disabled={x.isApproved}
                 onClick={() => openEditExpense(x)}
                 variant={"light"}
                 color={"blue"}
@@ -163,7 +155,8 @@ function Expenses() {
                 <IconEdit />
               </ActionIcon>
               <ActionIcon
-                onClick={() => removeExpense(x)}
+                disabled={x.isApproved}
+                onClick={() => deleteExpense(x.id)}
                 variant={"light"}
                 color={"red"}
               >
