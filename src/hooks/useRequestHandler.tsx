@@ -192,10 +192,6 @@ function useRequestHandler() {
           return false;
         }
 
-        let paginationJson = response.headers.get("x-pagination");
-
-        if (paginationJson) paginationJson = JSON.parse(paginationJson);
-
         const blob: Blob = await response.blob();
         const link: HTMLAnchorElement = document.createElement("a");
 
@@ -207,7 +203,7 @@ function useRequestHandler() {
 
         return true;
       })
-      .catch((error) => false);
+      .catch(() => false);
   }
 
   async function handleDataRequest<Request, Response>(

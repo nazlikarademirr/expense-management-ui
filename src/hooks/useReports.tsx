@@ -45,17 +45,9 @@ function useReports({ hasValueLabel }: UseReportsProps) {
   };
 
   const downloadReport = async (report: Report) => {
-    const reportId = report.id;
-    const response = await downloadFile(
-      urls.expenseExcel,
-      report.name,
-      undefined,
-      { reportId }
-    );
-
-    if (!response) {
-      toast.error("File could not be downloaded.");
-    }
+    await downloadFile(urls.expenseExcel, report.name, undefined, {
+      reportId: report.id,
+    });
   };
 
   const updateReport = (updatedReport: Report) => {
