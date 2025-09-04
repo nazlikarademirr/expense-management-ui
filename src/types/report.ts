@@ -1,21 +1,20 @@
 type Report = {
   id: string;
   name: string;
-  lastReportDate: Date | null;
-  isActive: boolean;
+  isApproved: boolean;
   createUser: string;
   createDate: Date;
 };
 
 type ReportRequest = {
   name: string;
+  isApproved: boolean;
 };
 
 type ReportResponse = {
   id: string;
   name: string;
-  lastReportDate: Date | null;
-  isActive: boolean;
+  isApproved: boolean;
   createUser: string;
   createDate: Date;
 };

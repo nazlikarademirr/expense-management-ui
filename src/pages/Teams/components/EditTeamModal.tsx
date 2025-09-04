@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Team, TeamResponse } from "../../../types/team";
-import { Button, Flex, TextInput } from "@mantine/core";
+import { Button, Flex, Group, Radio, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import {
   createJsonPatchDocumentFromDirtyForm,
@@ -33,6 +33,8 @@ function EditTeamModal({ team, updateTeam }: EditTeamProps) {
             : value.length > 128
               ? "Name cannot exceed 128 characters."
               : null,
+      isActive: (value) =>
+        value === null ? "Activity must be selected." : undefined,
     },
   });
 
@@ -82,6 +84,12 @@ function EditTeamModal({ team, updateTeam }: EditTeamProps) {
         withAsterisk
         label={"Name"}
       />
+      <Radio.Group label="Is Active" withAsterisk style={{ flexGrow: 1 }}>
+        <Group mt="xs">
+          <Radio value="true" label="True" />
+          <Radio value="false" label="False" />
+        </Group>
+      </Radio.Group>
       <Button disabled={!teamForm.isDirty()} onClick={(e) => handleSave(e)}>
         Edit
       </Button>

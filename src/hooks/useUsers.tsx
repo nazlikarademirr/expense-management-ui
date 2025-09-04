@@ -36,8 +36,6 @@ function useUsers({ hasValueLabel }: UseUsersProps) {
     if (response.isSuccess) {
       const newUser: User = {
         ...response.value,
-        gender: String(response.value.gender),
-        role: String(response.value.role),
       };
       dispatch({
         type: ReducerActions.Add,
@@ -91,8 +89,6 @@ function useUsers({ hasValueLabel }: UseUsersProps) {
     if (response.isSuccess) {
       const users: User[] = response.value.map((x) => ({
         ...x,
-        gender: String(x.gender),
-        role: String(x.role),
       }));
       dispatch({
         type: ReducerActions.Replace,

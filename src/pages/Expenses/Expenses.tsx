@@ -3,10 +3,11 @@ import {
   ActionIcon,
   Button,
   Card,
-  Checkbox,
   Divider,
   Flex,
+  Group,
   NumberInput,
+  Radio,
   ScrollArea,
   Select,
   Table,
@@ -45,10 +46,10 @@ function Expenses() {
       id: crypto.randomUUID(),
       userId: "",
       projectId: "",
-      expenseType: "",
+      expenseType: null,
       expenseDate: new Date(),
       totalPrice: 0,
-      currency: "",
+      currency: null,
       tripDescription: "",
       outOfOffice: false,
       reportId: "",
@@ -62,13 +63,13 @@ function Expenses() {
       projectId: (value) =>
         value.length === 0 ? "Project must be selected." : null,
       expenseType: (value) =>
-        value?.length === 0 ? "Expense type must be selected." : undefined,
+        value === null ? "Expense type must be selected." : undefined,
       expenseDate: (value) =>
         value === null ? "Expense date must be selected." : undefined,
       totalPrice: (value) =>
         value === null ? "Total price cannot be empty." : undefined,
       currency: (value) =>
-        value?.length === 0 ? "Currency must be selected." : undefined,
+        value === null ? "Currency must be selected." : undefined,
       tripDescription: (value) =>
         value.length > 256
           ? "Trip description cannot exceed 256 characters."
@@ -120,12 +121,12 @@ function Expenses() {
             {projectSelectData.find((y) => y.value === x.projectId)?.label}
           </Table.Td>
           <Table.Td>
-            {expenseTypes.find((y) => y.value === x.expenseType)?.label}
+            {x.expenseType ? expenseTypes[x.expenseType].label : ""}
           </Table.Td>
           <Table.Td>{format(x.expenseDate, "dd/MM/yyyy")}</Table.Td>
           <Table.Td> {x.totalPrice} </Table.Td>
           <Table.Td>
-            {currencyTypes.find((y) => y.value === x.currency)?.label}
+            {x.currency ? currencyTypes[x.currency].label : ""}
           </Table.Td>
           <Table.Td> {x.tripDescription} </Table.Td>
           <Table.Td> {String(x.outOfOffice)} </Table.Td>
@@ -133,7 +134,7 @@ function Expenses() {
             {reportSelectData.find((y) => y.value === x.reportId)?.label}
           </Table.Td>
           <Table.Td>{String(x.overtimeMembers)}</Table.Td>
-          <Table.Td> {"true"} </Table.Td>
+          <Table.Td> {String(x.outOfOffice)} </Table.Td>
           <Table.Td> {x.createUser} </Table.Td>
           <Table.Td>{format(x.createDate, "dd/MM/yyyy HH:mm")}</Table.Td>
           <Table.Td>
@@ -257,38 +258,46 @@ function Expenses() {
             />
 
             <Select
-              {...form.getInputProps("reportId")}
+              {...form.getInputProps("currency")}
               withAsterisk
+              style={{ flexGrow: 1 }}
+              data={currencyTypes}
+              searchable
+              label={"Currency"}
+            />
+          </Flex>
+          <Flex gap={"xl"} direction={"column"} style={{ flexGrow: 1 }}>
+            <Select
+              {...form.getInputProps("reportId")}
               style={{ flexGrow: 1 }}
               data={reportSelectData}
               searchable
               label={"Report Name"}
             />
-          </Flex>
-          <Flex gap={"xl"} direction={"column"} style={{ flexGrow: 1 }}>
-            <Select
-              {...form.getInputProps("expenseType")}
+            <Radio.Group
+              label="Expense Type"
               withAsterisk
               style={{ flexGrow: 1 }}
-              data={expenseTypes}
-              searchable
-              label={"Expense Type"}
-            />
+              {...form.getInputProps("expenseType")}
+            >
+              <Group mt="xs">
+                {expenseTypes.map((x) => (
+                  <Radio value={x.value.toString()} label={x.label}></Radio>
+                ))}
+              </Group>
+            </Radio.Group>
 
-            <Select
-              {...form.getInputProps("currency")}
+            <Radio.Group
+              label="Out Of Office"
               withAsterisk
-              style={{ flexGrow: 1, marginBottom: "30px" }}
-              data={currencyTypes}
-              searchable
-              label={"Currency"}
-            />
-
-            <Checkbox
-              {...form.getInputProps("outOfOffice", { type: "checkbox" })}
-              label={"Out Of Office"}
-              style={{ flexGrow: 1, marginBottom: "10px" }}
-            />
+              style={{ flexGrow: 1 }}
+              {...form.getInputProps("outOfOffice")}
+            >
+              <Group mt="xs">
+                <Radio value="True" label="True" />
+                <Radio value="False" label="False" />
+              </Group>
+            </Radio.Group>
           </Flex>
           <Flex gap={"xl"} direction={"column"} style={{ flexGrow: 1 }}>
             <Card shadow={"md"} radius={"md"} withBorder>

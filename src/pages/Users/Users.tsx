@@ -1,5 +1,4 @@
-import { useMemo } from "react";
-import { User } from "../../types/user.ts";
+import { User, UserResponse } from "../../types/user.ts";
 import EditUserModal from "./components/EditUserModal.tsx";
 import {
   ActionIcon,
@@ -7,7 +6,9 @@ import {
   Card,
   Divider,
   Flex,
+  Group,
   PasswordInput,
+  Radio,
   Select,
   Table,
   TextInput,
@@ -21,15 +22,25 @@ import toast from "react-hot-toast";
 import { format } from "date-fns";
 import { genders, roles } from "../../constants/static-data.ts";
 import useTeams from "../../hooks/useTeams.tsx";
+import {
+  createJsonPatchDocumentFromObject,
+  JsonPatchKeyValuePair,
+} from "../../types/json-patch-document.ts";
+import useRequestHandler from "../../hooks/useRequestHandler.tsx";
+import urls from "../../constants/urls.ts";
+import RequestType from "../../request-handler/request-type.ts";
+import { useMemo } from "react";
 
 function Users() {
-  const { users, addUser, deleteUser, updateUser } = useUsers({
+  const { users, addUser, updateUser } = useUsers({
     hasValueLabel: false,
   });
 
   const { teamSelectData } = useTeams({
     hasValueLabel: true,
   });
+
+  const { handleDataRequest } = useRequestHandler();
 
   const form = useForm({
     initialValues: {
@@ -100,6 +111,23 @@ function Users() {
     });
   };
 
+  const disableUser = async (user: User) => {
+    const patchDocument = createJsonPatchDocumentFromObject({
+      isActive: false,
+    });
+
+    const response = await handleDataRequest<
+      JsonPatchKeyValuePair[],
+      UserResponse
+    >(`${urls.user}/${user.id}`, RequestType.Patch, patchDocument);
+
+    if (response.isSuccess) {
+      updateUser({ ...user, isActive: false });
+
+      toast.success("User deleted successfully.");
+    }
+  };
+
   const memoizedUsers = useMemo(
     () =>
       users.map((x: User) => (
@@ -109,13 +137,11 @@ function Users() {
           <Table.Td>
             {teamSelectData.find((y) => y.value === x.teamId)?.label}
           </Table.Td>
-          <Table.Td>
-            {genders.find((y) => y.value === x.gender)?.label}
-          </Table.Td>
+          <Table.Td>{x.gender ? genders[x.gender].label : ""}</Table.Td>
           <Table.Td> {x.cardNumber} </Table.Td>
           <Table.Td> {x.email} </Table.Td>
-          <Table.Td>{roles.find((y) => y.value === x.gender)?.label}</Table.Td>
-          <Table.Td> {"true"} </Table.Td>
+          <Table.Td>{x.role ? roles[x.role].label : ""}</Table.Td>
+          <Table.Td> {String(x.isActive)} </Table.Td>
           <Table.Td> {x.createUser} </Table.Td>
           <Table.Td>{format(x.createDate, "dd/MM/yyyy HH:mm")}</Table.Td>
           <Table.Td>
@@ -128,7 +154,7 @@ function Users() {
                 <IconEdit />
               </ActionIcon>
               <ActionIcon
-                onClick={() => deleteUser(x.id)}
+                onClick={() => disableUser(x)}
                 variant={"light"}
                 color={"red"}
               >
@@ -208,23 +234,31 @@ function Users() {
             />
           </Flex>
           <Flex gap={"xl"} direction={"column"} style={{ flexGrow: 1 }}>
-            <Select
+            <Radio.Group
+              label="Gender"
+              withAsterisk
+              style={{ flexGrow: 1 }}
               {...form.getInputProps("gender")}
-              withAsterisk
-              data={genders}
-              searchable
-              style={{ flexGrow: 1 }}
-              label={"Gender"}
-            />
+            >
+              <Group mt="xs">
+                {genders.map((x) => (
+                  <Radio value={x.value.toString()} label={x.label}></Radio>
+                ))}
+              </Group>
+            </Radio.Group>
 
-            <Select
-              {...form.getInputProps("role")}
+            <Radio.Group
+              label="Role"
               withAsterisk
-              data={roles}
-              searchable
               style={{ flexGrow: 1 }}
-              label={"Role"}
-            />
+              {...form.getInputProps("role")}
+            >
+              <Group mt="xs">
+                {roles.map((x) => (
+                  <Radio value={x.value.toString()} label={x.label}></Radio>
+                ))}
+              </Group>
+            </Radio.Group>
           </Flex>
         </Flex>
         <Flex>

@@ -1,5 +1,5 @@
 import { useForm } from "@mantine/form";
-import { Team } from "../../types/team";
+import { Team, TeamResponse } from "../../types/team";
 import { modals } from "@mantine/modals";
 import useTeams from "../../hooks/useTeams";
 import {
@@ -17,11 +17,20 @@ import { format } from "date-fns";
 import { useMemo } from "react";
 import toast from "react-hot-toast";
 import EditTeamModal from "./components/EditTeamModal";
+import {
+  createJsonPatchDocumentFromObject,
+  JsonPatchKeyValuePair,
+} from "../../types/json-patch-document";
+import RequestType from "../../request-handler/request-type";
+import urls from "../../constants/urls";
+import useRequestHandler from "../../hooks/useRequestHandler";
 
 function Teams() {
-  const { teams, addTeam, deleteTeam, updateTeam } = useTeams({
+  const { teams, addTeam, updateTeam } = useTeams({
     hasValueLabel: false,
   });
+
+  const { handleDataRequest } = useRequestHandler();
 
   const form = useForm({
     initialValues: {
@@ -52,12 +61,29 @@ function Teams() {
     });
   };
 
+  const disableTeam = async (team: Team) => {
+    const patchDocument = createJsonPatchDocumentFromObject({
+      isActive: false,
+    });
+
+    const response = await handleDataRequest<
+      JsonPatchKeyValuePair[],
+      TeamResponse
+    >(`${urls.team}/${team.id}`, RequestType.Patch, patchDocument);
+
+    if (response.isSuccess) {
+      updateTeam({ ...team, isActive: false });
+
+      toast.success("Team deleted successfully.");
+    }
+  };
+
   const memoizedTeams = useMemo(
     () =>
       teams.map((x: Team) => (
         <Table.Tr key={x.id}>
           <Table.Td> {x.name} </Table.Td>
-          <Table.Td> {"true"} </Table.Td>
+          <Table.Td> {String(x.isActive)} </Table.Td>
           <Table.Td> {x.createUser} </Table.Td>
           <Table.Td>{format(x.createDate, "dd/MM/yyyy HH:mm")}</Table.Td>
           <Table.Td>
@@ -70,7 +96,7 @@ function Teams() {
                 <IconEdit />
               </ActionIcon>
               <ActionIcon
-                onClick={() => deleteTeam(x.id)}
+                onClick={() => disableTeam(x)}
                 variant={"light"}
                 color={"red"}
               >

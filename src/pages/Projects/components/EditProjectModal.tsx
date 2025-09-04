@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Project, ProjectResponse } from "../../../types/project";
 import { modals } from "@mantine/modals";
-import { Button, Flex, TextInput } from "@mantine/core";
+import { Button, Flex, Group, Radio, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import {
   createJsonPatchDocumentFromDirtyForm,
@@ -41,6 +41,8 @@ function EditProjectModal({ project, updateProject }: EditProjectProps) {
             : value.length > 128
               ? "Code cannot exceed 128 characters."
               : null,
+      isActive: (value) =>
+        value === null ? "Project must be selected." : undefined,
     },
   });
 
@@ -86,15 +88,17 @@ function EditProjectModal({ project, updateProject }: EditProjectProps) {
       <TextInput
         ref={nameInputRef}
         {...projectForm.getInputProps("name")}
-        withAsterisk
         label={"Name"}
       />
 
-      <TextInput
-        {...projectForm.getInputProps("code")}
-        withAsterisk
-        label={"Code"}
-      />
+      <TextInput {...projectForm.getInputProps("code")} label={"Code"} />
+
+      <Radio.Group label="Is Active" style={{ flexGrow: 1 }}>
+        <Group mt="xs">
+          <Radio value="True" label="True" />
+          <Radio value="False" label="False" />
+        </Group>
+      </Radio.Group>
       <Button disabled={!projectForm.isDirty()} onClick={(e) => handleSave(e)}>
         Edit
       </Button>

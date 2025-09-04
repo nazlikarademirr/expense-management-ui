@@ -4,10 +4,10 @@ type Expense = {
   id: string;
   userId: string;
   projectId: string;
-  expenseType: string | null;
+  expenseType: number | null;
   expenseDate: Date;
   totalPrice: number;
-  currency: string | null;
+  currency: number | null;
   tripDescription: string;
   outOfOffice: boolean;
   reportId: string;
