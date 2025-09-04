@@ -41,9 +41,12 @@ function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
       expenseDate: new Date(expense.expenseDate),
     },
     validate: {
-      userId: (value) => (value.length === 0 ? "User must be selected." : null),
+      userId: (value) =>
+        value === null || value.length === 0 ? "User must be selected." : null,
       projectId: (value) =>
-        value.length === 0 ? "Project must be selected." : null,
+        value === null || value.length === 0
+          ? "Project must be selected."
+          : null,
       expenseType: (value) =>
         value === null ? "Expense type must be selected." : undefined,
       expenseDate: (value) =>
@@ -129,6 +132,8 @@ function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
 
       <DateInput
         {...expenseForm.getInputProps("expenseDate")}
+        withAsterisk
+        valueFormat="DD MMMM YYYY"
         label={"Expense Date"}
       />
 

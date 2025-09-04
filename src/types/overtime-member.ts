@@ -1,15 +1,15 @@
 type OvertimeMember = {
   id: string;
-  userId: string;
-  expenseId: string;
+  userId: string | null;
+  expenseId: string | null;
   price: number;
   createUser: string;
   createDate: Date;
 };
 
 type OvertimeMemberRequest = {
-  userId: string;
-  expenseId: string;
+  userId: string | null;
+  expenseId: string | null;
   price: number;
 };
 

@@ -30,7 +30,7 @@ import useUsers from "../../hooks/useUsers";
 import useReports from "../../hooks/useReports";
 
 function Expenses() {
-  const { expenses, addExpense, deleteExpense, updateExpense } = useExpenses();
+  const { expenses, addExpense, updateExpense, deleteExpense } = useExpenses();
 
   const { userSelectData } = useUsers({
     hasValueLabel: true,
@@ -44,24 +44,28 @@ function Expenses() {
   const form = useForm<Expense>({
     initialValues: {
       id: crypto.randomUUID(),
-      userId: "",
-      projectId: "",
+      userId: null,
+      projectId: null,
       expenseType: null,
       expenseDate: new Date(),
       totalPrice: 0,
       currency: null,
       tripDescription: "",
       outOfOffice: false,
-      reportId: "",
+      reportId: null,
+      isApproved: false,
       overtimeMembers: [],
       isActive: false,
       createUser: crypto.randomUUID(),
       createDate: new Date(),
     },
     validate: {
-      userId: (value) => (value.length === 0 ? "User must be selected." : null),
+      userId: (value) =>
+        value === null || value.length === 0 ? "User must be selected." : null,
       projectId: (value) =>
-        value.length === 0 ? "Project must be selected." : null,
+        value === null || value.length === 0
+          ? "Project must be selected."
+          : null,
       expenseType: (value) =>
         value === null ? "Expense type must be selected." : undefined,
       expenseDate: (value) =>
@@ -79,16 +83,18 @@ function Expenses() {
 
   const overtimeMemberForm = useForm<OvertimeMember>({
     initialValues: {
-      id: crypto.randomUUID(),
-      userId: "",
-      expenseId: "",
+      id: "",
+      userId: null,
+      expenseId: null,
       price: 0,
       createUser: crypto.randomUUID(),
       createDate: new Date(),
     },
     validate: {
       userId: (value) =>
-        value.length < 2 ? "Name must have at least 2 letters" : null,
+        value === null || value.length === 0 ? "User must be selected." : null,
+      price: (value) =>
+        value.toString.length === 0 ? "Price cannot be empty." : undefined,
     },
   });
 
@@ -104,7 +110,7 @@ function Expenses() {
 
   const deleteOvertimeMember = (id: string) => {
     const overtimeMembers = form.values.overtimeMembers.filter(
-      (x) => x.userId !== id
+      (x) => x.id !== id
     );
 
     form.setFieldValue("overtimeMembers", overtimeMembers);
@@ -136,10 +142,11 @@ function Expenses() {
           <Table.Td>{String(x.overtimeMembers)}</Table.Td>
           <Table.Td> {String(x.outOfOffice)} </Table.Td>
           <Table.Td> {x.createUser} </Table.Td>
-          <Table.Td>{format(x.createDate, "dd/MM/yyyy HH:mm")}</Table.Td>
+          <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
           <Table.Td>
             <Flex justify={"center"} gap={5}>
               <ActionIcon
+                disabled={x.isApproved}
                 onClick={() => openEditExpense(x)}
                 variant={"light"}
                 color={"blue"}
@@ -147,6 +154,7 @@ function Expenses() {
                 <IconEdit />
               </ActionIcon>
               <ActionIcon
+                disabled={x.isApproved}
                 onClick={() => deleteExpense(x.id)}
                 variant={"light"}
                 color={"red"}
@@ -169,12 +177,12 @@ function Expenses() {
           </Table.Td>
           <Table.Td>{x.price}</Table.Td>
           <Table.Td>{x.createUser}</Table.Td>
-          <Table.Td>{format(x.createDate, "dd/MM/yyyy HH:mm")}</Table.Td>
+          <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
           <Table.Td>
             <Flex justify={"center"} gap={5}>
               <ActionIcon variant={"light"} color={"red"}>
                 <IconTrash
-                  onClick={() => deleteOvertimeMember(x.userId)}
+                  onClick={() => deleteOvertimeMember(x.id)}
                   color={"red"}
                 />
               </ActionIcon>
@@ -190,18 +198,28 @@ function Expenses() {
 
     if (!overtimeMemberForm.isValid()) return;
 
+    overtimeMemberForm.values.id = crypto.randomUUID();
+
+    if (
+      form.values.overtimeMembers.some(
+        (x) => x.userId === overtimeMemberForm.values.userId
+      )
+    ) {
+      return toast.error("There is a entry for this user.");
+    }
+
     form.setFieldValue("overtimeMembers", [
       ...form.values.overtimeMembers,
       overtimeMemberForm.values,
     ]);
+
+    overtimeMemberForm.reset();
   };
 
   const handleSave = async () => {
     form.validate();
 
     if (!form.isValid()) return;
-
-    overtimeMemberSave();
 
     const retVal = await addExpense(form.values);
 
@@ -230,6 +248,7 @@ function Expenses() {
             <DateInput
               {...form.getInputProps("expenseDate")}
               withAsterisk
+              valueFormat="DD MMMM YYYY"
               style={{ flexGrow: 1 }}
               label={"Expense Date"}
             />
@@ -377,8 +396,6 @@ function Expenses() {
             <Table.Th>Trip Description</Table.Th>
             <Table.Th>Out Of Office</Table.Th>
             <Table.Th>Report Name</Table.Th>
-            <Table.Th>Overtime Members</Table.Th>
-            <Table.Th>Is Active</Table.Th>
             <Table.Th>Create User</Table.Th>
             <Table.Th>Create Date</Table.Th>
           </Table.Tr>

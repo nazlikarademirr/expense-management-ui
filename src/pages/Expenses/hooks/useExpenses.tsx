@@ -19,6 +19,9 @@ function useExpenses() {
   const addExpense = async (expense: Expense) => {
     const expenseRequest: ExpenseRequest = {
       ...expense,
+      userId: expense.userId ? expense.userId : "",
+      projectId: expense.projectId ? expense.projectId : "",
+      reportId: expense.reportId ? expense.reportId : "",
       expenseType: Number(expense.expenseType),
       currency: Number(expense.currency),
     };
@@ -32,8 +35,6 @@ function useExpenses() {
     if (response.isSuccess) {
       const newExpense: Expense = {
         ...response.value,
-        expenseType: String(response.value.expenseType),
-        currency: String(response.value.currency),
       };
       dispatch({
         type: ReducerActions.Add,
@@ -87,8 +88,6 @@ function useExpenses() {
     if (response.isSuccess) {
       const expenses: Expense[] = response.value.map((x) => ({
         ...x,
-        expenseType: String(x.expenseType),
-        currency: String(x.currency),
       }));
       dispatch({
         type: ReducerActions.Replace,
