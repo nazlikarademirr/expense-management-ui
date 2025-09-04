@@ -157,6 +157,55 @@ function useRequestHandler() {
       });
   }
 
+  async function downloadFile<T>(
+    url: string,
+    fileName: string,
+    data?: T,
+    searchParameters?: { [key: string]: string | number | boolean }
+  ): Promise<boolean> {
+    const link = new URL(url);
+
+    if (searchParameters) {
+      Object.entries(searchParameters).forEach((x) => {
+        link.searchParams.set(x[0], String(x[1]));
+      });
+    }
+
+    return fetch(link, {
+      method: RequestType.Post,
+      body: data ? JSON.stringify(data) : undefined,
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          const responseJson = await response.json();
+
+          if (responseJson.errors !== undefined) {
+            const validationErrors = parseResponseErrors(responseJson.errors);
+
+            toast.error(validationErrors);
+          }
+
+          if (responseJson.detail !== undefined) {
+            toast.error(responseJson.detail);
+          }
+
+          return false;
+        }
+
+        const blob: Blob = await response.blob();
+        const link: HTMLAnchorElement = document.createElement("a");
+
+        link.href = URL.createObjectURL(blob);
+        link.download = fileName;
+        link.click();
+
+        URL.revokeObjectURL(link.href);
+
+        return true;
+      })
+      .catch(() => false);
+  }
+
   async function handleDataRequest<Request, Response>(
     url: string,
     requestType: RequestType,
@@ -170,7 +219,6 @@ function useRequestHandler() {
         link.searchParams.set(x[0], String(x[1]));
       });
     }
-    // const requestHeaders = new Headers();
 
     return fetch(link, {
       method: requestType,
@@ -244,7 +292,7 @@ function useRequestHandler() {
       });
   }
 
-  return { fetchData, sendData, handleDataRequest };
+  return { fetchData, sendData, downloadFile, handleDataRequest };
 }
 
 export default useRequestHandler;

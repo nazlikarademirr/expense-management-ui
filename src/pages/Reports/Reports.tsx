@@ -63,7 +63,7 @@ function Reports() {
           <Table.Td>
             <Flex justify={"center"} gap={5}>
               <ActionIcon
-                onClick={() => downloadReport(x.id)}
+                onClick={() => downloadReport(x)}
                 variant={"light"}
                 color={"blue"}
               >
