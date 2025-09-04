@@ -35,8 +35,6 @@ function useExpenses() {
     if (response.isSuccess) {
       const newExpense: Expense = {
         ...response.value,
-        expenseType: String(response.value.expenseType),
-        currency: String(response.value.currency),
       };
       dispatch({
         type: ReducerActions.Add,
@@ -90,8 +88,6 @@ function useExpenses() {
     if (response.isSuccess) {
       const expenses: Expense[] = response.value.map((x) => ({
         ...x,
-        expenseType: String(x.expenseType),
-        currency: String(x.currency),
       }));
       dispatch({
         type: ReducerActions.Replace,
