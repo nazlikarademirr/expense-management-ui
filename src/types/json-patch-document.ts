@@ -38,6 +38,20 @@ export function createJsonPatchDocument(patchList: JsonPatchKeyValuePair[]) {
   return operationList;
 }
 
+export function createJsonPatchDocumentFromObject<T>(
+  obj: T
+): JsonPatchKeyValuePair[] {
+  const jsonPatchList: JsonPatchKeyValuePair[] = [];
+
+  let property: keyof typeof obj;
+
+  for (property in obj) {
+    jsonPatchList.push({ path: property, value: String(obj[property]) });
+  }
+
+  return createJsonPatchDocument(jsonPatchList);
+}
+
 export function createJsonPatchDocumentFromDirtyForm<T>(
   form: UseFormReturnType<T>,
   obj: T

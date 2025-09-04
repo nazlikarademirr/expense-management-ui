@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Expense, ExpenseResponse } from "../../../types/expense";
 import { modals } from "@mantine/modals";
-import { Button, Checkbox, Flex, Select, TextInput } from "@mantine/core";
+import { Button, Flex, Group, Radio, Select, TextInput } from "@mantine/core";
 import RequestType from "../../../request-handler/request-type";
 import useRequestHandler from "../../../hooks/useRequestHandler";
 import urls from "../../../constants/urls";
@@ -48,17 +48,13 @@ function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
           ? "Project must be selected."
           : null,
       expenseType: (value) =>
-        value === null || value.length === 0
-          ? "Expense type must be selected."
-          : undefined,
+        value === null ? "Expense type must be selected." : undefined,
       expenseDate: (value) =>
         value === null ? "Expense date must be selected." : undefined,
       totalPrice: (value) =>
         value === null ? "Total price cannot be empty." : undefined,
       currency: (value) =>
-        value === null || value.length === 0
-          ? "Currency must be selected."
-          : undefined,
+        value === null ? "Currency must be selected." : undefined,
       tripDescription: (value) =>
         value.length > 256
           ? "Trip description cannot exceed 256 characters."
@@ -109,7 +105,6 @@ function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
       <Select
         ref={nameInputRef}
         {...expenseForm.getInputProps("userId")}
-        withAsterisk
         data={userSelectData}
         searchable
         label={"User Name"}
@@ -117,19 +112,23 @@ function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
 
       <Select
         {...expenseForm.getInputProps("projectId")}
-        withAsterisk
         data={projectSelectData}
         searchable
         label={"Project Name"}
       />
 
-      <Select
-        {...expenseForm.getInputProps("expenseType")}
+      <Radio.Group
+        label="Expense Type"
         withAsterisk
-        data={expenseTypes}
-        searchable
-        label={"Expense Type"}
-      />
+        style={{ flexGrow: 1 }}
+        {...expenseForm.getInputProps("expenseType")}
+      >
+        <Group mt="xs">
+          {expenseTypes.map((x) => (
+            <Radio value={x.value.toString()} label={x.label}></Radio>
+          ))}
+        </Group>
+      </Radio.Group>
 
       <DateInput
         {...expenseForm.getInputProps("expenseDate")}
@@ -140,13 +139,11 @@ function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
 
       <TextInput
         {...expenseForm.getInputProps("totalPrice")}
-        withAsterisk
         label={"Total Price"}
       />
 
       <Select
         {...expenseForm.getInputProps("currency")}
-        withAsterisk
         data={currencyTypes}
         label={"Currency"}
       />
@@ -158,15 +155,20 @@ function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
 
       <Select
         {...expenseForm.getInputProps("reportId")}
-        withAsterisk
         data={reportSelectData}
         label={"Report Name"}
       />
 
-      <Checkbox
-        {...expenseForm.getInputProps("outOfOffice", { type: "checkbox" })}
-        label={"Out Of Office"}
-      />
+      <Radio.Group
+        label="Out Of Office"
+        style={{ flexGrow: 1 }}
+        {...expenseForm.getInputProps("outOfOffice")}
+      >
+        <Group mt="xs">
+          <Radio value="True" label="True" />
+          <Radio value="False" label="False" />
+        </Group>
+      </Radio.Group>
 
       <Button disabled={!expenseForm.isDirty()} onClick={(e) => handleSave(e)}>
         Edit

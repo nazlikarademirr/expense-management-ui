@@ -28,8 +28,7 @@ function Reports() {
     initialValues: {
       id: crypto.randomUUID(),
       name: "",
-      lastReportDate: new Date(),
-      isActive: false,
+      isApproved: false,
       createUser: "",
       createDate: new Date(),
     },
@@ -58,8 +57,7 @@ function Reports() {
       reports.map((x: Report) => (
         <Table.Tr key={x.id}>
           <Table.Td> {x.name} </Table.Td>
-          <Table.Td> {String(x.lastReportDate)} </Table.Td>
-          <Table.Td> {"true"} </Table.Td>
+          <Table.Td> {String(x.isApproved)} </Table.Td>
           <Table.Td> {x.createUser} </Table.Td>
           <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
           <Table.Td>
@@ -131,8 +129,7 @@ function Reports() {
         <Table.Thead>
           <Table.Tr>
             <Table.Th>Name</Table.Th>
-            <Table.Th>Last Report Date</Table.Th>
-            <Table.Th>Is Active</Table.Th>
+            <Table.Th>Approved</Table.Th>
             <Table.Th>Create User</Table.Th>
             <Table.Th>Create Date</Table.Th>
           </Table.Tr>

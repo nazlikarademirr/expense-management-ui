@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { modals } from "@mantine/modals";
-import { Button, Flex, PasswordInput, Select, TextInput } from "@mantine/core";
+import { Button, Flex, Group, Radio, Select, TextInput } from "@mantine/core";
 import { User, UserResponse } from "../../../types/user";
 import { useForm } from "@mantine/form";
 import useRequestHandler from "../../../hooks/useRequestHandler";
@@ -11,8 +11,8 @@ import {
   JsonPatchKeyValuePair,
 } from "../../../types/json-patch-document";
 import toast from "react-hot-toast";
-import { genders, roles } from "../../../constants/static-data";
 import useTeams from "../../../hooks/useTeams";
+import { genders, roles } from "../../../constants/static-data";
 
 interface EditUserProps {
   user: User;
@@ -61,15 +61,9 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
           : value.length > 128
             ? "Email cannot exceed 128 characters."
             : null,
-      password: (value) =>
-        value.length === 0
-          ? "Password cannot be empty."
-          : value.length < 8
-            ? "Password cannot be less than 8 characters."
-            : value.length > 32
-              ? "Password cannot exceed 32 characters."
-              : null,
       role: (value) => (value === null ? "Role must be selected." : undefined),
+      isActive: (value) =>
+        value === null ? "Activity must be selected." : undefined,
     },
   });
 
@@ -131,30 +125,51 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
         searchable
         label={"Team Name"}
       />
-      <Select
-        {...userForm.getInputProps("gender")}
+      <Radio.Group
+        label="Gender"
         withAsterisk
-        data={genders}
-        searchable
-        label={"Gender"}
-      />
+        style={{ flexGrow: 1 }}
+        {...userForm.getInputProps("gender")}
+      >
+        <Group mt="xs">
+          {genders.map((x) => (
+            <Radio value={x.value.toString()} label={x.label}></Radio>
+          ))}
+        </Group>
+      </Radio.Group>
       <TextInput
         {...userForm.getInputProps("cardNumber")}
         withAsterisk
         label={"Card Number"}
       />
-      <PasswordInput
-        {...userForm.getInputProps("password")}
+      <TextInput
+        {...userForm.getInputProps("email")}
         withAsterisk
-        label={"Password"}
+        label={"Email"}
       />
-      <Select
+      <Radio.Group
+        label="Role"
+        withAsterisk
+        style={{ flexGrow: 1 }}
         {...userForm.getInputProps("role")}
+      >
+        <Group mt="xs">
+          {roles.map((x) => (
+            <Radio value={x.value.toString()} label={x.label}></Radio>
+          ))}
+        </Group>
+      </Radio.Group>
+      <Radio.Group
+        label="Is Active"
         withAsterisk
-        data={roles}
-        searchable
-        label={"Role"}
-      />
+        style={{ flexGrow: 1 }}
+        {...userForm.getInputProps("isActive")}
+      >
+        <Group mt="xs">
+          <Radio value="True" label="True" />
+          <Radio value="False" label="False" />
+        </Group>
+      </Radio.Group>
       <Button disabled={!userForm.isDirty()} onClick={(e) => handleSave(e)}>
         Edit
       </Button>
