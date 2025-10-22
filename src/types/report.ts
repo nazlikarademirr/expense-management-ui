@@ -2,6 +2,7 @@ type Report = {
   id: string;
   name: string;
   isApproved: boolean;
+  searchText: string;
   createUser: string;
   createDate: Date;
 };
@@ -15,6 +16,7 @@ type ReportResponse = {
   id: string;
   name: string;
   isApproved: boolean;
+  searchText: string;
   createUser: string;
   createDate: Date;
 };

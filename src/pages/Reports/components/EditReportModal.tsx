@@ -34,7 +34,7 @@ function EditReportModal({ report, updateReport }: EditReportProps) {
               ? "Name cannot exceed 128 characters."
               : null,
       isApproved: (value) =>
-        value === null ? "Approval must be selected." : undefined,
+        !value ? "Approval must be selected." : undefined,
     },
   });
 
@@ -80,10 +80,14 @@ function EditReportModal({ report, updateReport }: EditReportProps) {
     <Flex direction={"column"} gap={10}>
       <TextInput
         ref={nameInputRef}
-        {...reportForm.getInputProps("name")}
         label={"Name"}
+        {...reportForm.getInputProps("name")}
       />
-      <Radio.Group label="Approved" style={{ flexGrow: 1 }}>
+      <Radio.Group
+        label="Approved"
+        style={{ flexGrow: 1 }}
+        {...reportForm.getInputProps("isApproved")}
+      >
         <Group mt="xs">
           <Radio value="True" label="True" />
           <Radio value="False" label="False" />

@@ -9,11 +9,12 @@ type Expense = {
   totalPrice: number;
   currency: number | null;
   tripDescription: string;
-  outOfOffice: boolean;
+  outOfOffice: boolean | null;
   reportId: string | null;
   isApproved: boolean;
   overtimeMembers: OvertimeMember[];
   isActive: boolean;
+  searchText: string;
   createUser: string;
   createDate: Date;
 };
@@ -45,6 +46,7 @@ type ExpenseResponse = {
   isApproved: boolean;
   overtimeMembers: OvertimeMember[];
   isActive: boolean;
+  searchText: string;
   createUser: string;
   createDate: Date;
 };

@@ -66,14 +66,14 @@ function Transactions() {
           <Table.Td>
             <Flex justify={"center"} gap={5}>
               <ActionIcon
-                onClick={(_) => deleteTransaction(x.id)}
+                onClick={() => deleteTransaction(x.id)}
                 variant={"light"}
                 color={"red"}
               >
                 <IconTrash />
               </ActionIcon>
               <ActionIcon
-                onClick={(_) => openEditModal(x)}
+                onClick={() => openEditModal(x)}
                 variant={"light"}
                 color={"blue"}
               >

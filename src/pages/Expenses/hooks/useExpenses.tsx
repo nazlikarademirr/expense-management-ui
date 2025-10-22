@@ -22,8 +22,9 @@ function useExpenses() {
       userId: expense.userId ? expense.userId : "",
       projectId: expense.projectId ? expense.projectId : "",
       reportId: expense.reportId ? expense.reportId : "",
-      expenseType: Number(expense.expenseType),
-      currency: Number(expense.currency),
+      expenseType: expense.expenseType ? Number(expense.expenseType) : 0,
+      currency: expense.currency ? Number(expense.currency) : 0,
+      outOfOffice: Boolean(expense.outOfOffice),
     };
 
     const response = await handleDataRequest<ExpenseRequest, ExpenseResponse>(

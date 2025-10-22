@@ -6,15 +6,16 @@ import {
   ActionIcon,
   Button,
   Card,
+  Checkbox,
   Divider,
   Flex,
   Table,
   TextInput,
   Title,
 } from "@mantine/core";
-import { IconEdit, IconTrash } from "@tabler/icons-react";
+import { IconEdit, IconSearch, IconTrash } from "@tabler/icons-react";
 import { format } from "date-fns";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import EditTeamModal from "./components/EditTeamModal";
 import {
@@ -24,11 +25,16 @@ import {
 import RequestType from "../../request-handler/request-type";
 import urls from "../../constants/urls";
 import useRequestHandler from "../../hooks/useRequestHandler";
+import { TiTick, TiTimes } from "react-icons/ti";
 
 function Teams() {
   const { teams, addTeam, updateTeam } = useTeams({
     hasValueLabel: false,
   });
+
+  const [showActiveTeams, setShowActiveTeams] = useState(false);
+
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { handleDataRequest } = useRequestHandler();
 
@@ -43,13 +49,13 @@ function Teams() {
     },
     validate: {
       name: (value) =>
-        value.length === 0
+        !value
           ? "Name cannot be empty."
           : value.length < 2
             ? "Name must have at least 2 letters."
             : value.length > 128
               ? "Name cannot exceed 128 characters."
-              : null,
+              : undefined,
     },
   });
 
@@ -80,33 +86,44 @@ function Teams() {
 
   const memoizedTeams = useMemo(
     () =>
-      teams.map((x: Team) => (
-        <Table.Tr key={x.id}>
-          <Table.Td> {x.name} </Table.Td>
-          <Table.Td> {String(x.isActive)} </Table.Td>
-          <Table.Td> {x.createUser} </Table.Td>
-          <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
-          <Table.Td>
-            <Flex justify={"center"} gap={5}>
-              <ActionIcon
-                onClick={() => openEditTeam(x)}
-                variant={"light"}
-                color={"blue"}
-              >
-                <IconEdit />
-              </ActionIcon>
-              <ActionIcon
-                onClick={() => disableTeam(x)}
-                variant={"light"}
-                color={"red"}
-              >
-                <IconTrash />
-              </ActionIcon>
-            </Flex>
-          </Table.Td>
-        </Table.Tr>
-      )),
-    [teams]
+      teams
+        .filter((x) => (showActiveTeams === true ? x.isActive : x))
+        .filter((x) =>
+          x.searchText.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+        .map((x: Team) => (
+          <Table.Tr key={x.id}>
+            <Table.Td> {x.name} </Table.Td>
+            <Table.Td>
+              {x.isActive ? (
+                <TiTick size={20} color="green" />
+              ) : (
+                <TiTimes size={20} color="#BA1A1A" />
+              )}
+            </Table.Td>
+            <Table.Td> {x.createUser} </Table.Td>
+            <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
+            <Table.Td>
+              <Flex justify={"center"} gap={5}>
+                <ActionIcon
+                  onClick={() => openEditTeam(x)}
+                  variant={"light"}
+                  color={"blue"}
+                >
+                  <IconEdit />
+                </ActionIcon>
+                <ActionIcon
+                  onClick={() => disableTeam(x)}
+                  variant={"light"}
+                  color={"red"}
+                >
+                  <IconTrash />
+                </ActionIcon>
+              </Flex>
+            </Table.Td>
+          </Table.Tr>
+        )),
+    [teams, showActiveTeams, searchQuery]
   );
 
   const handleSave = async () => {
@@ -136,6 +153,27 @@ function Teams() {
           <Button onClick={handleSave} variant={"light"}>
             Add New Team
           </Button>
+        </Flex>
+      </Card>
+      <Card mt={7} withBorder padding={8}>
+        <Flex gap={3}>
+          <TextInput
+            size="xs"
+            radius="xl"
+            rightSection={<IconSearch size={16}></IconSearch>}
+            style={{ flexGrow: 120 }}
+            {...form.getInputProps("searchText")}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <Checkbox
+            labelPosition="left"
+            label={"Show Active Teams"}
+            style={{ marginTop: "5px", marginLeft: "10px" }}
+            checked={showActiveTeams}
+            onChange={() => setShowActiveTeams(!showActiveTeams)}
+            type="checkbox"
+          />
         </Flex>
       </Card>
       <Table

@@ -17,6 +17,7 @@ import toast from "react-hot-toast";
 import { modals } from "@mantine/modals";
 import EditReportModal from "./components/EditReportModal";
 import useReports from "../../hooks/useReports";
+import { TiTick, TiTimes } from "react-icons/ti";
 
 function Reports() {
   const { reports, addReport, downloadReport, updateReport, deleteReport } =
@@ -29,18 +30,19 @@ function Reports() {
       id: crypto.randomUUID(),
       name: "",
       isApproved: false,
+      searchText: "",
       createUser: "",
       createDate: new Date(),
     },
     validate: {
       name: (value) =>
-        value.length === 0
+        !value
           ? "Name cannot be empty."
           : value.length < 2
             ? "Name must have at least 2 letters."
             : value.length > 128
               ? "Name cannot exceed 128 characters."
-              : null,
+              : undefined,
     },
   });
 
@@ -57,7 +59,13 @@ function Reports() {
       reports.map((x: Report) => (
         <Table.Tr key={x.id}>
           <Table.Td> {x.name} </Table.Td>
-          <Table.Td> {String(x.isApproved)} </Table.Td>
+          <Table.Td>
+            {x.isApproved ? (
+              <TiTick size={20} color="green" />
+            ) : (
+              <TiTimes size={20} color="#BA1A1A" />
+            )}
+          </Table.Td>
           <Table.Td> {x.createUser} </Table.Td>
           <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
           <Table.Td>
@@ -70,6 +78,7 @@ function Reports() {
                 <IconDownload />
               </ActionIcon>
               <ActionIcon
+                disabled={x.isApproved}
                 onClick={() => openEditReport(x)}
                 variant={"light"}
                 color={"blue"}
@@ -77,6 +86,7 @@ function Reports() {
                 <IconEdit />
               </ActionIcon>
               <ActionIcon
+                disabled={x.isApproved}
                 onClick={() => deleteReport(x.id)}
                 variant={"light"}
                 color={"red"}

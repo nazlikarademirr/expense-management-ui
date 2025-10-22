@@ -4,6 +4,7 @@ import {
   ActionIcon,
   Button,
   Card,
+  Checkbox,
   Divider,
   Flex,
   Group,
@@ -14,7 +15,7 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import { IconEdit, IconTrash } from "@tabler/icons-react";
+import { IconEdit, IconSearch, IconTrash } from "@tabler/icons-react";
 import { modals } from "@mantine/modals";
 import useUsers from "../../hooks/useUsers.tsx";
 import { useForm } from "@mantine/form";
@@ -29,7 +30,8 @@ import {
 import useRequestHandler from "../../hooks/useRequestHandler.tsx";
 import urls from "../../constants/urls.ts";
 import RequestType from "../../request-handler/request-type.ts";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { TiTick, TiTimes } from "react-icons/ti";
 
 function Users() {
   const { users, addUser, updateUser } = useUsers({
@@ -39,6 +41,10 @@ function Users() {
   const { teamSelectData } = useTeams({
     hasValueLabel: true,
   });
+
+  const [showActiveUsers, setShowActiveUsers] = useState(false);
+
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { handleDataRequest } = useRequestHandler();
 
@@ -60,46 +66,44 @@ function Users() {
     },
     validate: {
       name: (value) =>
-        value.length === 0
+        !value
           ? "Name cannot be empty."
           : value.length < 2
             ? "Name must have at least 2 letters."
             : value.length > 128
               ? "Name cannot exceed 128 characters."
-              : null,
+              : undefined,
       surname: (value) =>
-        value.length === 0
+        !value
           ? "Surname cannot be empty."
           : value.length < 2
             ? "Surname must have at least 2 letters."
             : value.length > 128
               ? "Surname cannot exceed 128 characters."
-              : null,
-      teamId: (value) =>
-        value === null ? "Team must be selected." : undefined,
-      gender: (value) =>
-        value === null ? "Gender must be selected." : undefined,
+              : undefined,
+      teamId: (value) => (!value ? "Team must be selected." : undefined),
+      gender: (value) => (!value ? "Gender must be selected." : undefined),
       cardNumber: (value) =>
-        value.length === 0
+        !value
           ? "Card number cannot be empty."
           : value.length > 8
             ? "Card number cannot exceed 8 characters."
-            : null,
+            : undefined,
       email: (value) =>
-        value.length === 0
+        !value
           ? "Email cannot be empty."
           : value.length > 128
             ? "Email cannot exceed 128 characters."
-            : null,
+            : undefined,
       password: (value) =>
-        value.length === 0
+        !value
           ? "Password cannot be empty."
           : value.length < 8
             ? "Password cannot be less than 8 characters."
             : value.length > 32
               ? "Password cannot exceed 32 characters."
-              : null,
-      role: (value) => (value === null ? "Role must be selected." : undefined),
+              : undefined,
+      role: (value) => (!value ? "Role must be selected." : undefined),
     },
   });
 
@@ -130,41 +134,52 @@ function Users() {
 
   const memoizedUsers = useMemo(
     () =>
-      users.map((x: User) => (
-        <Table.Tr key={x.id}>
-          <Table.Td> {x.name} </Table.Td>
-          <Table.Td> {x.surname} </Table.Td>
-          <Table.Td>
-            {teamSelectData.find((y) => y.value === x.teamId)?.label}
-          </Table.Td>
-          <Table.Td>{x.gender ? genders[x.gender].label : ""}</Table.Td>
-          <Table.Td> {x.cardNumber} </Table.Td>
-          <Table.Td> {x.email} </Table.Td>
-          <Table.Td>{x.role ? roles[x.role].label : ""}</Table.Td>
-          <Table.Td> {String(x.isActive)} </Table.Td>
-          <Table.Td> {x.createUser} </Table.Td>
-          <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
-          <Table.Td>
-            <Flex justify={"center"} gap={5}>
-              <ActionIcon
-                onClick={() => openEditUser(x)}
-                variant={"light"}
-                color={"blue"}
-              >
-                <IconEdit />
-              </ActionIcon>
-              <ActionIcon
-                onClick={() => disableUser(x)}
-                variant={"light"}
-                color={"red"}
-              >
-                <IconTrash />
-              </ActionIcon>
-            </Flex>
-          </Table.Td>
-        </Table.Tr>
-      )),
-    [users]
+      users
+        .filter((x) => (showActiveUsers === true ? x.isActive : x))
+        .filter((x) =>
+          x.searchText.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+        .map((x: User) => (
+          <Table.Tr key={x.id}>
+            <Table.Td> {x.name} </Table.Td>
+            <Table.Td> {x.surname} </Table.Td>
+            <Table.Td>
+              {teamSelectData.find((y) => y.value === x.teamId)?.label}
+            </Table.Td>
+            <Table.Td>{x.gender ? genders[x.gender].label : ""}</Table.Td>
+            <Table.Td> {x.cardNumber} </Table.Td>
+            <Table.Td> {x.email} </Table.Td>
+            <Table.Td>{x.role ? roles[x.role].label : ""}</Table.Td>
+            <Table.Td>
+              {x.isActive ? (
+                <TiTick size={20} color="green" />
+              ) : (
+                <TiTimes size={20} color="#BA1A1A" />
+              )}
+            </Table.Td>
+            <Table.Td> {x.createUser} </Table.Td>
+            <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
+            <Table.Td>
+              <Flex justify={"center"} gap={5}>
+                <ActionIcon
+                  onClick={() => openEditUser(x)}
+                  variant={"light"}
+                  color={"blue"}
+                >
+                  <IconEdit />
+                </ActionIcon>
+                <ActionIcon
+                  onClick={() => disableUser(x)}
+                  variant={"light"}
+                  color={"red"}
+                >
+                  <IconTrash />
+                </ActionIcon>
+              </Flex>
+            </Table.Td>
+          </Table.Tr>
+        )),
+    [users, showActiveUsers, searchQuery]
   );
 
   const handleSave = async () => {
@@ -269,6 +284,27 @@ function Users() {
           >
             Add New User
           </Button>
+        </Flex>
+      </Card>
+      <Card mt={7} withBorder padding={8}>
+        <Flex gap={3}>
+          <TextInput
+            size="xs"
+            radius="xl"
+            rightSection={<IconSearch size={16}></IconSearch>}
+            style={{ flexGrow: 120 }}
+            {...form.getInputProps("searchText")}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <Checkbox
+            labelPosition="left"
+            label={"Show Active Users"}
+            style={{ marginTop: "5px", marginLeft: "10px" }}
+            checked={showActiveUsers}
+            onChange={() => setShowActiveUsers(!showActiveUsers)}
+            type="checkbox"
+          />
         </Flex>
       </Card>
       <Table
