@@ -13,6 +13,7 @@ import {
 import toast from "react-hot-toast";
 import useTeams from "../../../hooks/useTeams";
 import { genders, roles } from "../../../constants/static-data";
+import useUsers from "../../../hooks/useUsers";
 
 interface EditUserProps {
   user: User;
@@ -22,52 +23,60 @@ interface EditUserProps {
 function EditUserModal({ user, updateUser }: EditUserProps) {
   const { handleDataRequest } = useRequestHandler();
 
-  const { teamSelectData } = useTeams({ hasValueLabel: true });
+  const { users } = useUsers({
+    hasValueLabel: false,
+    hasActiveUserValueLabel: false,
+  });
+
+  const { activeTeamSelectData } = useTeams({
+    hasValueLabel: true,
+    hasActiveTeamValueLabel: true,
+  });
 
   const userForm = useForm({
     initialValues: {
       ...user,
+      isActive: user.isActive ? "true" : "false",
     },
     validate: {
       name: (value) =>
-        value.length === 0
+        value.trim().length === 0
           ? "Name cannot be empty."
           : value.length < 2
             ? "Name must have at least 2 letters."
             : value.length > 128
               ? "Name cannot exceed 128 characters."
-              : null,
+              : undefined,
       surname: (value) =>
-        value.length === 0
+        value.trim().length === 0
           ? "Surname cannot be empty."
           : value.length < 2
             ? "Surname must have at least 2 letters."
             : value.length > 128
               ? "Surname cannot exceed 128 characters."
-              : null,
-      teamId: (value) =>
-        value === null ? "Team must be selected." : undefined,
-      gender: (value) =>
-        value === null ? "Gender must be selected." : undefined,
+              : undefined,
+      teamId: (value) => (!value ? "Team must be selected." : undefined),
+      gender: (value) => (!value ? "Gender must be selected." : undefined),
       cardNumber: (value) =>
-        value.length === 0
+        value.trim().length === 0
           ? "Card number cannot be empty."
           : value.length > 8
             ? "Card number cannot exceed 8 characters."
-            : null,
+            : undefined,
       email: (value) =>
-        value.length === 0
+        value.trim().length === 0
           ? "Email cannot be empty."
           : value.length > 128
             ? "Email cannot exceed 128 characters."
-            : null,
-      role: (value) => (value === null ? "Role must be selected." : undefined),
-      isActive: (value) =>
-        value === null ? "Activity must be selected." : undefined,
+            : undefined,
+      role: (value) => (!value ? "Role must be selected." : undefined),
     },
   });
 
-  const initialValues = useRef<User>(userForm.values);
+  const initialValues = useRef<User>({
+    ...userForm.values,
+    isActive: Boolean(userForm.values.isActive),
+  });
 
   const nameInputRef = useRef<HTMLInputElement>(null);
 
@@ -77,6 +86,24 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
     userForm.validate();
 
     if (!userForm.isValid()) return;
+
+    if (
+      users
+        .filter((x) => x.isActive && x.id != userForm.values.id)
+        .find((x) => x.cardNumber === userForm.values.cardNumber)
+    ) {
+      toast.error("There is a active user with the same card number!");
+      return;
+    }
+
+    if (
+      users
+        .filter((x) => x.isActive && x.id != userForm.values.id)
+        .find((x) => x.email === userForm.values.email)
+    ) {
+      toast.error("There is a user with the same email!");
+      return;
+    }
 
     const patchDocument = createJsonPatchDocumentFromDirtyForm(
       userForm,
@@ -89,9 +116,15 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
     >(`${urls.user}/${user.id}`, RequestType.Patch, patchDocument);
 
     if (response.isSuccess) {
-      initialValues.current = userForm.values;
+      initialValues.current = {
+        ...userForm.values,
+        isActive: Boolean(userForm.values.isActive),
+      };
 
-      updateUser(userForm.values);
+      updateUser({
+        ...userForm.values,
+        isActive: Boolean(userForm.values.isActive),
+      });
 
       toast.success("User edited successfully.");
 
@@ -121,7 +154,7 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
       <Select
         {...userForm.getInputProps("teamId")}
         withAsterisk
-        data={teamSelectData}
+        data={activeTeamSelectData}
         searchable
         label={"Team Name"}
       />
@@ -133,7 +166,7 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
       >
         <Group mt="xs">
           {genders.map((x) => (
-            <Radio value={x.value.toString()} label={x.label}></Radio>
+            <Radio value={x.value} label={x.label}></Radio>
           ))}
         </Group>
       </Radio.Group>
@@ -155,22 +188,16 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
       >
         <Group mt="xs">
           {roles.map((x) => (
-            <Radio value={x.value.toString()} label={x.label}></Radio>
+            <Radio value={x.value} label={x.label}></Radio>
           ))}
         </Group>
       </Radio.Group>
-      <Radio.Group
-        label="Is Active"
-        withAsterisk
-        style={{ flexGrow: 1 }}
-        {...userForm.getInputProps("isActive")}
+
+      <Button
+        variant={"light"}
+        disabled={!userForm.isDirty()}
+        onClick={(e) => handleSave(e)}
       >
-        <Group mt="xs">
-          <Radio value="True" label="True" />
-          <Radio value="False" label="False" />
-        </Group>
-      </Radio.Group>
-      <Button disabled={!userForm.isDirty()} onClick={(e) => handleSave(e)}>
         Edit
       </Button>
     </Flex>

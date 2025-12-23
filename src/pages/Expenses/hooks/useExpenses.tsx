@@ -22,9 +22,8 @@ function useExpenses() {
       userId: expense.userId ? expense.userId : "",
       projectId: expense.projectId ? expense.projectId : "",
       reportId: expense.reportId ? expense.reportId : "",
-      expenseType: expense.expenseType ? Number(expense.expenseType) : 0,
-      currency: expense.currency ? Number(expense.currency) : 0,
-      outOfOffice: Boolean(expense.outOfOffice),
+      expenseType: Number(expense.expenseType),
+      currency: Number(expense.currency),
     };
 
     const response = await handleDataRequest<ExpenseRequest, ExpenseResponse>(
@@ -36,6 +35,8 @@ function useExpenses() {
     if (response.isSuccess) {
       const newExpense: Expense = {
         ...response.value,
+        expenseType: response.value.expenseType.toString(),
+        currency: response.value.currency.toString(),
       };
       dispatch({
         type: ReducerActions.Add,
@@ -89,6 +90,8 @@ function useExpenses() {
     if (response.isSuccess) {
       const expenses: Expense[] = response.value.map((x) => ({
         ...x,
+        expenseType: x.expenseType.toString(),
+        currency: x.currency.toString(),
       }));
       dispatch({
         type: ReducerActions.Replace,

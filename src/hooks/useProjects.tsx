@@ -10,12 +10,20 @@ import projectReducer from "../pages/Projects/project-reducer";
 
 interface UseProjectsProps {
   hasValueLabel: boolean;
+  hasActiveProjectValueLabel: boolean;
 }
 
-function useProjects({ hasValueLabel }: UseProjectsProps) {
+function useProjects({
+  hasValueLabel,
+  hasActiveProjectValueLabel,
+}: UseProjectsProps) {
   const [projects, dispatch] = useReducer(projectReducer, []);
 
   const [projectSelectData, setProjectSelectData] = useState<SelectItem[]>([]);
+
+  const [activeProjectSelectData, setActiveProjectSelectData] = useState<
+    SelectItem[]
+  >([]);
 
   const { handleDataRequest } = useRequestHandler();
 
@@ -96,6 +104,14 @@ function useProjects({ hasValueLabel }: UseProjectsProps) {
           response.value.map((x) => ({ value: x.id, label: x.name }))
         );
       }
+
+      if (hasActiveProjectValueLabel) {
+        setActiveProjectSelectData(
+          response.value
+            .filter((x) => x.isActive === true)
+            .map((x) => ({ value: x.id, label: x.name }))
+        );
+      }
     }
   };
 
@@ -106,6 +122,7 @@ function useProjects({ hasValueLabel }: UseProjectsProps) {
   return {
     projects,
     projectSelectData,
+    activeProjectSelectData,
     fetchProjects,
     addProject,
     updateProject,

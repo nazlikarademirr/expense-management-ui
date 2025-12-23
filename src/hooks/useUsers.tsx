@@ -10,12 +10,17 @@ import userReducer from "../pages/Users/user-reducer";
 
 interface UseUsersProps {
   hasValueLabel: boolean;
+  hasActiveUserValueLabel: boolean;
 }
 
-function useUsers({ hasValueLabel }: UseUsersProps) {
+function useUsers({ hasValueLabel, hasActiveUserValueLabel }: UseUsersProps) {
   const [users, dispatch] = useReducer(userReducer, []);
 
   const [userSelectData, setUserSelectData] = useState<SelectItem[]>([]);
+
+  const [activeUserSelectData, setActiveUserSelectData] = useState<
+    SelectItem[]
+  >([]);
 
   const { handleDataRequest } = useRequestHandler();
 
@@ -36,6 +41,8 @@ function useUsers({ hasValueLabel }: UseUsersProps) {
     if (response.isSuccess) {
       const newUser: User = {
         ...response.value,
+        gender: response.value.gender.toString(),
+        role: response.value.role.toString(),
       };
       dispatch({
         type: ReducerActions.Add,
@@ -89,6 +96,8 @@ function useUsers({ hasValueLabel }: UseUsersProps) {
     if (response.isSuccess) {
       const users: User[] = response.value.map((x) => ({
         ...x,
+        gender: x.gender.toString(),
+        role: x.role.toString(),
       }));
       dispatch({
         type: ReducerActions.Replace,
@@ -103,6 +112,16 @@ function useUsers({ hasValueLabel }: UseUsersProps) {
           }))
         );
       }
+      if (hasActiveUserValueLabel) {
+        setActiveUserSelectData(
+          response.value
+            .filter((x) => x.isActive === true)
+            .map((x) => ({
+              value: x.id,
+              label: `${x.name} ${x.surname}`,
+            }))
+        );
+      }
     }
   };
 
@@ -113,6 +132,7 @@ function useUsers({ hasValueLabel }: UseUsersProps) {
   return {
     users,
     userSelectData,
+    activeUserSelectData,
     fetchUsers,
     addUser,
     deleteUser,

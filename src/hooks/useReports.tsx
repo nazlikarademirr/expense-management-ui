@@ -10,12 +10,20 @@ import reportReducer from "../pages/Reports/report-reducer";
 
 interface UseReportsProps {
   hasValueLabel: boolean;
+  hasApprovedReportValueLabel: boolean;
 }
 
-function useReports({ hasValueLabel }: UseReportsProps) {
+function useReports({
+  hasValueLabel,
+  hasApprovedReportValueLabel,
+}: UseReportsProps) {
   const [reports, dispatch] = useReducer(reportReducer, []);
 
   const [reportSelectData, setReportSelectData] = useState<SelectItem[]>([]);
+
+  const [approvedReportSelectData, setApprovedReportSelectData] = useState<
+    SelectItem[]
+  >([]);
 
   const { downloadFile, handleDataRequest } = useRequestHandler();
 
@@ -97,6 +105,14 @@ function useReports({ hasValueLabel }: UseReportsProps) {
           response.value.map((x) => ({ value: x.id, label: x.name }))
         );
       }
+
+      if (hasApprovedReportValueLabel) {
+        setApprovedReportSelectData(
+          response.value
+            .filter((x) => x.isApproved === false)
+            .map((x) => ({ value: x.id, label: x.name }))
+        );
+      }
     }
   };
 
@@ -107,6 +123,7 @@ function useReports({ hasValueLabel }: UseReportsProps) {
   return {
     reports,
     reportSelectData,
+    approvedReportSelectData,
     fetchReports,
     addReport,
     downloadReport,

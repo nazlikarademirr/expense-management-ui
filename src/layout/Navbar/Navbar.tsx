@@ -1,19 +1,18 @@
 import React, { useState } from "react";
 import {
   IconUser,
-  IconHome2,
   Icon,
   IconProps,
   IconUsersGroup,
   IconMenuDeep,
   IconReportAnalytics,
-  IconFileExcel,
   IconApps,
 } from "@tabler/icons-react";
 import { Tooltip, UnstyledButton } from "@mantine/core";
 import classes from "./Navbar.module.css";
-import { useLocation, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import routes from "../../constants/routes";
+import { RiFileTextLine } from "react-icons/ri";
 
 interface Link {
   icon: React.ForwardRefExoticComponent<IconProps & React.RefAttributes<Icon>>;
@@ -22,7 +21,6 @@ interface Link {
 }
 
 const mainLinksMockdata: Link[] = [
-  { icon: IconHome2, label: "Transactions", route: routes.home },
   { icon: IconUser, label: "Users", route: routes.users },
   { icon: IconUsersGroup, label: "Teams", route: routes.teams },
   { icon: IconApps, label: "Projects", route: routes.projects },
@@ -31,8 +29,6 @@ const mainLinksMockdata: Link[] = [
 ];
 
 export function Navbar() {
-  const location = useLocation();
-
   const [active, setActive] = useState("Releases");
 
   const navigate = useNavigate();
@@ -67,7 +63,9 @@ export function Navbar() {
     <nav className={classes.navbar}>
       <div className={classes.wrapper}>
         <div className={classes.aside}>
-          <div className={classes.logo}>Expense</div>
+          <div className={classes.logo}>
+            <RiFileTextLine size={30} color="green" />
+          </div>
           {mainLinks}
         </div>
       </div>

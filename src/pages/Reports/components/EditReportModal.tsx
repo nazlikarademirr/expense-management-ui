@@ -2,7 +2,7 @@ import { useForm } from "@mantine/form";
 import useRequestHandler from "../../../hooks/useRequestHandler";
 import { Report, ReportResponse } from "../../../types/report";
 import { useEffect, useRef } from "react";
-import { Button, Flex, Group, Radio, TextInput } from "@mantine/core";
+import { Button, Flex, TextInput } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import toast from "react-hot-toast";
 import RequestType from "../../../request-handler/request-type";
@@ -11,6 +11,7 @@ import {
   createJsonPatchDocumentFromDirtyForm,
   JsonPatchKeyValuePair,
 } from "../../../types/json-patch-document";
+import useReports from "../../../hooks/useReports";
 
 interface EditReportProps {
   report: Report;
@@ -20,21 +21,24 @@ interface EditReportProps {
 function EditReportModal({ report, updateReport }: EditReportProps) {
   const { handleDataRequest } = useRequestHandler();
 
+  const { reports } = useReports({
+    hasValueLabel: false,
+    hasApprovedReportValueLabel: false,
+  });
+
   const reportForm = useForm({
     initialValues: {
       ...report,
     },
     validate: {
       name: (value) =>
-        value.length === 0
+        value.trim().length === 0
           ? "Name cannot be empty."
           : value.length < 2
             ? "Name must have at least 2 letters."
             : value.length > 128
               ? "Name cannot exceed 128 characters."
               : null,
-      isApproved: (value) =>
-        !value ? "Approval must be selected." : undefined,
     },
   });
 
@@ -48,6 +52,15 @@ function EditReportModal({ report, updateReport }: EditReportProps) {
     reportForm.validate();
 
     if (!reportForm.isValid()) return;
+
+    if (
+      reports
+        .filter((x) => x.isApproved)
+        .find((x) => x.name === reportForm.values.name)
+    ) {
+      toast.error("There is a report with the same name!");
+      return;
+    }
 
     const patchDocument = createJsonPatchDocumentFromDirtyForm(
       reportForm,
@@ -83,17 +96,11 @@ function EditReportModal({ report, updateReport }: EditReportProps) {
         label={"Name"}
         {...reportForm.getInputProps("name")}
       />
-      <Radio.Group
-        label="Approved"
-        style={{ flexGrow: 1 }}
-        {...reportForm.getInputProps("isApproved")}
+      <Button
+        variant="light"
+        disabled={!reportForm.isDirty()}
+        onClick={(e) => handleSave(e)}
       >
-        <Group mt="xs">
-          <Radio value="True" label="True" />
-          <Radio value="False" label="False" />
-        </Group>
-      </Radio.Group>
-      <Button disabled={!reportForm.isDirty()} onClick={(e) => handleSave(e)}>
         Edit
       </Button>
     </Flex>

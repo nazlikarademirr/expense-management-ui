@@ -5,56 +5,56 @@ import Role from "../enums/role";
 
 const genders = [
   {
-    value: Gender.Male,
+    value: Gender.Male.toString(),
     label: "Male",
   },
   {
-    value: Gender.Female,
+    value: Gender.Female.toString(),
     label: "Female",
   },
 ];
 
 const roles = [
   {
-    value: Role.Admin,
+    value: Role.Admin.toString(),
     label: "Admin",
   },
   {
-    value: Role.Manager,
+    value: Role.Manager.toString(),
     label: "Manager",
   },
   {
-    value: Role.User,
+    value: Role.User.toString(),
     label: "User",
   },
 ];
 
 const expenseTypes = [
   {
-    value: ExpenseType.Food,
+    value: ExpenseType.Food.toString(),
     label: "Food",
   },
   {
-    value: ExpenseType.Transportation,
+    value: ExpenseType.Transportation.toString(),
     label: "Transportation",
   },
 ];
 
 const currencyTypes = [
   {
-    value: CurrencyType.TL,
+    value: CurrencyType.TL.toString(),
     label: "TL",
   },
   {
-    value: CurrencyType.Euro,
+    value: CurrencyType.Euro.toString(),
     label: "Euro",
   },
   {
-    value: CurrencyType.Dollar,
+    value: CurrencyType.Dollar.toString(),
     label: "Dollar",
   },
   {
-    value: CurrencyType.MalaysianRinggit,
+    value: CurrencyType.MalaysianRinggit.toString(),
     label: "MalaysianRinggit",
   },
 ];

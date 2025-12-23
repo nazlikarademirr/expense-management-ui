@@ -14,7 +14,7 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import { IconEdit, IconSearch, IconTrash } from "@tabler/icons-react";
+import { IconEdit, IconSearch } from "@tabler/icons-react";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import EditProjectModal from "./components/EditProjectModal";
@@ -26,19 +26,26 @@ import urls from "../../constants/urls";
 import RequestType from "../../request-handler/request-type";
 import useRequestHandler from "../../hooks/useRequestHandler";
 import { TiTick, TiTimes } from "react-icons/ti";
+import {
+  BOOLEAN_ICON_SIZE,
+  SEARCH_ICON_SIZE,
+  TITLE_DIVIDER_MY,
+} from "../../constants/constants";
+import { IoMdAddCircleOutline, IoMdRemoveCircleOutline } from "react-icons/io";
 
 function Projects() {
   const { projects, addProject, updateProject } = useProjects({
     hasValueLabel: false,
+    hasActiveProjectValueLabel: false,
   });
-
-  const [showActiveProjects, setShowActiveProjects] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState("");
 
+  const [showActiveProjects, setShowActiveProjects] = useState(true);
+
   const { handleDataRequest } = useRequestHandler();
 
-  const form = useForm({
+  const form = useForm<Project>({
     initialValues: {
       id: crypto.randomUUID(),
       name: "",
@@ -50,7 +57,7 @@ function Projects() {
     },
     validate: {
       name: (value) =>
-        !value
+        value.trim().length === 0
           ? "Name cannot be empty."
           : value.length < 2
             ? "Name must have at least 2 letters."
@@ -58,7 +65,7 @@ function Projects() {
               ? "Name cannot exceed 128 characters."
               : undefined,
       code: (value) =>
-        !value
+        value.trim().length === 0
           ? "Code cannot be empty."
           : value.length < 2
             ? "Code must have at least 2 letters."
@@ -70,7 +77,7 @@ function Projects() {
 
   const openEditProject = (project: Project) => {
     modals.open({
-      title: "Edit Project",
+      title: <Title order={4}>Edit Project</Title>,
       size: "xl",
       children: (
         <EditProjectModal project={project} updateProject={updateProject} />
@@ -78,9 +85,27 @@ function Projects() {
     });
   };
 
-  const disableProject = async (project: Project) => {
+  const changeProjectActivity = async (project: Project) => {
+    if (
+      projects
+        .filter((x) => x.isActive)
+        .find((x) => x.name === project.name && !x.isActive)
+    ) {
+      toast.error("There is a active project with the same name.");
+      return;
+    }
+
+    if (
+      projects
+        .filter((x) => x.isActive)
+        .find((x) => x.name === project.code && !x.isActive)
+    ) {
+      toast.error("There is a active project with the same code.");
+      return;
+    }
+
     const patchDocument = createJsonPatchDocumentFromObject({
-      isActive: false,
+      isActive: !project.isActive,
     });
 
     const response = await handleDataRequest<
@@ -89,9 +114,47 @@ function Projects() {
     >(`${urls.project}/${project.id}`, RequestType.Patch, patchDocument);
 
     if (response.isSuccess) {
-      updateProject({ ...project, isActive: false });
+      updateProject({ ...project, isActive: !project.isActive });
 
-      toast.success("Project deleted successfully.");
+      if (project.isActive) {
+        toast.success("Project deavtivated successfully.");
+        return;
+      }
+
+      toast.success("Project activated successfully.");
+    }
+  };
+
+  const handleSave = async () => {
+    form.validate();
+
+    if (!form.isValid()) return;
+
+    if (
+      projects
+        .filter((x) => x.isActive)
+        .find((x) => x.name === form.values.name)
+    ) {
+      toast.error("There is a project with the same name!");
+      return;
+    }
+
+    if (
+      projects
+        .filter((x) => x.isActive)
+        .find((x) => x.code === form.values.code)
+    ) {
+      toast.error("There is a active project with the same code!");
+      return;
+    }
+
+    const retVal = await addProject({
+      ...form.values,
+    });
+
+    if (retVal) {
+      form.reset();
+      toast.success("Project has been added successfully!");
     }
   };
 
@@ -108,28 +171,36 @@ function Projects() {
             <Table.Td> {x.code} </Table.Td>
             <Table.Td>
               {x.isActive ? (
-                <TiTick size={20} color="green" />
+                <TiTick size={BOOLEAN_ICON_SIZE} color="green" />
               ) : (
-                <TiTimes size={20} color="#BA1A1A" />
+                <TiTimes size={BOOLEAN_ICON_SIZE} color="#BA1A1A" />
               )}
             </Table.Td>
             <Table.Td> {x.createUser} </Table.Td>
             <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
             <Table.Td>
               <Flex justify={"center"} gap={5}>
+                {x.isActive ? (
+                  <ActionIcon
+                    onClick={() => openEditProject(x)}
+                    variant={"light"}
+                    color={"blue"}
+                  >
+                    <IconEdit />
+                  </ActionIcon>
+                ) : (
+                  <div></div>
+                )}
                 <ActionIcon
-                  onClick={() => openEditProject(x)}
+                  onClick={() => changeProjectActivity(x)}
                   variant={"light"}
-                  color={"blue"}
+                  color={x.isActive ? "red" : "green"}
                 >
-                  <IconEdit />
-                </ActionIcon>
-                <ActionIcon
-                  onClick={() => disableProject(x)}
-                  variant={"light"}
-                  color={"red"}
-                >
-                  <IconTrash />
+                  {x.isActive ? (
+                    <IoMdRemoveCircleOutline size={22} />
+                  ) : (
+                    <IoMdAddCircleOutline size={22} />
+                  )}
                 </ActionIcon>
               </Flex>
             </Table.Td>
@@ -138,25 +209,12 @@ function Projects() {
     [projects, showActiveProjects, searchQuery]
   );
 
-  const handleSave = async () => {
-    form.validate();
-
-    if (!form.isValid()) return;
-
-    const retVal = await addProject(form.values);
-
-    if (retVal) {
-      form.reset();
-      toast.success("Project has been added successfully!");
-    }
-  };
-
   return (
     <div>
       <Title order={3}>Projects</Title>
-      <Divider my={15} />
-      <Card shadow={"md"} radius={"md"} withBorder>
-        <Flex gap="xl" direction="row">
+      <Divider my={TITLE_DIVIDER_MY} />
+      <Card shadow={"xs"} radius={"md"} withBorder>
+        <Flex gap="md" direction="row">
           <TextInput
             key={form.key("name")}
             {...form.getInputProps("name")}
@@ -172,22 +230,21 @@ function Projects() {
             label={"Code"}
           />
         </Flex>
-        <Flex gap="xl" direction="column">
-          <Button
-            onClick={handleSave}
-            variant={"light"}
-            style={{ flexGrow: 2, marginTop: "15px" }}
-          >
-            Add New Project
-          </Button>
-        </Flex>
+        <Button
+          onClick={handleSave}
+          variant={"light"}
+          style={{ flexGrow: 2, marginTop: "15px" }}
+        >
+          Add New Project
+        </Button>
       </Card>
-      <Card mt={7} withBorder padding={8}>
-        <Flex gap={3}>
+
+      <Card mt={"xs"} withBorder padding={"sm"}>
+        <Flex gap={"xs"}>
           <TextInput
             size="xs"
             radius="xl"
-            rightSection={<IconSearch size={16}></IconSearch>}
+            rightSection={<IconSearch size={SEARCH_ICON_SIZE}></IconSearch>}
             style={{ flexGrow: 120 }}
             {...form.getInputProps("searchText")}
             value={searchQuery}
@@ -202,25 +259,28 @@ function Projects() {
             type="checkbox"
           />
         </Flex>
+        <Table
+          striped
+          stickyHeader
+          highlightOnHover
+          withTableBorder
+          withColumnBorders
+          mt={15}
+          style={{ tableLayout: "fixed" }}
+        >
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th>Name</Table.Th>
+              <Table.Th>Code</Table.Th>
+              <Table.Th>Is Active</Table.Th>
+              <Table.Th>Create User</Table.Th>
+              <Table.Th>Create Date</Table.Th>
+              <Table.Th></Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>{memoizedProjects}</Table.Tbody>
+        </Table>
       </Card>
-      <Table
-        stickyHeader
-        highlightOnHover
-        withTableBorder
-        withColumnBorders
-        mt={16}
-      >
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>Name</Table.Th>
-            <Table.Th>Code</Table.Th>
-            <Table.Th>Is Active</Table.Th>
-            <Table.Th>Create User</Table.Th>
-            <Table.Th>Create Date</Table.Th>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>{memoizedProjects}</Table.Tbody>
-      </Table>
     </div>
   );
 }

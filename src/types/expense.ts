@@ -4,12 +4,12 @@ type Expense = {
   id: string;
   userId: string | null;
   projectId: string | null;
-  expenseType: number | null;
+  expenseType: string;
   expenseDate: Date;
   totalPrice: number;
-  currency: number | null;
+  currency: string | null;
   tripDescription: string;
-  outOfOffice: boolean | null;
+  outOfOffice: boolean;
   reportId: string | null;
   isApproved: boolean;
   overtimeMembers: OvertimeMember[];

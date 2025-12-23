@@ -10,12 +10,17 @@ import teamReducer from "../pages/Teams/team-reducer";
 
 interface UseTeamsProps {
   hasValueLabel: boolean;
+  hasActiveTeamValueLabel: boolean;
 }
 
-function useTeams({ hasValueLabel }: UseTeamsProps) {
+function useTeams({ hasValueLabel, hasActiveTeamValueLabel }: UseTeamsProps) {
   const [teams, dispatch] = useReducer(teamReducer, []);
 
   const [teamSelectData, setTeamSelectData] = useState<SelectItem[]>([]);
+
+  const [activeTeamSelectData, setActiveTeamSelectData] = useState<
+    SelectItem[]
+  >([]);
 
   const { handleDataRequest } = useRequestHandler();
 
@@ -96,6 +101,15 @@ function useTeams({ hasValueLabel }: UseTeamsProps) {
           response.value.map((x) => ({ value: x.id, label: x.name }))
         );
       }
+      if (hasActiveTeamValueLabel) {
+        {
+          setActiveTeamSelectData(
+            response.value
+              .filter((x) => x.isActive)
+              .map((x) => ({ value: x.id, label: x.name }))
+          );
+        }
+      }
     }
   };
 
@@ -106,6 +120,7 @@ function useTeams({ hasValueLabel }: UseTeamsProps) {
   return {
     teams,
     teamSelectData,
+    activeTeamSelectData,
     fetchTeams,
     addTeam,
     deleteTeam,

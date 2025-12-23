@@ -3,11 +3,11 @@ type User = {
   name: string;
   surname: string;
   teamId: string | null;
-  gender: number | null;
+  gender: string;
   cardNumber: string;
   email: string;
   password: string;
-  role: number | null;
+  role: string;
   searchText: string;
   isActive: boolean;
   createUser: string;

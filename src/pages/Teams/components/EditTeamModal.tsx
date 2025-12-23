@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Team, TeamResponse } from "../../../types/team";
-import { Button, Flex, Group, Radio, TextInput } from "@mantine/core";
+import { Button, Flex, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import {
   createJsonPatchDocumentFromDirtyForm,
@@ -11,6 +11,7 @@ import RequestType from "../../../request-handler/request-type";
 import urls from "../../../constants/urls";
 import toast from "react-hot-toast";
 import { modals } from "@mantine/modals";
+import useTeams from "../../../hooks/useTeams";
 
 interface EditTeamProps {
   team: Team;
@@ -20,13 +21,19 @@ interface EditTeamProps {
 function EditTeamModal({ team, updateTeam }: EditTeamProps) {
   const { handleDataRequest } = useRequestHandler();
 
+  const { teams } = useTeams({
+    hasValueLabel: false,
+    hasActiveTeamValueLabel: false,
+  });
+
   const teamForm = useForm({
     initialValues: {
       ...team,
+      isActive: team.isActive ? "true" : "false",
     },
     validate: {
       name: (value) =>
-        value.length === 0
+        value.trim().length === 0
           ? "Name cannot be empty."
           : value.length < 2
             ? "Name must have at least 2 letters."
@@ -38,7 +45,10 @@ function EditTeamModal({ team, updateTeam }: EditTeamProps) {
     },
   });
 
-  const initialValues = useRef<Team>(teamForm.values);
+  const initialValues = useRef<Team>({
+    ...teamForm.values,
+    isActive: Boolean(teamForm.values.isActive),
+  });
 
   const nameInputRef = useRef<HTMLInputElement>(null);
 
@@ -48,6 +58,15 @@ function EditTeamModal({ team, updateTeam }: EditTeamProps) {
     teamForm.validate();
 
     if (!teamForm.isValid()) return;
+
+    if (
+      teams
+        .filter((x) => x.isActive && x.id != teamForm.values.id)
+        .find((x) => x.name === teamForm.values.name)
+    ) {
+      toast.error("There is a active team with the same name!");
+      return;
+    }
 
     const patchDocument = createJsonPatchDocumentFromDirtyForm(
       teamForm,
@@ -60,9 +79,15 @@ function EditTeamModal({ team, updateTeam }: EditTeamProps) {
     >(`${urls.team}/${team.id}`, RequestType.Patch, patchDocument);
 
     if (response.isSuccess) {
-      initialValues.current = teamForm.values;
+      initialValues.current = {
+        ...teamForm.values,
+        isActive: Boolean(teamForm.values.isActive),
+      };
 
-      updateTeam(teamForm.values);
+      updateTeam({
+        ...teamForm.values,
+        isActive: Boolean(teamForm.values.isActive),
+      });
 
       toast.success("Team edited successfully.");
 
@@ -84,13 +109,12 @@ function EditTeamModal({ team, updateTeam }: EditTeamProps) {
         withAsterisk
         label={"Name"}
       />
-      <Radio.Group label="Is Active" withAsterisk style={{ flexGrow: 1 }}>
-        <Group mt="xs">
-          <Radio value="true" label="True" />
-          <Radio value="false" label="False" />
-        </Group>
-      </Radio.Group>
-      <Button disabled={!teamForm.isDirty()} onClick={(e) => handleSave(e)}>
+
+      <Button
+        variant="light"
+        disabled={!teamForm.isDirty()}
+        onClick={(e) => handleSave(e)}
+      >
         Edit
       </Button>
     </Flex>
