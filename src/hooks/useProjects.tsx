@@ -38,18 +38,18 @@ function useProjects({
       projectRequest
     );
 
-    if (response.isSuccess) {
-      const newProject: Project = {
-        ...response.value,
-      };
-      dispatch({
-        type: ReducerActions.Add,
-        payload: newProject,
-      });
-      return true;
-    }
+    if (!response.isSuccess) return false;
 
-    return false;
+    const newProject: Project = {
+      ...response.value,
+    };
+
+    dispatch({
+      type: ReducerActions.Add,
+      payload: newProject,
+    });
+
+    return true;
   };
 
   const deleteProject = async (id: string) => {
@@ -60,16 +60,16 @@ function useProjects({
       { id }
     );
 
-    if (response.isSuccess) {
-      dispatch({
-        type: ReducerActions.Delete,
-        payload: id,
-      });
-      toast.success("Project has been deleted successfully!");
-      return true;
-    }
+    if (!response.isSuccess) return false;
 
-    return false;
+    dispatch({
+      type: ReducerActions.Delete,
+      payload: id,
+    });
+
+    toast.success("Project has been deleted successfully!");
+
+    return true;
   };
 
   const updateProject = (updatedProject: Project) => {
@@ -91,27 +91,30 @@ function useProjects({
       urls.project,
       RequestType.Get
     );
-    if (response.isSuccess) {
-      const projects: Project[] = response.value.map((x) => ({
-        ...x,
-      }));
-      dispatch({
-        type: ReducerActions.Replace,
-        payload: projects,
-      });
-      if (hasValueLabel) {
-        setProjectSelectData(
-          response.value.map((x) => ({ value: x.id, label: x.name }))
-        );
-      }
 
-      if (hasActiveProjectValueLabel) {
-        setActiveProjectSelectData(
-          response.value
-            .filter((x) => x.isActive === true)
-            .map((x) => ({ value: x.id, label: x.name }))
-        );
-      }
+    if (!response.isSuccess) return;
+
+    const projects: Project[] = response.value.map((x) => ({
+      ...x,
+    }));
+
+    dispatch({
+      type: ReducerActions.Replace,
+      payload: projects,
+    });
+
+    if (hasValueLabel) {
+      setProjectSelectData(
+        response.value.map((x) => ({ value: x.id, label: x.name }))
+      );
+    }
+
+    if (hasActiveProjectValueLabel) {
+      setActiveProjectSelectData(
+        response.value
+          .filter((x) => x.isActive === true)
+          .map((x) => ({ value: x.id, label: x.name }))
+      );
     }
   };
 

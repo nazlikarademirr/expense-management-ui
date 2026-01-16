@@ -29,7 +29,6 @@ function EditProjectModal({ project, updateProject }: EditProjectProps) {
   const projectForm = useForm({
     initialValues: {
       ...project,
-      isActive: project.isActive ? "true" : "false",
     },
     validate: {
       name: (value) =>
@@ -54,7 +53,6 @@ function EditProjectModal({ project, updateProject }: EditProjectProps) {
 
   const initialValues = useRef<Project>({
     ...projectForm.values,
-    isActive: Boolean(projectForm.values.isActive),
   });
 
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -94,21 +92,19 @@ function EditProjectModal({ project, updateProject }: EditProjectProps) {
       ProjectResponse
     >(`${urls.project}/${project.id}`, RequestType.Patch, patchDocument);
 
-    if (response.isSuccess) {
-      initialValues.current = {
-        ...projectForm.values,
-        isActive: Boolean(projectForm.values.isActive),
-      };
+    if (!response.isSuccess) return;
 
-      updateProject({
-        ...projectForm.values,
-        isActive: Boolean(projectForm.values.isActive),
-      });
+    initialValues.current = {
+      ...projectForm.values,
+    };
 
-      toast.success("Project edited successfully.");
+    updateProject({
+      ...projectForm.values,
+    });
 
-      modals.closeAll();
-    }
+    toast.success("Project edited successfully.");
+
+    modals.closeAll();
   };
 
   useEffect(() => {

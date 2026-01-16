@@ -10,6 +10,7 @@ import RequestType from "../../../request-handler/request-type";
 import toast from "react-hot-toast";
 import ReducerActions from "../../../enums/reducer-action";
 import expenseReducer from "../expense-reducer";
+import { currencyTypes, expenseTypes } from "../../../constants/static-data";
 
 function useExpenses() {
   const [expenses, dispatch] = useReducer(expenseReducer, []);
@@ -32,20 +33,20 @@ function useExpenses() {
       expenseRequest
     );
 
-    if (response.isSuccess) {
-      const newExpense: Expense = {
-        ...response.value,
-        expenseType: response.value.expenseType.toString(),
-        currency: response.value.currency.toString(),
-      };
-      dispatch({
-        type: ReducerActions.Add,
-        payload: newExpense,
-      });
-      return true;
-    }
+    if (!response.isSuccess) return false;
 
-    return false;
+    const newExpense: Expense = {
+      ...response.value,
+      expenseType: expenseTypes[response.value.expenseType].value,
+      currency: currencyTypes[response.value.currency].value,
+    };
+
+    dispatch({
+      type: ReducerActions.Add,
+      payload: newExpense,
+    });
+
+    return true;
   };
 
   const deleteExpense = async (id: string) => {
@@ -56,16 +57,16 @@ function useExpenses() {
       { id }
     );
 
-    if (response.isSuccess) {
-      dispatch({
-        type: ReducerActions.Delete,
-        payload: id,
-      });
-      toast.success("Expense has been deleted successfully!");
-      return true;
-    }
+    if (!response.isSuccess) return false;
 
-    return false;
+    dispatch({
+      type: ReducerActions.Delete,
+      payload: id,
+    });
+
+    toast.success("Expense has been deleted successfully!");
+
+    return true;
   };
 
   const updateExpense = (updatedExpense: Expense) => {
@@ -87,17 +88,19 @@ function useExpenses() {
       urls.expense,
       RequestType.Get
     );
-    if (response.isSuccess) {
-      const expenses: Expense[] = response.value.map((x) => ({
-        ...x,
-        expenseType: x.expenseType.toString(),
-        currency: x.currency.toString(),
-      }));
-      dispatch({
-        type: ReducerActions.Replace,
-        payload: expenses,
-      });
-    }
+
+    if (!response.isSuccess) return;
+
+    const expenses: Expense[] = response.value.map((x) => ({
+      ...x,
+      expenseType: x.expenseType.toString(),
+      currency: x.currency.toString(),
+    }));
+
+    dispatch({
+      type: ReducerActions.Replace,
+      payload: expenses,
+    });
   };
 
   useEffect(() => {

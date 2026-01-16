@@ -72,15 +72,15 @@ function EditReportModal({ report, updateReport }: EditReportProps) {
       ReportResponse
     >(`${urls.report}/${report.id}`, RequestType.Patch, patchDocument);
 
-    if (response.isSuccess) {
-      initialValues.current = reportForm.values;
+    if (!response.isSuccess) return;
 
-      updateReport(reportForm.values);
+    initialValues.current = reportForm.values;
 
-      toast.success("Report edited successfully.");
+    updateReport(reportForm.values);
 
-      modals.closeAll();
-    }
+    toast.success("Report edited successfully.");
+
+    modals.closeAll();
   };
 
   useEffect(() => {

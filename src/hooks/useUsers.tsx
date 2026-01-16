@@ -38,20 +38,20 @@ function useUsers({ hasValueLabel, hasActiveUserValueLabel }: UseUsersProps) {
       userRequest
     );
 
-    if (response.isSuccess) {
-      const newUser: User = {
-        ...response.value,
-        gender: response.value.gender.toString(),
-        role: response.value.role.toString(),
-      };
-      dispatch({
-        type: ReducerActions.Add,
-        payload: newUser,
-      });
-      return true;
-    }
+    if (!response.isSuccess) return false;
 
-    return false;
+    const newUser: User = {
+      ...response.value,
+      gender: response.value.gender.toString(),
+      role: response.value.role.toString(),
+    };
+
+    dispatch({
+      type: ReducerActions.Add,
+      payload: newUser,
+    });
+
+    return true;
   };
 
   const deleteUser = async (id: string) => {
@@ -62,16 +62,16 @@ function useUsers({ hasValueLabel, hasActiveUserValueLabel }: UseUsersProps) {
       { id }
     );
 
-    if (response.isSuccess) {
-      dispatch({
-        type: ReducerActions.Delete,
-        payload: id,
-      });
-      toast.success("User has been deleted successfully!");
-      return true;
-    }
+    if (!response.isSuccess) return false;
 
-    return false;
+    dispatch({
+      type: ReducerActions.Delete,
+      payload: id,
+    });
+
+    toast.success("User has been deleted successfully!");
+
+    return true;
   };
 
   const updateUser = (updatedUser: User) => {
@@ -93,35 +93,37 @@ function useUsers({ hasValueLabel, hasActiveUserValueLabel }: UseUsersProps) {
       urls.user,
       RequestType.Get
     );
-    if (response.isSuccess) {
-      const users: User[] = response.value.map((x) => ({
-        ...x,
-        gender: x.gender.toString(),
-        role: x.role.toString(),
-      }));
-      dispatch({
-        type: ReducerActions.Replace,
-        payload: users,
-      });
 
-      if (hasValueLabel) {
-        setUserSelectData(
-          response.value.map((x) => ({
+    if (!response.isSuccess) return;
+
+    const users: User[] = response.value.map((x) => ({
+      ...x,
+      gender: x.gender.toString(),
+      role: x.role.toString(),
+    }));
+
+    dispatch({
+      type: ReducerActions.Replace,
+      payload: users,
+    });
+
+    if (hasValueLabel) {
+      setUserSelectData(
+        response.value.map((x) => ({
+          value: x.id,
+          label: `${x.name} ${x.surname}`,
+        }))
+      );
+    }
+    if (hasActiveUserValueLabel) {
+      setActiveUserSelectData(
+        response.value
+          .filter((x) => x.isActive === true)
+          .map((x) => ({
             value: x.id,
             label: `${x.name} ${x.surname}`,
           }))
-        );
-      }
-      if (hasActiveUserValueLabel) {
-        setActiveUserSelectData(
-          response.value
-            .filter((x) => x.isActive === true)
-            .map((x) => ({
-              value: x.id,
-              label: `${x.name} ${x.surname}`,
-            }))
-        );
-      }
+      );
     }
   };
 

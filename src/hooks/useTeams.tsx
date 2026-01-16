@@ -35,18 +35,18 @@ function useTeams({ hasValueLabel, hasActiveTeamValueLabel }: UseTeamsProps) {
       teamRequest
     );
 
-    if (response.isSuccess) {
-      const newTeam: Team = {
-        ...response.value,
-      };
-      dispatch({
-        type: ReducerActions.Add,
-        payload: newTeam,
-      });
-      return true;
-    }
+    if (!response.isSuccess) return false;
 
-    return false;
+    const newTeam: Team = {
+      ...response.value,
+    };
+
+    dispatch({
+      type: ReducerActions.Add,
+      payload: newTeam,
+    });
+
+    return true;
   };
 
   const deleteTeam = async (id: string) => {
@@ -57,16 +57,16 @@ function useTeams({ hasValueLabel, hasActiveTeamValueLabel }: UseTeamsProps) {
       { id }
     );
 
-    if (response.isSuccess) {
-      dispatch({
-        type: ReducerActions.Delete,
-        payload: id,
-      });
-      toast.success("Team has been deleted successfully!");
-      return true;
-    }
+    if (!response.isSuccess) return false;
 
-    return false;
+    dispatch({
+      type: ReducerActions.Delete,
+      payload: id,
+    });
+
+    toast.success("Team has been deleted successfully!");
+
+    return true;
   };
 
   const updateTeam = (updatedTeam: Team) => {
@@ -88,27 +88,30 @@ function useTeams({ hasValueLabel, hasActiveTeamValueLabel }: UseTeamsProps) {
       urls.team,
       RequestType.Get
     );
-    if (response.isSuccess) {
-      const teams: Team[] = response.value.map((x) => ({
-        ...x,
-      }));
-      dispatch({
-        type: ReducerActions.Replace,
-        payload: teams,
-      });
-      if (hasValueLabel) {
-        setTeamSelectData(
-          response.value.map((x) => ({ value: x.id, label: x.name }))
+
+    if (!response.isSuccess) return;
+    const teams: Team[] = response.value.map((x) => ({
+      ...x,
+    }));
+
+    dispatch({
+      type: ReducerActions.Replace,
+      payload: teams,
+    });
+
+    if (hasValueLabel) {
+      setTeamSelectData(
+        response.value.map((x) => ({ value: x.id, label: x.name }))
+      );
+    }
+
+    if (hasActiveTeamValueLabel) {
+      {
+        setActiveTeamSelectData(
+          response.value
+            .filter((x) => x.isActive)
+            .map((x) => ({ value: x.id, label: x.name }))
         );
-      }
-      if (hasActiveTeamValueLabel) {
-        {
-          setActiveTeamSelectData(
-            response.value
-              .filter((x) => x.isActive)
-              .map((x) => ({ value: x.id, label: x.name }))
-          );
-        }
       }
     }
   };

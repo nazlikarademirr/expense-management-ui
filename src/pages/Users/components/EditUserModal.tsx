@@ -28,7 +28,7 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
     hasActiveUserValueLabel: false,
   });
 
-  const { activeTeamSelectData } = useTeams({
+  const { teamSelectData, activeTeamSelectData } = useTeams({
     hasValueLabel: true,
     hasActiveTeamValueLabel: true,
   });
@@ -36,7 +36,6 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
   const userForm = useForm({
     initialValues: {
       ...user,
-      isActive: user.isActive ? "true" : "false",
     },
     validate: {
       name: (value) =>
@@ -75,7 +74,6 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
 
   const initialValues = useRef<User>({
     ...userForm.values,
-    isActive: Boolean(userForm.values.isActive),
   });
 
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -115,21 +113,21 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
       UserResponse
     >(`${urls.user}/${user.id}`, RequestType.Patch, patchDocument);
 
-    if (response.isSuccess) {
-      initialValues.current = {
-        ...userForm.values,
-        isActive: Boolean(userForm.values.isActive),
-      };
+    if (!response.isSuccess) return;
 
-      updateUser({
-        ...userForm.values,
-        isActive: Boolean(userForm.values.isActive),
-      });
+    initialValues.current = {
+      ...userForm.values,
+    };
 
-      toast.success("User edited successfully.");
+    updateUser({
+      ...userForm.values,
+      teamName: teamSelectData.find((y) => y.value === userForm.values.teamId)!
+        .label,
+    });
 
-      modals.closeAll();
-    }
+    toast.success("User edited successfully.");
+
+    modals.closeAll();
   };
 
   useEffect(() => {

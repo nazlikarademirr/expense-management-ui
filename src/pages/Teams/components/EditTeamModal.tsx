@@ -29,7 +29,6 @@ function EditTeamModal({ team, updateTeam }: EditTeamProps) {
   const teamForm = useForm({
     initialValues: {
       ...team,
-      isActive: team.isActive ? "true" : "false",
     },
     validate: {
       name: (value) =>
@@ -47,7 +46,6 @@ function EditTeamModal({ team, updateTeam }: EditTeamProps) {
 
   const initialValues = useRef<Team>({
     ...teamForm.values,
-    isActive: Boolean(teamForm.values.isActive),
   });
 
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -78,21 +76,19 @@ function EditTeamModal({ team, updateTeam }: EditTeamProps) {
       TeamResponse
     >(`${urls.team}/${team.id}`, RequestType.Patch, patchDocument);
 
-    if (response.isSuccess) {
-      initialValues.current = {
-        ...teamForm.values,
-        isActive: Boolean(teamForm.values.isActive),
-      };
+    if (!response.isSuccess) return;
 
-      updateTeam({
-        ...teamForm.values,
-        isActive: Boolean(teamForm.values.isActive),
-      });
+    initialValues.current = {
+      ...teamForm.values,
+    };
 
-      toast.success("Team edited successfully.");
+    updateTeam({
+      ...teamForm.values,
+    });
 
-      modals.closeAll();
-    }
+    toast.success("Team edited successfully.");
+
+    modals.closeAll();
   };
 
   useEffect(() => {

@@ -56,9 +56,9 @@ function Expenses() {
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  const [selectedUser, setSelectedUser] = useState("");
+  const [selectedUser, setSelectedUser] = useState<string | null>(null);
 
-  const [selectedReport, setSelectedReport] = useState("");
+  const [selectedReport, setSelectedReport] = useState<string | null>(null);
 
   const [showUnapprovedExpenses, setShowUnapprovedExpenses] = useState(false);
 
@@ -66,7 +66,9 @@ function Expenses() {
     initialValues: {
       id: crypto.randomUUID(),
       userId: null,
+      userFullName: "",
       projectId: null,
+      projectName: "",
       expenseType: "",
       expenseDate: new Date(),
       totalPrice: 0,
@@ -74,6 +76,7 @@ function Expenses() {
       tripDescription: "",
       outOfOffice: false,
       reportId: null,
+      reportName: "",
       isApproved: false,
       overtimeMembers: [],
       isActive: false,
@@ -96,21 +99,22 @@ function Expenses() {
             : undefined,
       currency: (value) => (!value ? "Currency must be selected." : undefined),
       tripDescription: (value, values) =>
-        values.expenseType === ExpenseType.Transportation.toString() &&
+        values.expenseType === ExpenseType.Transportation &&
         value.trim().length === 0
           ? "Trip description cannot be empty."
           : value.length > 256
             ? "Trip description cannot exceed 256 characters."
             : undefined,
       outOfOffice: (value) =>
-        !value ? "Out of office cannot be empty." : undefined,
+        value === null ? "Out of office cannot be empty." : undefined,
     },
   });
 
   const overtimeMemberForm = useForm<OvertimeMember>({
     initialValues: {
-      id: "",
+      id: crypto.randomUUID(),
       userId: null,
+      userFullName: "",
       expenseId: form.values.id,
       price: 0,
       createUser: crypto.randomUUID(),
@@ -118,14 +122,19 @@ function Expenses() {
     },
     validate: {
       userId: (value) => (!value ? "User must be selected." : undefined),
-      price: (value) => (!value ? "Total price cannot be empty." : undefined),
+      price: (value) =>
+        !value
+          ? "Price cannot be empty."
+          : value < 0 || value === 0
+            ? "Price cannot be 0 or less."
+            : undefined,
     },
   });
 
   const openEditExpense = (expense: Expense) => {
     modals.open({
       title: <Title order={4}>Edit Expense</Title>,
-      size: 1500,
+      size: 2000,
       children: (
         <EditExpenseModal expense={expense} updateExpense={updateExpense} />
       ),
@@ -173,7 +182,7 @@ function Expenses() {
     form.setFieldValue("overtimeMembers", overtimeMembers);
   };
 
-  const overtimeMemberSave = async () => {
+  const saveOvertimeMember = async () => {
     overtimeMemberForm.validate();
 
     if (!overtimeMemberForm.isValid()) return;
@@ -191,7 +200,14 @@ function Expenses() {
 
     form.setFieldValue("overtimeMembers", [
       ...form.values.overtimeMembers,
-      overtimeMemberForm.values,
+      {
+        ...overtimeMemberForm.values,
+        userFullName: overtimeMemberForm.values.userId
+          ? userSelectData.find(
+              (y) => y.value === overtimeMemberForm.values.userId
+            )!.label
+          : "",
+      },
     ]);
 
     overtimeMemberForm.reset();
@@ -207,7 +223,19 @@ function Expenses() {
       return;
     }
 
-    const retVal = await addExpense(form.values);
+    const retVal = await addExpense({
+      ...form.values,
+      userFullName: form.values.userId
+        ? userSelectData.find((y) => y.value === form.values.userId)!.label
+        : "",
+      projectName: form.values.projectId
+        ? projectSelectData.find((y) => y.value === form.values.projectId)!
+            .label
+        : "",
+      reportName: form.values.reportId
+        ? reportSelectData.find((y) => y.value === form.values.reportId)!.label
+        : "-",
+    });
 
     if (retVal) {
       form.reset();
@@ -223,12 +251,8 @@ function Expenses() {
         .filter((x) =>
           x.searchText.toLowerCase().includes(searchQuery.toLowerCase())
         )
-        .filter((x) =>
-          selectedReport.length > 0 ? x.reportId === selectedReport : true
-        )
-        .filter((x) =>
-          selectedUser.length > 0 ? x.userId === selectedUser : true
-        )
+        .filter((x) => (selectedReport ? x.reportId === selectedReport : true))
+        .filter((x) => (selectedUser ? x.userId === selectedUser : true))
         .filter(
           (x) => activeUserSelectData.find((y) => y.value === x.userId)?.label
         )
@@ -238,18 +262,14 @@ function Expenses() {
         )
         .map((x: Expense) => (
           <Table.Tr key={x.id}>
-            <Table.Td>
-              {userSelectData.find((y) => y.value === x.userId)?.label}
-            </Table.Td>
-            <Table.Td>
-              {projectSelectData.find((y) => y.value === x.projectId)?.label}
-            </Table.Td>
+            <Table.Td>{x.userFullName}</Table.Td>
+            <Table.Td>{x.projectName}</Table.Td>
             <Table.Td>{expenseTypes[Number(x.expenseType)].label}</Table.Td>
             <Table.Td>{format(x.expenseDate, "dd/MM/yyyy")}</Table.Td>
             <Table.Td> {x.totalPrice} </Table.Td>
             <Table.Td>{currencyTypes[Number(x.currency)].label}</Table.Td>
             <Table.Td>
-              {x.expenseType === ExpenseType.Transportation.toString()
+              {x.expenseType === ExpenseType.Transportation
                 ? x.tripDescription
                 : "-"}
             </Table.Td>
@@ -260,11 +280,7 @@ function Expenses() {
                 <TiTimes size={BOOLEAN_ICON_SIZE} color="#BA1A1A" />
               )}
             </Table.Td>
-            <Table.Td>
-              {x.reportId
-                ? reportSelectData.find((y) => y.value === x.reportId)?.label
-                : "-"}
-            </Table.Td>
+            <Table.Td>{x.reportName ? x.reportName : "-"}</Table.Td>
             <Table.Td> {x.createUser} </Table.Td>
             <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
             <Table.Td>
@@ -302,9 +318,7 @@ function Expenses() {
     () =>
       form.values.overtimeMembers.map((x: OvertimeMember) => (
         <Table.Tr key={x.id}>
-          <Table.Td>
-            {userSelectData.find((y) => y.value === x.userId)?.label}
-          </Table.Td>
+          <Table.Td>{x.userFullName}</Table.Td>
           <Table.Td>{x.price}</Table.Td>
           <Table.Td>{x.createUser}</Table.Td>
           <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
@@ -328,106 +342,12 @@ function Expenses() {
       <Title order={3}>Expenses</Title>
       <Divider my={TITLE_DIVIDER_MY} />
       <Card shadow={"xs"} radius={"xs"} withBorder padding={10}>
-        <Flex gap={"md"} direction={"row"}>
-          <Flex gap={"sm"} direction={"column"} style={{ flexGrow: 1 }}>
-            <Select
-              {...form.getInputProps("userId")}
-              withAsterisk
-              data={activeUserSelectData}
-              searchable
-              label={"User Name"}
-              style={{ flexGrow: 1 }}
-            />
-
-            <DateInput
-              {...form.getInputProps("expenseDate")}
-              withAsterisk
-              valueFormat="DD MMMM YYYY"
-              label={"Expense Date"}
-              style={{ flexGrow: 1 }}
-            />
-
-            <TextInput
-              {...form.getInputProps("tripDescription")}
-              label={"Trip Description"}
-              withAsterisk={
-                form.values.expenseType ===
-                ExpenseType.Transportation.toString()
-              }
-              disabled={form.values.expenseType === ExpenseType.Food.toString()}
-              style={{ flexGrow: 1 }}
-            />
-          </Flex>
-          <Flex gap={"sm"} direction={"column"} style={{ flexGrow: 1 }}>
-            <Select
-              {...form.getInputProps("projectId")}
-              withAsterisk
-              data={activeProjectSelectData}
-              label={"Project Name"}
-              style={{ flexGrow: 1 }}
-            />
-
-            <NumberInput
-              {...form.getInputProps("totalPrice")}
-              withAsterisk
-              label={"Total Price"}
-              hideControls
-              style={{ flexGrow: 1 }}
-            />
-
-            <Select
-              {...form.getInputProps("currency")}
-              withAsterisk
-              data={currencyTypes}
-              label={"Currency"}
-              style={{ flexGrow: 1 }}
-            />
-          </Flex>
-          <Flex gap={"sm"} direction={"column"} style={{ flexGrow: 1 }}>
-            <Select
-              {...form.getInputProps("reportId")}
-              data={approvedReportSelectData}
-              searchable
-              label={"Report Name"}
-              style={{ flexGrow: 1 }}
-              clearable
-            />
-            <Radio.Group
-              label="Expense Type"
-              withAsterisk
-              {...form.getInputProps("expenseType")}
-              style={{ flexGrow: 1 }}
-              display={"center"}
-            >
-              <Group mt="xs">
-                {expenseTypes.map((x) => (
-                  <Radio value={x.value} label={x.label}></Radio>
-                ))}
-              </Group>
-            </Radio.Group>
-
-            <Radio.Group
-              label="Out Of Office"
-              withAsterisk
-              {...form.getInputProps("outOfOffice")}
-              style={{ flexGrow: 1 }}
-            >
-              <Group mt="xs">
-                <Radio value="true" label="True" />
-                <Radio value="false" label="False" />
-              </Group>
-            </Radio.Group>
-          </Flex>
-          <Card
-            shadow={"xs"}
-            radius={"md"}
-            withBorder
-            padding={10}
-            style={{ width: "50%" }}
-          >
-            <Flex gap="sm" direction="row">
+        <Flex gap={"md"}>
+          <Flex direction={"column"} w={"60%"}>
+            <Flex gap={"sm"} style={{ flexGrow: 1 }} align={"center"}>
               <Select
-                {...overtimeMemberForm.getInputProps("userId")}
+                w={"20%"}
+                {...form.getInputProps("userId")}
                 withAsterisk
                 data={activeUserSelectData}
                 searchable
@@ -435,23 +355,120 @@ function Expenses() {
                 style={{ flexGrow: 1 }}
               />
 
-              <NumberInput
-                {...overtimeMemberForm.getInputProps("price")}
+              <Select
+                w={"20%"}
+                {...form.getInputProps("projectId")}
                 withAsterisk
-                label="Price"
+                data={activeProjectSelectData}
+                label={"Project Name"}
+                style={{ flexGrow: 1 }}
+              />
+
+              <Select
+                w={"20%"}
+                {...form.getInputProps("reportId")}
+                data={approvedReportSelectData}
+                searchable
+                label={"Report Name"}
+                style={{ flexGrow: 1 }}
+                clearable
+              />
+            </Flex>
+            <Flex gap={"sm"} style={{ flexGrow: 1 }} align={"center"}>
+              <DateInput
+                w={"20%"}
+                {...form.getInputProps("expenseDate")}
+                withAsterisk
+                valueFormat="DD MMMM YYYY"
+                label={"Expense Date"}
+                style={{ flexGrow: 1 }}
+              />
+
+              <NumberInput
+                w={"20%"}
+                {...form.getInputProps("totalPrice")}
+                withAsterisk
+                label={"Total Price"}
                 hideControls
                 style={{ flexGrow: 1 }}
               />
 
-              <Button
-                onClick={overtimeMemberSave}
-                variant={"light"}
-                style={{ marginTop: "25px", flexGrow: 1 }}
+              <Radio.Group
+                w={"20%"}
+                label="Expense Type"
+                withAsterisk
+                {...form.getInputProps("expenseType")}
+                style={{ flexGrow: 1 }}
+                display={"center"}
               >
-                Add Overtime Member
-              </Button>
+                <Group mt="xs">
+                  {expenseTypes.map((x) => (
+                    <Radio value={x.value} label={x.label}></Radio>
+                  ))}
+                </Group>
+              </Radio.Group>
             </Flex>
-            <ScrollArea h={200}>
+            <Flex gap={"sm"} style={{ flexGrow: 1 }} align={"center"}>
+              <TextInput
+                w={"20%"}
+                {...form.getInputProps("tripDescription")}
+                label={"Trip Description"}
+                withAsterisk={
+                  form.values.expenseType === ExpenseType.Transportation
+                }
+                disabled={form.values.expenseType === ExpenseType.Food}
+                style={{ flexGrow: 1 }}
+              />
+
+              <Select
+                w={"20%"}
+                {...form.getInputProps("currency")}
+                withAsterisk
+                data={currencyTypes}
+                label={"Currency"}
+                style={{ flexGrow: 1 }}
+              />
+
+              <Checkbox
+                mt={25}
+                w={"20%"}
+                label="Out Of Office"
+                {...form.getInputProps("outOfOffice", { type: "checkbox" })}
+                style={{ flexGrow: 1 }}
+              />
+            </Flex>
+          </Flex>
+          <Flex w={"40%"}>
+            <Card
+              shadow={"xs"}
+              radius={"md"}
+              withBorder
+              padding={10}
+              w={"100%"}
+            >
+              <Flex gap="sm" align={"flex-end"}>
+                <Select
+                  {...overtimeMemberForm.getInputProps("userId")}
+                  withAsterisk
+                  data={activeUserSelectData}
+                  searchable
+                  label={"User Name"}
+                  style={{ flexGrow: 1 }}
+                />
+
+                <NumberInput
+                  {...overtimeMemberForm.getInputProps("price")}
+                  withAsterisk
+                  label="Price"
+                  hideControls
+                  style={{ flexGrow: 1 }}
+                />
+
+                <Button onClick={saveOvertimeMember} variant={"light"}>
+                  Add Overtime Member
+                </Button>
+              </Flex>
+
               <Table
                 striped
                 stickyHeader
@@ -459,20 +476,23 @@ function Expenses() {
                 withTableBorder
                 withColumnBorders
                 mt={15}
+                style={{ tableLayout: "fixed" }}
               >
-                <Table.Thead>
-                  <Table.Tr style={{ tableLayout: "fixed" }}>
-                    <Table.Th>User Name</Table.Th>
-                    <Table.Th>Price</Table.Th>
-                    <Table.Th>Create User</Table.Th>
-                    <Table.Th>Create Date</Table.Th>
-                    <Table.Th></Table.Th>
-                  </Table.Tr>
-                </Table.Thead>
-                <Table.Tbody>{memoizedOvertimeMembers}</Table.Tbody>
+                <ScrollArea h={200}>
+                  <Table.Thead>
+                    <Table.Tr>
+                      <Table.Th>User Name</Table.Th>
+                      <Table.Th>Price</Table.Th>
+                      <Table.Th>Create User</Table.Th>
+                      <Table.Th>Create Date</Table.Th>
+                      <Table.Th></Table.Th>
+                    </Table.Tr>
+                  </Table.Thead>
+                  <Table.Tbody>{memoizedOvertimeMembers}</Table.Tbody>
+                </ScrollArea>
               </Table>
-            </ScrollArea>
-          </Card>
+            </Card>
+          </Flex>
         </Flex>
         <Button onClick={handleSave} variant={"light"} mt={10}>
           Add New Expense
@@ -486,15 +506,15 @@ function Expenses() {
             rightSection={<IconSearch size={SEARCH_ICON_SIZE}></IconSearch>}
             style={{ flexGrow: 120 }}
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => setSearchQuery(e.currentTarget.value)}
           />
           <Select
-            data={userSelectData}
+            data={activeUserSelectData}
             searchable
             placeholder="Select User"
             style={{ flexGrow: 1 }}
             clearable
-            onChange={(e) => setSelectedUser(e ? e : "")}
+            onChange={(e) => setSelectedUser(e)}
           />
           <Select
             data={reportSelectData}
@@ -502,7 +522,7 @@ function Expenses() {
             placeholder="Select Report"
             style={{ flexGrow: 1 }}
             clearable
-            onChange={(e) => setSelectedReport(e ? e : "")}
+            onChange={(e) => setSelectedReport(e)}
           />
           <Checkbox
             labelPosition="left"

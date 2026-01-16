@@ -52,7 +52,7 @@ function Projects() {
       code: "",
       searchText: "",
       isActive: false,
-      createUser: "",
+      createUser: crypto.randomUUID(),
       createDate: new Date(),
     },
     validate: {
@@ -86,24 +86,6 @@ function Projects() {
   };
 
   const changeProjectActivity = async (project: Project) => {
-    if (
-      projects
-        .filter((x) => x.isActive)
-        .find((x) => x.name === project.name && !x.isActive)
-    ) {
-      toast.error("There is a active project with the same name.");
-      return;
-    }
-
-    if (
-      projects
-        .filter((x) => x.isActive)
-        .find((x) => x.name === project.code && !x.isActive)
-    ) {
-      toast.error("There is a active project with the same code.");
-      return;
-    }
-
     const patchDocument = createJsonPatchDocumentFromObject({
       isActive: !project.isActive,
     });
@@ -113,16 +95,16 @@ function Projects() {
       ProjectResponse
     >(`${urls.project}/${project.id}`, RequestType.Patch, patchDocument);
 
-    if (response.isSuccess) {
-      updateProject({ ...project, isActive: !project.isActive });
+    if (!response.isSuccess) return;
 
-      if (project.isActive) {
-        toast.success("Project deavtivated successfully.");
-        return;
-      }
+    updateProject({ ...project, isActive: !project.isActive });
 
-      toast.success("Project activated successfully.");
+    if (project.isActive) {
+      toast.success("Project deactivated successfully.");
+      return;
     }
+
+    toast.success("Project activated successfully.");
   };
 
   const handleSave = async () => {

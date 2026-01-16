@@ -38,18 +38,18 @@ function useReports({
       reportRequest
     );
 
-    if (response.isSuccess) {
-      const newReport: Report = {
-        ...response.value,
-      };
-      dispatch({
-        type: ReducerActions.Add,
-        payload: newReport,
-      });
-      return true;
-    }
+    if (!response.isSuccess) return false;
 
-    return false;
+    const newReport: Report = {
+      ...response.value,
+    };
+
+    dispatch({
+      type: ReducerActions.Add,
+      payload: newReport,
+    });
+
+    return true;
   };
 
   const downloadReport = async (report: Report) => {
@@ -73,17 +73,16 @@ function useReports({
       { id }
     );
 
-    if (response.isSuccess) {
-      dispatch({
-        type: ReducerActions.Delete,
-        payload: id,
-      });
-      toast.success("Report has been deleted successfully!");
+    if (!response.isSuccess) return false;
 
-      return true;
-    }
+    dispatch({
+      type: ReducerActions.Delete,
+      payload: id,
+    });
 
-    return false;
+    toast.success("Report has been deleted successfully!");
+
+    return true;
   };
 
   const fetchReports = async () => {
@@ -91,28 +90,30 @@ function useReports({
       urls.report,
       RequestType.Get
     );
-    if (response.isSuccess) {
-      const reports: Report[] = response.value.map((x) => ({
-        ...x,
-      }));
-      dispatch({
-        type: ReducerActions.Replace,
-        payload: reports,
-      });
 
-      if (hasValueLabel) {
-        setReportSelectData(
-          response.value.map((x) => ({ value: x.id, label: x.name }))
-        );
-      }
+    if (!response.isSuccess) return;
 
-      if (hasApprovedReportValueLabel) {
-        setApprovedReportSelectData(
-          response.value
-            .filter((x) => x.isApproved === false)
-            .map((x) => ({ value: x.id, label: x.name }))
-        );
-      }
+    const reports: Report[] = response.value.map((x) => ({
+      ...x,
+    }));
+
+    dispatch({
+      type: ReducerActions.Replace,
+      payload: reports,
+    });
+
+    if (hasValueLabel) {
+      setReportSelectData(
+        response.value.map((x) => ({ value: x.id, label: x.name }))
+      );
+    }
+
+    if (hasApprovedReportValueLabel) {
+      setApprovedReportSelectData(
+        response.value
+          .filter((x) => x.isApproved === false)
+          .map((x) => ({ value: x.id, label: x.name }))
+      );
     }
   };
 

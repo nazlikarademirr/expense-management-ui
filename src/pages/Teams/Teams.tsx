@@ -93,15 +93,6 @@ function Teams() {
       return;
     }
 
-    if (
-      teams
-        .filter((x) => x.isActive)
-        .find((x) => x.name === team.name && !x.isActive)
-    ) {
-      toast.error("There is a active team with the same name.");
-      return;
-    }
-
     const patchDocument = createJsonPatchDocumentFromObject({
       isActive: !team.isActive,
     });
@@ -111,16 +102,16 @@ function Teams() {
       TeamResponse
     >(`${urls.team}/${team.id}`, RequestType.Patch, patchDocument);
 
-    if (response.isSuccess) {
-      updateTeam({ ...team, isActive: !team.isActive });
+    if (!response.isSuccess) return;
 
-      if (team.isActive) {
-        toast.success("Team deactivated successfully.");
-        return;
-      }
+    updateTeam({ ...team, isActive: !team.isActive });
 
-      toast.success("Team activated successfully.");
+    if (team.isActive) {
+      toast.success("Team deactivated successfully.");
+      return;
     }
+
+    toast.success("Team activated successfully.");
   };
 
   const handleSave = async () => {
@@ -218,7 +209,7 @@ function Teams() {
             style={{ flexGrow: 120 }}
             {...form.getInputProps("searchText")}
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => setSearchQuery(e.currentTarget.value)}
           />
           <Checkbox
             labelPosition="left"

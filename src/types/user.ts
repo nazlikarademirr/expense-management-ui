@@ -3,6 +3,7 @@ type User = {
   name: string;
   surname: string;
   teamId: string | null;
+  teamName: string;
   gender: string;
   cardNumber: string;
   email: string;
@@ -30,6 +31,7 @@ type UserResponse = {
   name: string;
   surname: string;
   teamId: string;
+  teamName: string;
   gender: number;
   cardNumber: string;
   email: string;

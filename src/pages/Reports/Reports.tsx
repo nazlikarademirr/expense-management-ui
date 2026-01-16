@@ -272,7 +272,7 @@ function Reports() {
             style={{ flexGrow: 120 }}
             {...form.getInputProps("searchText")}
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => setSearchQuery(e.currentTarget.value)}
           />
           <Checkbox
             labelPosition="left"

@@ -52,9 +52,9 @@ function Users() {
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  const [selectedTeam, setSelectedTeam] = useState("");
+  const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
 
-  const [selectedRole, setSelectedRole] = useState("");
+  const [selectedRole, setSelectedRole] = useState<string | null>(null);
 
   const [showActiveUsers, setShowActiveUsers] = useState(true);
 
@@ -66,6 +66,7 @@ function Users() {
       name: "",
       surname: "",
       teamId: null,
+      teamName: "",
       gender: "",
       cardNumber: "",
       email: "",
@@ -128,24 +129,6 @@ function Users() {
   };
 
   const changeUserActivity = async (user: User) => {
-    if (
-      users
-        .filter((x) => x.isActive)
-        .find((x) => x.cardNumber === user.cardNumber && !x.isActive)
-    ) {
-      toast.error("There is a active user with the same card number.");
-      return;
-    }
-
-    if (
-      users
-        .filter((x) => x.isActive)
-        .find((x) => x.email === user.email && !x.isActive)
-    ) {
-      toast.error("There is a active user with the same email.");
-      return;
-    }
-
     const patchDocument = createJsonPatchDocumentFromObject({
       isActive: !user.isActive,
     });
@@ -155,16 +138,16 @@ function Users() {
       UserResponse
     >(`${urls.user}/${user.id}`, RequestType.Patch, patchDocument);
 
-    if (response.isSuccess) {
-      updateUser({ ...user, isActive: !user.isActive });
+    if (!response.isSuccess) return;
 
-      if (user.isActive) {
-        toast.success("User deavtivated successfully.");
-        return;
-      }
+    updateUser({ ...user, isActive: !user.isActive });
 
-      toast.success("User activated successfully.");
+    if (user.isActive) {
+      toast.success("User deactivated successfully.");
+      return;
     }
+
+    toast.success("User activated successfully.");
   };
 
   const handleSave = async () => {
@@ -188,7 +171,11 @@ function Users() {
       return;
     }
 
-    const retVal = await addUser(form.values);
+    const retVal = await addUser({
+      ...form.values,
+      teamName: teamSelectData.find((y) => y.value === form.values.teamId)!
+        .label,
+    });
 
     if (retVal) {
       form.reset();
@@ -203,19 +190,13 @@ function Users() {
         .filter((x) =>
           x.searchText.toLowerCase().includes(searchQuery.toLowerCase())
         )
-        .filter((x) =>
-          selectedTeam.length > 0 ? x.teamId === selectedTeam : true
-        )
-        .filter((x) =>
-          selectedRole.length > 0 ? x.role.toString() === selectedRole : true
-        )
+        .filter((x) => (selectedTeam ? x.teamId === selectedTeam : true))
+        .filter((x) => (selectedRole ? x.role === selectedRole : true))
         .map((x: User) => (
           <Table.Tr key={x.id}>
             <Table.Td> {x.name} </Table.Td>
             <Table.Td> {x.surname} </Table.Td>
-            <Table.Td>
-              {teamSelectData.find((y) => y.value === x.teamId)?.label}
-            </Table.Td>
+            <Table.Td>{x.teamName}</Table.Td>
             <Table.Td>{genders[Number(x.gender)].label}</Table.Td>
             <Table.Td> {x.cardNumber} </Table.Td>
             <Table.Td> {x.email} </Table.Td>
@@ -231,7 +212,7 @@ function Users() {
             <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
             <Table.Td>
               <Flex justify={"center"} gap={5}>
-                {x.isActive ? (
+                {x.isActive && (
                   <ActionIcon
                     onClick={() => openEditUser(x)}
                     variant={"light"}
@@ -239,8 +220,6 @@ function Users() {
                   >
                     <IconEdit />
                   </ActionIcon>
-                ) : (
-                  <div></div>
                 )}
                 <ActionIcon
                   onClick={() => changeUserActivity(x)}
@@ -261,7 +240,7 @@ function Users() {
   );
 
   return (
-    <div>
+    <>
       <Title order={3}>Users</Title>
       <Divider my={TITLE_DIVIDER_MY} />
       <Card shadow={"xs"} radius={"md"} withBorder>
@@ -413,7 +392,7 @@ function Users() {
           <Table.Tbody>{memoizedUsers}</Table.Tbody>
         </Table>
       </Card>
-    </div>
+    </>
   );
 }
 
