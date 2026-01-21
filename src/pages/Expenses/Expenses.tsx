@@ -17,7 +17,7 @@ import {
   Text,
 } from "@mantine/core";
 import { modals } from "@mantine/modals";
-import { Expense } from "../../types/expense";
+import { Expense, ExpenseRequest, ExpenseResponse } from "../../types/expense";
 import useExpenses from "./hooks/useExpenses";
 import { IconEdit, IconSearch, IconTrash } from "@tabler/icons-react";
 import { format } from "date-fns";
@@ -25,7 +25,7 @@ import toast from "react-hot-toast";
 import { DateInput } from "@mantine/dates";
 import { OvertimeMember } from "../../types/overtime-member";
 import EditExpenseModal from "./components/EditExpenseModal";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import useProjects from "../../hooks/useProjects";
 import { currencyTypes, expenseTypes } from "../../constants/static-data";
 import useUsers from "../../hooks/useUsers";
@@ -37,22 +37,37 @@ import {
   SEARCH_ICON_SIZE,
   TITLE_DIVIDER_MY,
 } from "../../constants/constants";
+import urls from "../../constants/urls";
+import RequestType from "../../request-handler/request-type";
+import useRequestHandler from "../../hooks/useRequestHandler";
+import { SelectItem } from "../../types/select-item";
+import { User } from "../../types/user";
+import { Project } from "../../types/project";
+import { Report } from "../../types/report";
 
 function Expenses() {
-  const { expenses, addExpense, updateExpense, deleteExpense } = useExpenses();
+  const { expenses, addExpense, updateExpense, deleteExpense, fetchExpenses } =
+    useExpenses();
 
-  const { userSelectData, activeUserSelectData } = useUsers({
-    hasValueLabel: true,
-    hasActiveUserValueLabel: true,
-  });
-  const { projectSelectData, activeProjectSelectData } = useProjects({
-    hasValueLabel: true,
-    hasActiveProjectValueLabel: true,
-  });
-  const { reportSelectData, approvedReportSelectData } = useReports({
-    hasValueLabel: true,
-    hasApprovedReportValueLabel: true,
-  });
+  const { handleDataRequest } = useRequestHandler();
+
+  const { fetchUsers } = useUsers();
+  const { fetchProjects } = useProjects();
+  const { fetchReports } = useReports();
+
+  const [activeUserSelectData, setActiveUserSelectData] = useState<
+    SelectItem[]
+  >([]);
+
+  const [activeProjectSelectData, setActiveProjectSelectData] = useState<
+    SelectItem[]
+  >([]);
+
+  const [reportSelectData, setReportSelectData] = useState<SelectItem[]>([]);
+
+  const [unapprovedReportSelectData, setUnapprovedReportSelectData] = useState<
+    SelectItem[]
+  >([]);
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -152,7 +167,7 @@ function Expenses() {
             <Button
               style={{ flexGrow: 1 }}
               onClick={() => {
-                deleteExpense(id);
+                handleDelete(id);
                 modals.closeAll();
               }}
               variant={"light"}
@@ -174,43 +189,76 @@ function Expenses() {
     });
   };
 
-  const deleteOvertimeMember = (id: string) => {
-    const overtimeMembers = form.values.overtimeMembers.filter(
-      (x) => x.id !== id
+  const getUsers = async () => {
+    const response = await handleDataRequest<never, User[]>(
+      urls.user,
+      RequestType.Get,
     );
 
-    form.setFieldValue("overtimeMembers", overtimeMembers);
+    if (!response.isSuccess) return;
+
+    fetchUsers(response.value);
+
+    setActiveUserSelectData(
+      response.value
+        .filter((x) => x.isActive)
+        .map((x) => ({ value: x.id, label: `${x.name} ${x.surname}` })),
+    );
   };
 
-  const saveOvertimeMember = async () => {
-    overtimeMemberForm.validate();
+  const getProjects = async () => {
+    const response = await handleDataRequest<never, Project[]>(
+      urls.project,
+      RequestType.Get,
+    );
 
-    if (!overtimeMemberForm.isValid()) return;
+    if (!response.isSuccess) return;
 
-    overtimeMemberForm.values.id = crypto.randomUUID();
-    overtimeMemberForm.values.createDate = new Date();
+    fetchProjects(response.value);
 
-    if (
-      form.values.overtimeMembers.some(
-        (x) => x.userId === overtimeMemberForm.values.userId
-      )
-    ) {
-      return toast.error("There is a entry for this user.");
-    }
+    setActiveProjectSelectData(
+      response.value
+        .filter((x) => x.isActive)
+        .map((x) => ({ value: x.id, label: x.name })),
+    );
+  };
 
-    form.setFieldValue("overtimeMembers", [
-      ...form.values.overtimeMembers,
-      {
-        ...overtimeMemberForm.values,
-        userFullName: overtimeMemberForm.values.userId
-          ? userSelectData.find(
-              (y) => y.value === overtimeMemberForm.values.userId
-            )!.label
-          : "",
-      },
-    ]);
+  const getReports = async () => {
+    const response = await handleDataRequest<never, Report[]>(
+      urls.report,
+      RequestType.Get,
+    );
 
-    overtimeMemberForm.reset();
+    if (!response.isSuccess) return;
+
+    fetchReports(response.value);
+
+    setReportSelectData(
+      response.value.map((x) => ({ value: x.id, label: x.name })),
+    );
+
+    setUnapprovedReportSelectData(
+      response.value
+        .filter((x) => !x.isApproved)
+        .map((x) => ({ value: x.id, label: x.name })),
+    );
+  };
+
+  const getExpenses = async () => {
+    const response = await handleDataRequest<never, ExpenseResponse[]>(
+      urls.expense,
+      RequestType.Get,
+    );
+
+    if (!response.isSuccess) return;
+
+    const expenseList = response.value.map((x) => ({
+      ...x,
+      expenseType: x.expenseType.toString(),
+      currency: x.currency.toString(),
+    }));
+
+    fetchExpenses(expenseList);
   };
 
   const handleSave = async () => {
@@ -223,25 +271,84 @@ function Expenses() {
       return;
     }
 
-    const retVal = await addExpense({
-      ...form.values,
-      userFullName: form.values.userId
-        ? userSelectData.find((y) => y.value === form.values.userId)!.label
-        : "",
-      projectName: form.values.projectId
-        ? projectSelectData.find((y) => y.value === form.values.projectId)!
-            .label
-        : "",
-      reportName: form.values.reportId
-        ? reportSelectData.find((y) => y.value === form.values.reportId)!.label
-        : "-",
+    const expenseRequest: ExpenseRequest = {
+      userId: form.values.userId ?? "",
+      projectId: form.values.projectId ?? "",
+      expenseType: Number(form.values.expenseType),
+      expenseDate: form.values.expenseDate,
+      totalPrice: form.values.totalPrice,
+      currency: Number(form.values.currency),
+      tripDescription: form.values.tripDescription,
+      outOfOffice: form.values.outOfOffice,
+      reportId: form.values.reportId ?? "",
+      overtimeMembers: form.values.overtimeMembers,
+    };
+
+    const response = await handleDataRequest<ExpenseRequest, ExpenseResponse>(
+      urls.expense,
+      RequestType.Post,
+      expenseRequest,
+    );
+
+    if (!response.isSuccess) return false;
+
+    addExpense({
+      ...response.value,
+      expenseType: expenseTypes[response.value.expenseType].value,
+      currency: currencyTypes[response.value.currency].value,
     });
 
-    if (retVal) {
-      form.reset();
-      overtimeMemberForm.reset();
-      toast.success("Expense has been added successfully!");
+    form.reset();
+    overtimeMemberForm.reset();
+
+    toast.success("Expense has been added successfully!");
+  };
+
+  const handleDelete = async (id: string) => {
+    const response = await handleDataRequest<string, never>(
+      urls.expense,
+      RequestType.Delete,
+      undefined,
+      { id },
+    );
+
+    if (!response.isSuccess) return;
+
+    deleteExpense(id);
+
+    toast.success("Expense has been deleted successfully!");
+  };
+
+  const saveOvertimeMember = async () => {
+    overtimeMemberForm.validate();
+
+    if (!overtimeMemberForm.isValid()) return;
+
+    overtimeMemberForm.values.id = crypto.randomUUID();
+    overtimeMemberForm.values.createDate = new Date();
+
+    if (
+      form.values.overtimeMembers.some(
+        (x) => x.userId === overtimeMemberForm.values.userId,
+      )
+    ) {
+      return toast.error("There is a entry for this user.");
     }
+
+    form.setFieldValue("overtimeMembers", [
+      ...form.values.overtimeMembers,
+      overtimeMemberForm.values,
+    ]);
+
+    overtimeMemberForm.reset();
+  };
+
+  const deleteOvertimeMember = (id: string) => {
+    const overtimeMembers = form.values.overtimeMembers.filter(
+      (x) => x.id !== id,
+    );
+
+    form.setFieldValue("overtimeMembers", overtimeMembers);
   };
 
   const memoizedExpenses = useMemo(
@@ -249,16 +356,16 @@ function Expenses() {
       expenses
         .filter((x) => (showUnapprovedExpenses === true ? !x.isApproved : x))
         .filter((x) =>
-          x.searchText.toLowerCase().includes(searchQuery.toLowerCase())
+          x.searchText.toLowerCase().includes(searchQuery.toLowerCase()),
         )
         .filter((x) => (selectedReport ? x.reportId === selectedReport : true))
         .filter((x) => (selectedUser ? x.userId === selectedUser : true))
         .filter(
-          (x) => activeUserSelectData.find((y) => y.value === x.userId)?.label
+          (x) => activeUserSelectData.find((y) => y.value === x.userId)?.label,
         )
         .filter(
           (x) =>
-            activeProjectSelectData.find((y) => y.value === x.projectId)?.label
+            activeProjectSelectData.find((y) => y.value === x.projectId)?.label,
         )
         .map((x: Expense) => (
           <Table.Tr key={x.id}>
@@ -280,7 +387,7 @@ function Expenses() {
                 <TiTimes size={BOOLEAN_ICON_SIZE} color="#BA1A1A" />
               )}
             </Table.Td>
-            <Table.Td>{x.reportName ? x.reportName : "-"}</Table.Td>
+            <Table.Td>{x.reportName ?? "-"}</Table.Td>
             <Table.Td> {x.createUser} </Table.Td>
             <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
             <Table.Td>
@@ -311,7 +418,7 @@ function Expenses() {
       selectedUser,
       selectedReport,
       showUnapprovedExpenses,
-    ]
+    ],
   );
 
   const memoizedOvertimeMembers = useMemo(
@@ -334,8 +441,15 @@ function Expenses() {
           </Table.Td>
         </Table.Tr>
       )),
-    [form.values.overtimeMembers]
+    [form.values.overtimeMembers],
   );
+
+  useEffect(() => {
+    getUsers();
+    getProjects();
+    getReports();
+    getExpenses();
+  }, []);
 
   return (
     <div>
@@ -367,7 +481,7 @@ function Expenses() {
               <Select
                 w={"20%"}
                 {...form.getInputProps("reportId")}
-                data={approvedReportSelectData}
+                data={unapprovedReportSelectData}
                 searchable
                 label={"Report Name"}
                 style={{ flexGrow: 1 }}

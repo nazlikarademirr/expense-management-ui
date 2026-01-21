@@ -1,6 +1,6 @@
 import { useForm } from "@mantine/form";
-import { Report, ReportResponse } from "../../types/report";
-import { useMemo, useState } from "react";
+import { Report, ReportRequest } from "../../types/report";
+import { useEffect, useMemo, useState } from "react";
 import {
   ActionIcon,
   Button,
@@ -40,17 +40,14 @@ import RequestType from "../../request-handler/request-type";
 import useRequestHandler from "../../hooks/useRequestHandler";
 
 function Reports() {
-  const { reports, addReport, downloadReport, updateReport, deleteReport } =
-    useReports({
-      hasValueLabel: false,
-      hasApprovedReportValueLabel: false,
-    });
+  const { reports, addReport, updateReport, deleteReport, fetchReports } =
+    useReports();
 
   const [searchQuery, setSearchQuery] = useState("");
 
   const [showUnapprovedReports, setShowUnapprovedReports] = useState(false);
 
-  const { handleDataRequest } = useRequestHandler();
+  const { handleDataRequest, downloadFile } = useRequestHandler();
 
   const form = useForm({
     initialValues: {
@@ -86,10 +83,11 @@ function Reports() {
       isApproved: true,
     });
 
-    const response = await handleDataRequest<
-      JsonPatchKeyValuePair[],
-      ReportResponse
-    >(`${urls.report}/${report.id}`, RequestType.Patch, patchDocument);
+    const response = await handleDataRequest<JsonPatchKeyValuePair[], Report>(
+      `${urls.report}/${report.id}`,
+      RequestType.Patch,
+      patchDocument,
+    );
 
     if (response.isSuccess) {
       updateReport({ ...report, isApproved: true });
@@ -136,7 +134,7 @@ function Reports() {
             <Button
               style={{ flexGrow: 1 }}
               onClick={() => {
-                deleteReport(id);
+                handleDelete(id);
                 modals.closeAll();
               }}
               variant={"light"}
@@ -158,26 +156,66 @@ function Reports() {
     });
   };
 
+  const getReports = async () => {
+    const response = await handleDataRequest<never, Report[]>(
+      urls.report,
+      RequestType.Get,
+    );
+
+    if (!response.isSuccess) return;
+
+    fetchReports(response.value);
+  };
+
   const handleSave = async () => {
     form.validate();
 
     if (!form.isValid()) return;
 
-    if (
-      reports
-        .filter((x) => x.isApproved)
-        .find((x) => x.name === form.values.name)
-    ) {
+    if (reports.some((x) => x.isApproved && x.name === form.values.name)) {
       toast.error("There is a report with the same name!");
       return;
     }
 
-    const retVal = await addReport(form.values);
+    const request: ReportRequest = {
+      name: form.values.name,
+      isApproved: form.values.isApproved,
+    };
 
-    if (retVal) {
-      form.reset();
-      toast.success("Report has been added successfully!");
-    }
+    const response = await handleDataRequest<ReportRequest, Report>(
+      urls.report,
+      RequestType.Post,
+      request,
+    );
+
+    if (!response.isSuccess) return;
+
+    addReport(response.value);
+
+    form.reset();
+
+    toast.success("Report has been added successfully!");
+  };
+
+  const handleDelete = async (id: string) => {
+    const response = await handleDataRequest<string, never>(
+      urls.report,
+      RequestType.Delete,
+      undefined,
+      { id },
+    );
+
+    if (!response.isSuccess) return;
+
+    deleteReport(id);
+
+    toast.success("Report has been deleted successfully!");
+  };
+
+  const downloadReport = async (report: Report) => {
+    await downloadFile(urls.expenseExcel, report.name, undefined, {
+      reportId: report.id,
+    });
   };
 
   const memoizedReports = useMemo(
@@ -185,7 +223,7 @@ function Reports() {
       reports
         .filter((x) => (showUnapprovedReports === true ? !x.isApproved : x))
         .filter((x) =>
-          x.searchText.toLowerCase().includes(searchQuery.toLowerCase())
+          x.searchText.toLowerCase().includes(searchQuery.toLowerCase()),
         )
         .map((x: Report) => (
           <Table.Tr key={x.id}>
@@ -243,8 +281,12 @@ function Reports() {
             </Table.Td>
           </Table.Tr>
         )),
-    [reports, showUnapprovedReports, searchQuery]
+    [reports, showUnapprovedReports, searchQuery],
   );
+
+  useEffect(() => {
+    getReports();
+  }, []);
 
   return (
     <div>

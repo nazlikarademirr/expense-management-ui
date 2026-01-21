@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Project, ProjectResponse } from "../../../types/project";
+import { Project } from "../../../types/project";
 import { modals } from "@mantine/modals";
 import { Button, Flex, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
@@ -11,7 +11,6 @@ import useRequestHandler from "../../../hooks/useRequestHandler";
 import urls from "../../../constants/urls";
 import RequestType from "../../../request-handler/request-type";
 import toast from "react-hot-toast";
-import useProjects from "../../../hooks/useProjects";
 
 interface EditProjectProps {
   project: Project;
@@ -20,11 +19,6 @@ interface EditProjectProps {
 
 function EditProjectModal({ project, updateProject }: EditProjectProps) {
   const { handleDataRequest } = useRequestHandler();
-
-  const { projects } = useProjects({
-    hasValueLabel: false,
-    hasActiveProjectValueLabel: false,
-  });
 
   const projectForm = useForm({
     initialValues: {
@@ -64,33 +58,16 @@ function EditProjectModal({ project, updateProject }: EditProjectProps) {
 
     if (!projectForm.isValid()) return;
 
-    if (
-      projects
-        .filter((x) => x.isActive && x.id != projectForm.values.id)
-        .find((x) => x.name === projectForm.values.name)
-    ) {
-      toast.error("There is a project with the same name!");
-      return;
-    }
-
-    if (
-      projects
-        .filter((x) => x.isActive && x.id != projectForm.values.id)
-        .find((x) => x.code === projectForm.values.code)
-    ) {
-      toast.error("There is a active project with the same code!");
-      return;
-    }
-
     const patchDocument = createJsonPatchDocumentFromDirtyForm(
       projectForm,
-      projectForm.values
+      projectForm.values,
     );
 
-    const response = await handleDataRequest<
-      JsonPatchKeyValuePair[],
-      ProjectResponse
-    >(`${urls.project}/${project.id}`, RequestType.Patch, patchDocument);
+    const response = await handleDataRequest<JsonPatchKeyValuePair[], Project>(
+      `${urls.project}/${project.id}`,
+      RequestType.Patch,
+      patchDocument,
+    );
 
     if (!response.isSuccess) return;
 

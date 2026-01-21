@@ -1,6 +1,14 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { modals } from "@mantine/modals";
-import { Button, Flex, Group, Radio, Select, TextInput } from "@mantine/core";
+import {
+  Button,
+  ComboboxItem,
+  Flex,
+  Group,
+  Radio,
+  Select,
+  TextInput,
+} from "@mantine/core";
 import { User, UserResponse } from "../../../types/user";
 import { useForm } from "@mantine/form";
 import useRequestHandler from "../../../hooks/useRequestHandler";
@@ -13,7 +21,8 @@ import {
 import toast from "react-hot-toast";
 import useTeams from "../../../hooks/useTeams";
 import { genders, roles } from "../../../constants/static-data";
-import useUsers from "../../../hooks/useUsers";
+import { SelectItem } from "../../../types/select-item";
+import { Team } from "../../../types/team";
 
 interface EditUserProps {
   user: User;
@@ -23,15 +32,11 @@ interface EditUserProps {
 function EditUserModal({ user, updateUser }: EditUserProps) {
   const { handleDataRequest } = useRequestHandler();
 
-  const { users } = useUsers({
-    hasValueLabel: false,
-    hasActiveUserValueLabel: false,
-  });
+  const { fetchTeams } = useTeams();
 
-  const { teamSelectData, activeTeamSelectData } = useTeams({
-    hasValueLabel: true,
-    hasActiveTeamValueLabel: true,
-  });
+  const [activeTeamSelectData, setActiveTeamSelectData] = useState<
+    SelectItem[]
+  >([]);
 
   const userForm = useForm({
     initialValues: {
@@ -78,6 +83,23 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
 
   const nameInputRef = useRef<HTMLInputElement>(null);
 
+  const getTeams = async () => {
+    const response = await handleDataRequest<never, Team[]>(
+      urls.team,
+      RequestType.Get,
+    );
+
+    if (!response.isSuccess) return;
+
+    fetchTeams(response.value);
+
+    setActiveTeamSelectData(
+      response.value
+        .filter((x) => x.isActive)
+        .map((x) => ({ value: x.id, label: x.name })),
+    );
+  };
+
   const handleSave = async (e: React.MouseEvent) => {
     e.preventDefault();
 
@@ -85,27 +107,9 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
 
     if (!userForm.isValid()) return;
 
-    if (
-      users
-        .filter((x) => x.isActive && x.id != userForm.values.id)
-        .find((x) => x.cardNumber === userForm.values.cardNumber)
-    ) {
-      toast.error("There is a active user with the same card number!");
-      return;
-    }
-
-    if (
-      users
-        .filter((x) => x.isActive && x.id != userForm.values.id)
-        .find((x) => x.email === userForm.values.email)
-    ) {
-      toast.error("There is a user with the same email!");
-      return;
-    }
-
     const patchDocument = createJsonPatchDocumentFromDirtyForm(
       userForm,
-      userForm.values
+      userForm.values,
     );
 
     const response = await handleDataRequest<
@@ -121,8 +125,6 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
 
     updateUser({
       ...userForm.values,
-      teamName: teamSelectData.find((y) => y.value === userForm.values.teamId)!
-        .label,
     });
 
     toast.success("User edited successfully.");
@@ -130,7 +132,14 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
     modals.closeAll();
   };
 
+  const changeTeam = (team: ComboboxItem) => {
+    userForm.setFieldValue("teamId", team.value);
+    userForm.setFieldValue("teamName", team.label);
+  };
+
   useEffect(() => {
+    getTeams();
+
     if (nameInputRef.current) {
       nameInputRef.current.focus();
     }
@@ -151,6 +160,7 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
       />
       <Select
         {...userForm.getInputProps("teamId")}
+        onChange={(_, option) => changeTeam(option)}
         withAsterisk
         data={activeTeamSelectData}
         searchable

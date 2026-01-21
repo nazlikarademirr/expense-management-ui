@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Expense,
   ExpenseRequest,
@@ -10,6 +10,7 @@ import {
   Button,
   Card,
   Checkbox,
+  ComboboxItem,
   Flex,
   Group,
   NumberInput,
@@ -33,6 +34,10 @@ import { OvertimeMember } from "../../../types/overtime-member";
 import { format } from "date-fns";
 import { IconTrash } from "@tabler/icons-react";
 import ExpenseType from "../../../enums/expense-type";
+import { SelectItem } from "../../../types/select-item";
+import { Project } from "../../../types/project";
+import { User } from "../../../types/user";
+import { Report } from "../../../types/report";
 
 interface EditExpenseProps {
   expense: Expense;
@@ -42,25 +47,25 @@ interface EditExpenseProps {
 function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
   const { handleDataRequest } = useRequestHandler();
 
-  const { userSelectData, activeUserSelectData } = useUsers({
-    hasValueLabel: true,
-    hasActiveUserValueLabel: true,
-  });
-  const { projectSelectData, activeProjectSelectData } = useProjects({
-    hasValueLabel: true,
-    hasActiveProjectValueLabel: true,
-  });
-  const { reportSelectData, approvedReportSelectData } = useReports({
-    hasValueLabel: true,
-    hasApprovedReportValueLabel: true,
-  });
+  const { fetchUsers } = useUsers();
+  const { fetchProjects } = useProjects();
+  const { fetchReports } = useReports();
+
+  const [activeUserSelectData, setActiveUserSelectData] = useState<
+    SelectItem[]
+  >([]);
+
+  const [activeProjectSelectData, setActiveProjectSelectData] = useState<
+    SelectItem[]
+  >([]);
+
+  const [unapprovedReportSelectData, setUnapprovedReportSelectData] = useState<
+    SelectItem[]
+  >([]);
 
   const expenseForm = useForm<Expense>({
     initialValues: {
       ...expense,
-      userId: expense.userId ? expense.userId : "",
-      projectId: expense.projectId ? expense.projectId : "",
-      reportId: expense.reportId ? expense.reportId : "",
       expenseDate: new Date(expense.expenseDate),
     },
     validate: {
@@ -111,6 +116,57 @@ function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
 
   const nameInputRef = useRef<HTMLInputElement>(null);
 
+  const getUsers = async () => {
+    const response = await handleDataRequest<never, User[]>(
+      urls.user,
+      RequestType.Get,
+    );
+
+    if (!response.isSuccess) return;
+
+    fetchUsers(response.value);
+
+    setActiveUserSelectData(
+      response.value
+        .filter((x) => x.isActive)
+        .map((x) => ({ value: x.id, label: `${x.name} ${x.surname}` })),
+    );
+  };
+
+  const getProjects = async () => {
+    const response = await handleDataRequest<never, Project[]>(
+      urls.project,
+      RequestType.Get,
+    );
+
+    if (!response.isSuccess) return;
+
+    fetchProjects(response.value);
+
+    setActiveProjectSelectData(
+      response.value
+        .filter((x) => x.isActive)
+        .map((x) => ({ value: x.id, label: x.name })),
+    );
+  };
+
+  const getReports = async () => {
+    const response = await handleDataRequest<never, Report[]>(
+      urls.report,
+      RequestType.Get,
+    );
+
+    if (!response.isSuccess) return;
+
+    fetchReports(response.value);
+
+    setUnapprovedReportSelectData(
+      response.value
+        .filter((x) => !x.isApproved)
+        .map((x) => ({ value: x.id, label: x.name })),
+    );
+  };
+
   const handleSave = async (e: React.MouseEvent) => {
     e.preventDefault();
 
@@ -125,11 +181,9 @@ function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
 
     const expenseRequest: ExpenseRequest = {
       ...expenseForm.values,
-      userId: expenseForm.values.userId ? expenseForm.values.userId : "",
-      projectId: expenseForm.values.projectId
-        ? expenseForm.values.projectId
-        : "",
-      reportId: expenseForm.values.reportId ? expenseForm.values.reportId : "",
+      userId: expenseForm.values.userId ?? "",
+      projectId: expenseForm.values.projectId ?? "",
+      reportId: expenseForm.values.reportId ?? "",
       expenseType: Number(expenseForm.values.expenseType),
       currency: Number(expenseForm.values.currency),
     };
@@ -137,7 +191,7 @@ function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
     const response = await handleDataRequest<ExpenseRequest, ExpenseResponse>(
       `${urls.expense}/${expense.id}`,
       RequestType.Put,
-      expenseRequest
+      expenseRequest,
     );
 
     if (!response.isSuccess) return;
@@ -148,19 +202,6 @@ function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
 
     updateExpense({
       ...expenseForm.values,
-      userFullName: expenseForm.values.userId
-        ? userSelectData.find((y) => y.value === expenseForm.values.userId)!
-            .label
-        : "",
-      projectName: expenseForm.values.projectId
-        ? projectSelectData.find(
-            (y) => y.value === expenseForm.values.projectId
-          )!.label
-        : "",
-      reportName: expenseForm.values.reportId
-        ? reportSelectData.find((y) => y.value === expenseForm.values.reportId)!
-            .label
-        : "-",
     });
 
     expenseForm.reset();
@@ -181,7 +222,7 @@ function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
 
     if (
       expenseForm.values.overtimeMembers.some(
-        (x) => x.userId === overtimeMemberForm.values.userId
+        (x) => x.userId === overtimeMemberForm.values.userId,
       )
     ) {
       return toast.error("There is a entry for this user.");
@@ -189,14 +230,7 @@ function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
 
     expenseForm.setFieldValue("overtimeMembers", [
       ...expenseForm.values.overtimeMembers,
-      {
-        ...overtimeMemberForm.values,
-        userFullName: overtimeMemberForm.values.userId
-          ? userSelectData.find(
-              (y) => y.value === overtimeMemberForm.values.userId
-            )!.label
-          : "",
-      },
+      overtimeMemberForm.values,
     ]);
 
     overtimeMemberForm.reset();
@@ -204,10 +238,30 @@ function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
 
   const deleteOvertimeMember = (id: string) => {
     const overtimeMembers = expenseForm.values.overtimeMembers.filter(
-      (x) => x.id !== id
+      (x) => x.id !== id,
     );
 
     expenseForm.setFieldValue("overtimeMembers", overtimeMembers);
+  };
+
+  const changeUser = (user: ComboboxItem) => {
+    expenseForm.setFieldValue("userId", user.value);
+    expenseForm.setFieldValue("userFullName", user.label);
+  };
+
+  const changeProject = (project: ComboboxItem) => {
+    expenseForm.setFieldValue("projectId", project.value);
+    expenseForm.setFieldValue("projectName", project.label);
+  };
+
+  const changeReport = (report?: ComboboxItem) => {
+    expenseForm.setFieldValue("reportId", report?.value ?? "");
+    expenseForm.setFieldValue("reportName", report?.label ?? "");
+  };
+
+  const changeOvertimeMember = (overtimeMember: ComboboxItem) => {
+    overtimeMemberForm.setFieldValue("userId", overtimeMember.value);
+    overtimeMemberForm.setFieldValue("userFullName", overtimeMember.label);
   };
 
   const memoizedOvertimeMembers = useMemo(
@@ -230,10 +284,14 @@ function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
           </Table.Td>
         </Table.Tr>
       )),
-    [expenseForm.values.overtimeMembers, overtimeMemberForm]
+    [expenseForm.values.overtimeMembers, overtimeMemberForm],
   );
 
   useEffect(() => {
+    getUsers();
+    getProjects();
+    getReports();
+
     if (nameInputRef.current) {
       nameInputRef.current.focus();
     }
@@ -247,6 +305,7 @@ function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
             <Select
               w={"20%"}
               {...expenseForm.getInputProps("userId")}
+              onChange={(_, option) => changeUser(option)}
               withAsterisk
               data={activeUserSelectData}
               searchable
@@ -257,6 +316,7 @@ function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
             <Select
               w={"20%"}
               {...expenseForm.getInputProps("projectId")}
+              onChange={(_, option) => changeProject(option)}
               withAsterisk
               data={activeProjectSelectData}
               label={"Project Name"}
@@ -266,7 +326,8 @@ function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
             <Select
               w={"20%"}
               {...expenseForm.getInputProps("reportId")}
-              data={approvedReportSelectData}
+              onChange={(_, option) => changeReport(option)}
+              data={unapprovedReportSelectData}
               searchable
               label={"Report Name"}
               style={{ flexGrow: 1 }}
@@ -344,6 +405,7 @@ function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
             <Flex gap="sm" align={"flex-end"}>
               <Select
                 {...overtimeMemberForm.getInputProps("userId")}
+                onChange={(_, option) => changeOvertimeMember(option)}
                 withAsterisk
                 data={activeUserSelectData}
                 searchable

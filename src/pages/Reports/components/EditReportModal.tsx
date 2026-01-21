@@ -1,6 +1,6 @@
 import { useForm } from "@mantine/form";
 import useRequestHandler from "../../../hooks/useRequestHandler";
-import { Report, ReportResponse } from "../../../types/report";
+import { Report } from "../../../types/report";
 import { useEffect, useRef } from "react";
 import { Button, Flex, TextInput } from "@mantine/core";
 import { modals } from "@mantine/modals";
@@ -21,10 +21,7 @@ interface EditReportProps {
 function EditReportModal({ report, updateReport }: EditReportProps) {
   const { handleDataRequest } = useRequestHandler();
 
-  const { reports } = useReports({
-    hasValueLabel: false,
-    hasApprovedReportValueLabel: false,
-  });
+  const { reports } = useReports();
 
   const reportForm = useForm({
     initialValues: {
@@ -54,9 +51,7 @@ function EditReportModal({ report, updateReport }: EditReportProps) {
     if (!reportForm.isValid()) return;
 
     if (
-      reports
-        .filter((x) => x.isApproved)
-        .find((x) => x.name === reportForm.values.name)
+      reports.some((x) => x.isApproved && x.name === reportForm.values.name)
     ) {
       toast.error("There is a report with the same name!");
       return;
@@ -64,13 +59,14 @@ function EditReportModal({ report, updateReport }: EditReportProps) {
 
     const patchDocument = createJsonPatchDocumentFromDirtyForm(
       reportForm,
-      reportForm.values
+      reportForm.values,
     );
 
-    const response = await handleDataRequest<
-      JsonPatchKeyValuePair[],
-      ReportResponse
-    >(`${urls.report}/${report.id}`, RequestType.Patch, patchDocument);
+    const response = await handleDataRequest<JsonPatchKeyValuePair[], Report>(
+      `${urls.report}/${report.id}`,
+      RequestType.Patch,
+      patchDocument,
+    );
 
     if (!response.isSuccess) return;
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Team, TeamResponse } from "../../../types/team";
+import { Team } from "../../../types/team";
 import { Button, Flex, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import {
@@ -11,7 +11,6 @@ import RequestType from "../../../request-handler/request-type";
 import urls from "../../../constants/urls";
 import toast from "react-hot-toast";
 import { modals } from "@mantine/modals";
-import useTeams from "../../../hooks/useTeams";
 
 interface EditTeamProps {
   team: Team;
@@ -20,11 +19,6 @@ interface EditTeamProps {
 
 function EditTeamModal({ team, updateTeam }: EditTeamProps) {
   const { handleDataRequest } = useRequestHandler();
-
-  const { teams } = useTeams({
-    hasValueLabel: false,
-    hasActiveTeamValueLabel: false,
-  });
 
   const teamForm = useForm({
     initialValues: {
@@ -57,24 +51,16 @@ function EditTeamModal({ team, updateTeam }: EditTeamProps) {
 
     if (!teamForm.isValid()) return;
 
-    if (
-      teams
-        .filter((x) => x.isActive && x.id != teamForm.values.id)
-        .find((x) => x.name === teamForm.values.name)
-    ) {
-      toast.error("There is a active team with the same name!");
-      return;
-    }
-
     const patchDocument = createJsonPatchDocumentFromDirtyForm(
       teamForm,
-      teamForm.values
+      teamForm.values,
     );
 
-    const response = await handleDataRequest<
-      JsonPatchKeyValuePair[],
-      TeamResponse
-    >(`${urls.team}/${team.id}`, RequestType.Patch, patchDocument);
+    const response = await handleDataRequest<JsonPatchKeyValuePair[], Team>(
+      `${urls.team}/${team.id}`,
+      RequestType.Patch,
+      patchDocument,
+    );
 
     if (!response.isSuccess) return;
 

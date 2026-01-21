@@ -1,4 +1,4 @@
-import { User, UserResponse } from "../../types/user.ts";
+import { User, UserRequest, UserResponse } from "../../types/user.ts";
 import EditUserModal from "./components/EditUserModal.tsx";
 import {
   ActionIcon,
@@ -30,7 +30,7 @@ import {
 import useRequestHandler from "../../hooks/useRequestHandler.tsx";
 import urls from "../../constants/urls.ts";
 import RequestType from "../../request-handler/request-type.ts";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { TiTick, TiTimes } from "react-icons/ti";
 import { IoMdAddCircleOutline, IoMdRemoveCircleOutline } from "react-icons/io";
 import {
@@ -38,17 +38,13 @@ import {
   SEARCH_ICON_SIZE,
   TITLE_DIVIDER_MY,
 } from "../../constants/constants.ts";
+import { SelectItem } from "../../types/select-item.ts";
+import { Team } from "../../types/team.ts";
 
 function Users() {
-  const { users, addUser, updateUser } = useUsers({
-    hasValueLabel: false,
-    hasActiveUserValueLabel: false,
-  });
+  const { users, addUser, updateUser, fetchUsers } = useUsers();
 
-  const { teamSelectData, activeTeamSelectData } = useTeams({
-    hasValueLabel: true,
-    hasActiveTeamValueLabel: true,
-  });
+  const { fetchTeams } = useTeams();
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -57,6 +53,10 @@ function Users() {
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
 
   const [showActiveUsers, setShowActiveUsers] = useState(true);
+
+  const [activeTeamSelectData, setActiveTeamSelectData] = useState<
+    SelectItem[]
+  >([]);
 
   const { handleDataRequest } = useRequestHandler();
 
@@ -128,7 +128,100 @@ function Users() {
     });
   };
 
+  const getTeams = async () => {
+    const response = await handleDataRequest<never, Team[]>(
+      urls.team,
+      RequestType.Get,
+    );
+
+    if (!response.isSuccess) return;
+
+    fetchTeams(response.value);
+
+    setActiveTeamSelectData(
+      response.value
+        .filter((x) => x.isActive)
+        .map((x) => ({ value: x.id, label: x.name })),
+    );
+  };
+
+  const getUsers = async () => {
+    const response = await handleDataRequest<never, User[]>(
+      urls.user,
+      RequestType.Get,
+    );
+
+    if (!response.isSuccess) return;
+
+    const users: User[] = response.value.map((x) => ({
+      ...x,
+      gender: x.gender.toString(),
+      role: x.role.toString(),
+    }));
+
+    fetchUsers(users);
+  };
+
+  const handleSave = async () => {
+    form.validate();
+
+    if (!form.isValid()) return;
+
+    const userData = users.find((x) => x.isActive);
+
+    if (userData?.cardNumber === form.values.cardNumber) {
+      toast.error("There is a active user with the same card number!");
+      return;
+    }
+
+    if (userData?.email === form.values.email) {
+      toast.error("There is a user with the same email!");
+      return;
+    }
+
+    const userRequest: UserRequest = {
+      name: form.values.name,
+      surname: form.values.surname,
+      teamId: form.values.teamId ?? "",
+      gender: Number(form.values.gender),
+      cardNumber: form.values.cardNumber,
+      email: form.values.email,
+      password: form.values.password,
+      role: Number(form.values.role),
+    };
+
+    const response = await handleDataRequest<UserRequest, UserResponse>(
+      urls.user,
+      RequestType.Post,
+      userRequest,
+    );
+
+    if (!response.isSuccess) return false;
+
+    addUser({
+      ...response.value,
+      gender: response.value.gender.toString(),
+      role: response.value.role.toString(),
+    });
+
+    form.reset();
+
+    toast.success("User has been added successfully!");
+  };
+
   const changeUserActivity = async (user: User) => {
+    const userData = users.find((x) => x.isActive && x.id !== user.id);
+
+    if (userData?.cardNumber === user.cardNumber) {
+      toast.error("There is a active user with the same card number!");
+      return;
+    }
+
+    if (userData?.email === user.email) {
+      toast.error("There is a active user with the same card number!");
+      return;
+    }
+
     const patchDocument = createJsonPatchDocumentFromObject({
       isActive: !user.isActive,
     });
@@ -150,45 +243,12 @@ function Users() {
     toast.success("User activated successfully.");
   };
 
-  const handleSave = async () => {
-    form.validate();
-
-    if (!form.isValid()) return;
-
-    if (
-      users
-        .filter((x) => x.isActive)
-        .find((x) => x.cardNumber === form.values.cardNumber)
-    ) {
-      toast.error("There is a active user with the same card number!");
-      return;
-    }
-
-    if (
-      users.filter((x) => x.isActive).find((x) => x.email === form.values.email)
-    ) {
-      toast.error("There is a user with the same email!");
-      return;
-    }
-
-    const retVal = await addUser({
-      ...form.values,
-      teamName: teamSelectData.find((y) => y.value === form.values.teamId)!
-        .label,
-    });
-
-    if (retVal) {
-      form.reset();
-      toast.success("User has been added successfully!");
-    }
-  };
-
   const memoizedUsers = useMemo(
     () =>
       users
         .filter((x) => (showActiveUsers === true ? x.isActive : x))
         .filter((x) =>
-          x.searchText.toLowerCase().includes(searchQuery.toLowerCase())
+          x.searchText.toLowerCase().includes(searchQuery.toLowerCase()),
         )
         .filter((x) => (selectedTeam ? x.teamId === selectedTeam : true))
         .filter((x) => (selectedRole ? x.role === selectedRole : true))
@@ -236,8 +296,13 @@ function Users() {
             </Table.Td>
           </Table.Tr>
         )),
-    [users, searchQuery, showActiveUsers, selectedTeam, selectedRole]
+    [users, searchQuery, showActiveUsers, selectedTeam, selectedRole],
   );
+
+  useEffect(() => {
+    getUsers();
+    getTeams();
+  }, []);
 
   return (
     <>
@@ -340,12 +405,12 @@ function Users() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
           <Select
-            data={teamSelectData}
+            data={activeTeamSelectData}
             searchable
             placeholder="Select Team"
             style={{ flexGrow: 1 }}
             clearable
-            onChange={(e) => setSelectedTeam(e ? e : "")}
+            onChange={(e) => setSelectedTeam(e ?? "")}
           />
           <Select
             data={roles}
@@ -353,7 +418,7 @@ function Users() {
             placeholder="Select Role"
             style={{ flexGrow: 1 }}
             clearable
-            onChange={(e) => setSelectedRole(e ? e : "")}
+            onChange={(e) => setSelectedRole(e ?? "")}
           />
           <Checkbox
             labelPosition="left"

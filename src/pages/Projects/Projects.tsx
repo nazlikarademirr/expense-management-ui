@@ -1,8 +1,8 @@
 import { useForm } from "@mantine/form";
-import { Project, ProjectResponse } from "../../types/project";
+import { Project, ProjectRequest } from "../../types/project";
 import { modals } from "@mantine/modals";
 import useProjects from "../../hooks/useProjects";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ActionIcon,
   Button,
@@ -34,10 +34,7 @@ import {
 import { IoMdAddCircleOutline, IoMdRemoveCircleOutline } from "react-icons/io";
 
 function Projects() {
-  const { projects, addProject, updateProject } = useProjects({
-    hasValueLabel: false,
-    hasActiveProjectValueLabel: false,
-  });
+  const { projects, addProject, updateProject, fetchProjects } = useProjects();
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -85,15 +82,76 @@ function Projects() {
     });
   };
 
-  const changeProjectActivity = async (project: Project) => {
+  const getProjects = async () => {
+    const response = await handleDataRequest<never, Project[]>(
+      urls.project,
+      RequestType.Get,
+    );
+
+    if (!response.isSuccess) return;
+
+    fetchProjects(response.value);
+  };
+
+  const handleSave = async () => {
+    form.validate();
+
+    if (!form.isValid()) return;
+
+    const projectData = projects.find((x) => x.isActive);
+
+    if (projectData?.name === form.values.name) {
+      toast.error("There is a active project with the same name!");
+      return;
+    }
+
+    if (projectData?.code === form.values.code) {
+      toast.error("There is a active project with the same code!");
+      return;
+    }
+
+    const request: ProjectRequest = {
+      name: form.values.name,
+      code: form.values.code,
+    };
+
+    const response = await handleDataRequest<ProjectRequest, Project>(
+      urls.project,
+      RequestType.Post,
+      request,
+    );
+
+    if (!response.isSuccess) return;
+
+    addProject(response.value);
+
+    form.reset();
+
+    toast.success("Project has been added successfully!");
+  };
+
+  const updateProjectActivity = async (project: Project) => {
+    const projectData = projects.find((x) => x.isActive && x.id !== project.id);
+
+    if (projectData?.name === project.name) {
+      toast.error("There is a active project with the same name!");
+      return;
+    }
+
+    if (projectData?.code === project.code) {
+      toast.error("There is a active project with the same code!");
+      return;
+    }
+
     const patchDocument = createJsonPatchDocumentFromObject({
       isActive: !project.isActive,
     });
 
-    const response = await handleDataRequest<
-      JsonPatchKeyValuePair[],
-      ProjectResponse
-    >(`${urls.project}/${project.id}`, RequestType.Patch, patchDocument);
+    const response = await handleDataRequest<JsonPatchKeyValuePair[], Project>(
+      `${urls.project}/${project.id}`,
+      RequestType.Patch,
+      patchDocument,
+    );
 
     if (!response.isSuccess) return;
 
@@ -107,45 +165,12 @@ function Projects() {
     toast.success("Project activated successfully.");
   };
 
-  const handleSave = async () => {
-    form.validate();
-
-    if (!form.isValid()) return;
-
-    if (
-      projects
-        .filter((x) => x.isActive)
-        .find((x) => x.name === form.values.name)
-    ) {
-      toast.error("There is a project with the same name!");
-      return;
-    }
-
-    if (
-      projects
-        .filter((x) => x.isActive)
-        .find((x) => x.code === form.values.code)
-    ) {
-      toast.error("There is a active project with the same code!");
-      return;
-    }
-
-    const retVal = await addProject({
-      ...form.values,
-    });
-
-    if (retVal) {
-      form.reset();
-      toast.success("Project has been added successfully!");
-    }
-  };
-
   const memoizedProjects = useMemo(
     () =>
       projects
         .filter((x) => (showActiveProjects === true ? x.isActive : x))
         .filter((x) =>
-          x.searchText.toLowerCase().includes(searchQuery.toLowerCase())
+          x.searchText.toLowerCase().includes(searchQuery.toLowerCase()),
         )
         .map((x: Project) => (
           <Table.Tr key={x.id}>
@@ -174,7 +199,7 @@ function Projects() {
                   <div></div>
                 )}
                 <ActionIcon
-                  onClick={() => changeProjectActivity(x)}
+                  onClick={() => updateProjectActivity(x)}
                   variant={"light"}
                   color={x.isActive ? "red" : "green"}
                 >
@@ -188,8 +213,12 @@ function Projects() {
             </Table.Td>
           </Table.Tr>
         )),
-    [projects, showActiveProjects, searchQuery]
+    [projects, showActiveProjects, searchQuery],
   );
+
+  useEffect(() => {
+    getProjects();
+  }, []);
 
   return (
     <div>

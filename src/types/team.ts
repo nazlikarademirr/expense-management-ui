@@ -11,13 +11,4 @@ type TeamRequest = {
   name: string;
 };
 
-type TeamResponse = {
-  id: string;
-  name: string;
-  searchText: string;
-  isActive: boolean;
-  createUser: string;
-  createDate: Date;
-};
-
-export type { Team, TeamRequest, TeamResponse };
+export type { Team, TeamRequest };

@@ -1,5 +1,5 @@
 import { useForm } from "@mantine/form";
-import { Team, TeamResponse } from "../../types/team";
+import { Team, TeamRequest } from "../../types/team";
 import { modals } from "@mantine/modals";
 import useTeams from "../../hooks/useTeams";
 import {
@@ -15,7 +15,7 @@ import {
 } from "@mantine/core";
 import { IconEdit, IconSearch } from "@tabler/icons-react";
 import { format } from "date-fns";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import EditTeamModal from "./components/EditTeamModal";
 import {
@@ -35,15 +35,9 @@ import useUsers from "../../hooks/useUsers";
 import { IoMdAddCircleOutline, IoMdRemoveCircleOutline } from "react-icons/io";
 
 function Teams() {
-  const { teams, addTeam, updateTeam } = useTeams({
-    hasValueLabel: false,
-    hasActiveTeamValueLabel: false,
-  });
+  const { teams, addTeam, updateTeam, fetchTeams } = useTeams();
 
-  const { users } = useUsers({
-    hasValueLabel: false,
-    hasActiveUserValueLabel: false,
-  });
+  const { users } = useUsers();
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -80,14 +74,57 @@ function Teams() {
     });
   };
 
-  const changeTeamActivity = async (team: Team) => {
+  const getTeams = async () => {
+    const response = await handleDataRequest<never, Team[]>(
+      urls.team,
+      RequestType.Get,
+    );
+
+    if (!response.isSuccess) return;
+
+    fetchTeams(response.value);
+  };
+
+  const handleSave = async () => {
+    form.validate();
+
+    if (!form.isValid()) return;
+
+    if (teams.some((x) => x.isActive && x.name === form.values.name)) {
+      toast.error("There is a active team with the same name!");
+      return;
+    }
+
+    const request: TeamRequest = { name: form.values.name };
+
+    const response = await handleDataRequest<TeamRequest, Team>(
+      urls.team,
+      RequestType.Post,
+      request,
+    );
+
+    if (!response.isSuccess) return;
+
+    addTeam(response.value);
+
+    form.reset();
+
+    toast.success("Team has been added successfully!");
+  };
+
+  const updateTeamActivity = async (team: Team) => {
     if (
-      users.find(
-        (x) => x.isActive === true && team.isActive && x.teamId === team.id
-      )
+      teams.find((x) => x.isActive && x.id !== team.id && x.name === team.name)
+    ) {
+      toast.error("There is a active team with the same name.");
+      return;
+    }
+
+    if (
+      users.find((x) => x.isActive && team.isActive && x.teamId === team.id)
     ) {
       toast.error(
-        "This team already has users; to deactivate the team, first delete the users in that team."
+        "This team already has users; to deactivate the team, first delete the users in that team.",
       );
 
       return;
@@ -97,10 +134,11 @@ function Teams() {
       isActive: !team.isActive,
     });
 
-    const response = await handleDataRequest<
-      JsonPatchKeyValuePair[],
-      TeamResponse
-    >(`${urls.team}/${team.id}`, RequestType.Patch, patchDocument);
+    const response = await handleDataRequest<JsonPatchKeyValuePair[], Team>(
+      `${urls.team}/${team.id}`,
+      RequestType.Patch,
+      patchDocument,
+    );
 
     if (!response.isSuccess) return;
 
@@ -114,32 +152,12 @@ function Teams() {
     toast.success("Team activated successfully.");
   };
 
-  const handleSave = async () => {
-    form.validate();
-
-    if (!form.isValid()) return;
-
-    if (
-      teams.filter((x) => x.isActive).find((x) => x.name === form.values.name)
-    ) {
-      toast.error("There is a active team with the same name!");
-      return;
-    }
-
-    const retVal = await addTeam(form.values);
-
-    if (retVal) {
-      form.reset();
-      toast.success("Team has been added successfully!");
-    }
-  };
-
   const memoizedTeams = useMemo(
     () =>
       teams
         .filter((x) => (showActiveTeams === true ? x.isActive : x))
         .filter((x) =>
-          x.searchText.toLowerCase().includes(searchQuery.toLowerCase())
+          x.searchText.toLowerCase().includes(searchQuery.toLowerCase()),
         )
         .map((x: Team) => (
           <Table.Tr key={x.id}>
@@ -167,7 +185,7 @@ function Teams() {
                   <div></div>
                 )}
                 <ActionIcon
-                  onClick={() => changeTeamActivity(x)}
+                  onClick={() => updateTeamActivity(x)}
                   variant={"light"}
                   color={x.isActive ? "red" : "green"}
                 >
@@ -181,8 +199,12 @@ function Teams() {
             </Table.Td>
           </Table.Tr>
         )),
-    [teams, showActiveTeams, searchQuery]
+    [teams, showActiveTeams, searchQuery],
   );
+
+  useEffect(() => {
+    getTeams();
+  }, []);
 
   return (
     <div>
