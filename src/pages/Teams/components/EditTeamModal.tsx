@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
-import { Team, TeamResponse } from "../../../types/team";
-import { Button, Flex, Group, Radio, TextInput } from "@mantine/core";
+import { Team } from "../../../types/team";
+import { Button, Flex, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import {
   createJsonPatchDocumentFromDirtyForm,
@@ -26,7 +26,7 @@ function EditTeamModal({ team, updateTeam }: EditTeamProps) {
     },
     validate: {
       name: (value) =>
-        value.length === 0
+        value.trim().length === 0
           ? "Name cannot be empty."
           : value.length < 2
             ? "Name must have at least 2 letters."
@@ -38,7 +38,9 @@ function EditTeamModal({ team, updateTeam }: EditTeamProps) {
     },
   });
 
-  const initialValues = useRef<Team>(teamForm.values);
+  const initialValues = useRef<Team>({
+    ...teamForm.values,
+  });
 
   const nameInputRef = useRef<HTMLInputElement>(null);
 
@@ -51,23 +53,28 @@ function EditTeamModal({ team, updateTeam }: EditTeamProps) {
 
     const patchDocument = createJsonPatchDocumentFromDirtyForm(
       teamForm,
-      teamForm.values
+      teamForm.values,
     );
 
-    const response = await handleDataRequest<
-      JsonPatchKeyValuePair[],
-      TeamResponse
-    >(`${urls.team}/${team.id}`, RequestType.Patch, patchDocument);
+    const response = await handleDataRequest<JsonPatchKeyValuePair[], Team>(
+      `${urls.team}/${team.id}`,
+      RequestType.Patch,
+      patchDocument,
+    );
 
-    if (response.isSuccess) {
-      initialValues.current = teamForm.values;
+    if (!response.isSuccess) return;
 
-      updateTeam(teamForm.values);
+    initialValues.current = {
+      ...teamForm.values,
+    };
 
-      toast.success("Team edited successfully.");
+    updateTeam({
+      ...teamForm.values,
+    });
 
-      modals.closeAll();
-    }
+    toast.success("Team edited successfully.");
+
+    modals.closeAll();
   };
 
   useEffect(() => {
@@ -84,13 +91,12 @@ function EditTeamModal({ team, updateTeam }: EditTeamProps) {
         withAsterisk
         label={"Name"}
       />
-      <Radio.Group label="Is Active" withAsterisk style={{ flexGrow: 1 }}>
-        <Group mt="xs">
-          <Radio value="true" label="True" />
-          <Radio value="false" label="False" />
-        </Group>
-      </Radio.Group>
-      <Button disabled={!teamForm.isDirty()} onClick={(e) => handleSave(e)}>
+
+      <Button
+        variant="light"
+        disabled={!teamForm.isDirty()}
+        onClick={(e) => handleSave(e)}
+      >
         Edit
       </Button>
     </Flex>

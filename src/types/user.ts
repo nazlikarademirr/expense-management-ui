@@ -2,12 +2,13 @@ type User = {
   id: string;
   name: string;
   surname: string;
-  teamId: string | null;
-  gender: number | null;
+  teamId: string;
+  teamName: string;
+  gender: string;
   cardNumber: string;
   email: string;
   password: string;
-  role: number | null;
+  role: string;
   searchText: string;
   isActive: boolean;
   createUser: string;
@@ -30,6 +31,7 @@ type UserResponse = {
   name: string;
   surname: string;
   teamId: string;
+  teamName: string;
   gender: number;
   cardNumber: string;
   email: string;

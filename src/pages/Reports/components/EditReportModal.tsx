@@ -1,8 +1,8 @@
 import { useForm } from "@mantine/form";
 import useRequestHandler from "../../../hooks/useRequestHandler";
-import { Report, ReportResponse } from "../../../types/report";
+import { Report } from "../../../types/report";
 import { useEffect, useRef } from "react";
-import { Button, Flex, Group, Radio, TextInput } from "@mantine/core";
+import { Button, Flex, TextInput } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import toast from "react-hot-toast";
 import RequestType from "../../../request-handler/request-type";
@@ -11,6 +11,7 @@ import {
   createJsonPatchDocumentFromDirtyForm,
   JsonPatchKeyValuePair,
 } from "../../../types/json-patch-document";
+import useReports from "../../../hooks/useReports";
 
 interface EditReportProps {
   report: Report;
@@ -20,21 +21,21 @@ interface EditReportProps {
 function EditReportModal({ report, updateReport }: EditReportProps) {
   const { handleDataRequest } = useRequestHandler();
 
+  const { reports } = useReports();
+
   const reportForm = useForm({
     initialValues: {
       ...report,
     },
     validate: {
       name: (value) =>
-        value.length === 0
+        value.trim().length === 0
           ? "Name cannot be empty."
           : value.length < 2
             ? "Name must have at least 2 letters."
             : value.length > 128
               ? "Name cannot exceed 128 characters."
               : null,
-      isApproved: (value) =>
-        value === null ? "Approval must be selected." : undefined,
     },
   });
 
@@ -49,25 +50,33 @@ function EditReportModal({ report, updateReport }: EditReportProps) {
 
     if (!reportForm.isValid()) return;
 
+    if (
+      reports.some((x) => x.isApproved && x.name === reportForm.values.name)
+    ) {
+      toast.error("There is a report with the same name!");
+      return;
+    }
+
     const patchDocument = createJsonPatchDocumentFromDirtyForm(
       reportForm,
-      reportForm.values
+      reportForm.values,
     );
 
-    const response = await handleDataRequest<
-      JsonPatchKeyValuePair[],
-      ReportResponse
-    >(`${urls.report}/${report.id}`, RequestType.Patch, patchDocument);
+    const response = await handleDataRequest<JsonPatchKeyValuePair[], Report>(
+      `${urls.report}/${report.id}`,
+      RequestType.Patch,
+      patchDocument,
+    );
 
-    if (response.isSuccess) {
-      initialValues.current = reportForm.values;
+    if (!response.isSuccess) return;
 
-      updateReport(reportForm.values);
+    initialValues.current = reportForm.values;
 
-      toast.success("Report edited successfully.");
+    updateReport(reportForm.values);
 
-      modals.closeAll();
-    }
+    toast.success("Report edited successfully.");
+
+    modals.closeAll();
   };
 
   useEffect(() => {
@@ -80,16 +89,14 @@ function EditReportModal({ report, updateReport }: EditReportProps) {
     <Flex direction={"column"} gap={10}>
       <TextInput
         ref={nameInputRef}
-        {...reportForm.getInputProps("name")}
         label={"Name"}
+        {...reportForm.getInputProps("name")}
       />
-      <Radio.Group label="Approved" style={{ flexGrow: 1 }}>
-        <Group mt="xs">
-          <Radio value="True" label="True" />
-          <Radio value="False" label="False" />
-        </Group>
-      </Radio.Group>
-      <Button disabled={!reportForm.isDirty()} onClick={(e) => handleSave(e)}>
+      <Button
+        variant="light"
+        disabled={!reportForm.isDirty()}
+        onClick={(e) => handleSave(e)}
+      >
         Edit
       </Button>
     </Flex>

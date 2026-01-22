@@ -1,6 +1,14 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { modals } from "@mantine/modals";
-import { Button, Flex, Group, Radio, Select, TextInput } from "@mantine/core";
+import {
+  Button,
+  ComboboxItem,
+  Flex,
+  Group,
+  Radio,
+  Select,
+  TextInput,
+} from "@mantine/core";
 import { User, UserResponse } from "../../../types/user";
 import { useForm } from "@mantine/form";
 import useRequestHandler from "../../../hooks/useRequestHandler";
@@ -13,6 +21,8 @@ import {
 import toast from "react-hot-toast";
 import useTeams from "../../../hooks/useTeams";
 import { genders, roles } from "../../../constants/static-data";
+import { SelectItem } from "../../../types/select-item";
+import { Team } from "../../../types/team";
 
 interface EditUserProps {
   user: User;
@@ -22,7 +32,11 @@ interface EditUserProps {
 function EditUserModal({ user, updateUser }: EditUserProps) {
   const { handleDataRequest } = useRequestHandler();
 
-  const { teamSelectData } = useTeams({ hasValueLabel: true });
+  const { fetchTeams } = useTeams();
+
+  const [activeTeamSelectData, setActiveTeamSelectData] = useState<
+    SelectItem[]
+  >([]);
 
   const userForm = useForm({
     initialValues: {
@@ -30,46 +44,61 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
     },
     validate: {
       name: (value) =>
-        value.length === 0
+        value.trim().length === 0
           ? "Name cannot be empty."
           : value.length < 2
             ? "Name must have at least 2 letters."
             : value.length > 128
               ? "Name cannot exceed 128 characters."
-              : null,
+              : undefined,
       surname: (value) =>
-        value.length === 0
+        value.trim().length === 0
           ? "Surname cannot be empty."
           : value.length < 2
             ? "Surname must have at least 2 letters."
             : value.length > 128
               ? "Surname cannot exceed 128 characters."
-              : null,
-      teamId: (value) =>
-        value === null ? "Team must be selected." : undefined,
-      gender: (value) =>
-        value === null ? "Gender must be selected." : undefined,
+              : undefined,
+      teamId: (value) => (!value ? "Team must be selected." : undefined),
+      gender: (value) => (!value ? "Gender must be selected." : undefined),
       cardNumber: (value) =>
-        value.length === 0
+        value.trim().length === 0
           ? "Card number cannot be empty."
           : value.length > 8
             ? "Card number cannot exceed 8 characters."
-            : null,
+            : undefined,
       email: (value) =>
-        value.length === 0
+        value.trim().length === 0
           ? "Email cannot be empty."
           : value.length > 128
             ? "Email cannot exceed 128 characters."
-            : null,
-      role: (value) => (value === null ? "Role must be selected." : undefined),
-      isActive: (value) =>
-        value === null ? "Activity must be selected." : undefined,
+            : undefined,
+      role: (value) => (!value ? "Role must be selected." : undefined),
     },
   });
 
-  const initialValues = useRef<User>(userForm.values);
+  const initialValues = useRef<User>({
+    ...userForm.values,
+  });
 
   const nameInputRef = useRef<HTMLInputElement>(null);
+
+  const getTeams = async () => {
+    const response = await handleDataRequest<never, Team[]>(
+      urls.team,
+      RequestType.Get,
+    );
+
+    if (!response.isSuccess) return;
+
+    fetchTeams(response.value);
+
+    setActiveTeamSelectData(
+      response.value
+        .filter((x) => x.isActive)
+        .map((x) => ({ value: x.id, label: x.name })),
+    );
+  };
 
   const handleSave = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -80,7 +109,7 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
 
     const patchDocument = createJsonPatchDocumentFromDirtyForm(
       userForm,
-      userForm.values
+      userForm.values,
     );
 
     const response = await handleDataRequest<
@@ -88,18 +117,29 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
       UserResponse
     >(`${urls.user}/${user.id}`, RequestType.Patch, patchDocument);
 
-    if (response.isSuccess) {
-      initialValues.current = userForm.values;
+    if (!response.isSuccess) return;
 
-      updateUser(userForm.values);
+    initialValues.current = {
+      ...userForm.values,
+    };
 
-      toast.success("User edited successfully.");
+    updateUser({
+      ...userForm.values,
+    });
 
-      modals.closeAll();
-    }
+    toast.success("User edited successfully.");
+
+    modals.closeAll();
+  };
+
+  const changeTeam = (team: ComboboxItem) => {
+    userForm.setFieldValue("teamId", team.value);
+    userForm.setFieldValue("teamName", team.label);
   };
 
   useEffect(() => {
+    getTeams();
+
     if (nameInputRef.current) {
       nameInputRef.current.focus();
     }
@@ -120,8 +160,9 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
       />
       <Select
         {...userForm.getInputProps("teamId")}
+        onChange={(_, option) => changeTeam(option)}
         withAsterisk
-        data={teamSelectData}
+        data={activeTeamSelectData}
         searchable
         label={"Team Name"}
       />
@@ -133,7 +174,7 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
       >
         <Group mt="xs">
           {genders.map((x) => (
-            <Radio value={x.value.toString()} label={x.label}></Radio>
+            <Radio value={x.value} label={x.label}></Radio>
           ))}
         </Group>
       </Radio.Group>
@@ -155,22 +196,16 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
       >
         <Group mt="xs">
           {roles.map((x) => (
-            <Radio value={x.value.toString()} label={x.label}></Radio>
+            <Radio value={x.value} label={x.label}></Radio>
           ))}
         </Group>
       </Radio.Group>
-      <Radio.Group
-        label="Is Active"
-        withAsterisk
-        style={{ flexGrow: 1 }}
-        {...userForm.getInputProps("isActive")}
+
+      <Button
+        variant={"light"}
+        disabled={!userForm.isDirty()}
+        onClick={(e) => handleSave(e)}
       >
-        <Group mt="xs">
-          <Radio value="True" label="True" />
-          <Radio value="False" label="False" />
-        </Group>
-      </Radio.Group>
-      <Button disabled={!userForm.isDirty()} onClick={(e) => handleSave(e)}>
         Edit
       </Button>
     </Flex>

@@ -2,6 +2,7 @@ type Report = {
   id: string;
   name: string;
   isApproved: boolean;
+  searchText: string;
   createUser: string;
   createDate: Date;
 };
@@ -11,12 +12,4 @@ type ReportRequest = {
   isApproved: boolean;
 };
 
-type ReportResponse = {
-  id: string;
-  name: string;
-  isApproved: boolean;
-  createUser: string;
-  createDate: Date;
-};
-
-export type { Report, ReportRequest, ReportResponse };
+export type { Report, ReportRequest };

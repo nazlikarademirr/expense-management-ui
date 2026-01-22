@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router";
 import Main from "./layout/Main";
-import Transactions from "./pages/Transactions/Transactions";
 import Users from "./pages/Users/Users";
 import routes from "./constants/routes";
 import Teams from "./pages/Teams/Teams";
@@ -12,14 +11,6 @@ function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route
-          path={routes.home}
-          element={
-            <Main>
-              <Transactions />
-            </Main>
-          }
-        />
         <Route
           path={routes.users}
           element={

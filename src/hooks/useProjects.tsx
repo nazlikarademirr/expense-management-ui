@@ -1,67 +1,23 @@
-import { useEffect, useReducer, useState } from "react";
-import { Project, ProjectRequest, ProjectResponse } from "../types/project";
-import useRequestHandler from "./useRequestHandler";
-import urls from "../constants/urls";
-import RequestType from "../request-handler/request-type";
-import toast from "react-hot-toast";
-import { SelectItem } from "../types/select-item";
+import { useReducer } from "react";
+import { Project } from "../types/project";
 import ReducerActions from "../enums/reducer-action";
 import projectReducer from "../pages/Projects/project-reducer";
 
-interface UseProjectsProps {
-  hasValueLabel: boolean;
-}
-
-function useProjects({ hasValueLabel }: UseProjectsProps) {
+function useProjects() {
   const [projects, dispatch] = useReducer(projectReducer, []);
 
-  const [projectSelectData, setProjectSelectData] = useState<SelectItem[]>([]);
-
-  const { handleDataRequest } = useRequestHandler();
-
-  const addProject = async (project: Project) => {
-    const projectRequest: ProjectRequest = {
-      ...project,
-    };
-
-    const response = await handleDataRequest<ProjectRequest, ProjectResponse>(
-      urls.project,
-      RequestType.Post,
-      projectRequest
-    );
-
-    if (response.isSuccess) {
-      const newProject: Project = {
-        ...response.value,
-      };
-      dispatch({
-        type: ReducerActions.Add,
-        payload: newProject,
-      });
-      return true;
-    }
-
-    return false;
+  const addProject = (project: Project) => {
+    dispatch({
+      type: ReducerActions.Add,
+      payload: project,
+    });
   };
 
-  const deleteProject = async (id: string) => {
-    const response = await handleDataRequest<string, never>(
-      urls.project,
-      RequestType.Delete,
-      undefined,
-      { id }
-    );
-
-    if (response.isSuccess) {
-      dispatch({
-        type: ReducerActions.Delete,
-        payload: id,
-      });
-      toast.success("Project has been deleted successfully!");
-      return true;
-    }
-
-    return false;
+  const deleteProject = (id: string) => {
+    dispatch({
+      type: ReducerActions.Delete,
+      payload: id,
+    });
   };
 
   const updateProject = (updatedProject: Project) => {
@@ -78,34 +34,15 @@ function useProjects({ hasValueLabel }: UseProjectsProps) {
     });
   };
 
-  const fetchProjects = async () => {
-    const response = await handleDataRequest<never, ProjectResponse[]>(
-      urls.project,
-      RequestType.Get
-    );
-    if (response.isSuccess) {
-      const projects: Project[] = response.value.map((x) => ({
-        ...x,
-      }));
-      dispatch({
-        type: ReducerActions.Replace,
-        payload: projects,
-      });
-      if (hasValueLabel) {
-        setProjectSelectData(
-          response.value.map((x) => ({ value: x.id, label: x.name }))
-        );
-      }
-    }
+  const fetchProjects = (projects: Project[]) => {
+    dispatch({
+      type: ReducerActions.Replace,
+      payload: projects,
+    });
   };
-
-  useEffect(() => {
-    fetchProjects();
-  }, []);
 
   return {
     projects,
-    projectSelectData,
     fetchProjects,
     addProject,
     updateProject,

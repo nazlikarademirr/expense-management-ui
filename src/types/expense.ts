@@ -3,17 +3,21 @@ import { OvertimeMember } from "./overtime-member";
 type Expense = {
   id: string;
   userId: string | null;
+  userFullName: string;
   projectId: string | null;
-  expenseType: number | null;
+  projectName: string;
+  expenseType: string;
   expenseDate: Date;
   totalPrice: number;
-  currency: number | null;
+  currency: string | null;
   tripDescription: string;
   outOfOffice: boolean;
   reportId: string | null;
+  reportName: string;
   isApproved: boolean;
   overtimeMembers: OvertimeMember[];
   isActive: boolean;
+  searchText: string;
   createUser: string;
   createDate: Date;
 };
@@ -34,7 +38,9 @@ type ExpenseRequest = {
 type ExpenseResponse = {
   id: string;
   userId: string;
+  userFullName: string;
   projectId: string;
+  projectName: string;
   expenseType: number;
   expenseDate: Date;
   totalPrice: number;
@@ -42,9 +48,11 @@ type ExpenseResponse = {
   tripDescription: string;
   outOfOffice: boolean;
   reportId: string;
+  reportName: string;
   isApproved: boolean;
   overtimeMembers: OvertimeMember[];
   isActive: boolean;
+  searchText: string;
   createUser: string;
   createDate: Date;
 };

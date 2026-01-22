@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
-import { Project, ProjectResponse } from "../../../types/project";
+import { Project } from "../../../types/project";
 import { modals } from "@mantine/modals";
-import { Button, Flex, Group, Radio, TextInput } from "@mantine/core";
+import { Button, Flex, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import {
   createJsonPatchDocumentFromDirtyForm,
@@ -26,7 +26,7 @@ function EditProjectModal({ project, updateProject }: EditProjectProps) {
     },
     validate: {
       name: (value) =>
-        value.length === 0
+        value.trim().length === 0
           ? "Name cannot be empty."
           : value.length < 2
             ? "Name must have at least 2 letters."
@@ -34,19 +34,20 @@ function EditProjectModal({ project, updateProject }: EditProjectProps) {
               ? "Name cannot exceed 128 characters."
               : null,
       code: (value) =>
-        value.length === 0
+        value.trim().length === 0
           ? "Code cannot be empty."
           : value.length < 2
             ? "Code must have at least 2 letters."
             : value.length > 128
               ? "Code cannot exceed 128 characters."
               : null,
-      isActive: (value) =>
-        value === null ? "Project must be selected." : undefined,
+      isActive: (value) => (!value ? "Activity must be selected." : undefined),
     },
   });
 
-  const initialValues = useRef<Project>(projectForm.values);
+  const initialValues = useRef<Project>({
+    ...projectForm.values,
+  });
 
   const nameInputRef = useRef<HTMLInputElement>(null);
 
@@ -59,22 +60,28 @@ function EditProjectModal({ project, updateProject }: EditProjectProps) {
 
     const patchDocument = createJsonPatchDocumentFromDirtyForm(
       projectForm,
-      projectForm.values
+      projectForm.values,
     );
-    const response = await handleDataRequest<
-      JsonPatchKeyValuePair[],
-      ProjectResponse
-    >(`${urls.project}/${project.id}`, RequestType.Patch, patchDocument);
 
-    if (response.isSuccess) {
-      initialValues.current = projectForm.values;
+    const response = await handleDataRequest<JsonPatchKeyValuePair[], Project>(
+      `${urls.project}/${project.id}`,
+      RequestType.Patch,
+      patchDocument,
+    );
 
-      updateProject(projectForm.values);
+    if (!response.isSuccess) return;
 
-      toast.success("Project edited successfully.");
+    initialValues.current = {
+      ...projectForm.values,
+    };
 
-      modals.closeAll();
-    }
+    updateProject({
+      ...projectForm.values,
+    });
+
+    toast.success("Project edited successfully.");
+
+    modals.closeAll();
   };
 
   useEffect(() => {
@@ -92,14 +99,11 @@ function EditProjectModal({ project, updateProject }: EditProjectProps) {
       />
 
       <TextInput {...projectForm.getInputProps("code")} label={"Code"} />
-
-      <Radio.Group label="Is Active" style={{ flexGrow: 1 }}>
-        <Group mt="xs">
-          <Radio value="True" label="True" />
-          <Radio value="False" label="False" />
-        </Group>
-      </Radio.Group>
-      <Button disabled={!projectForm.isDirty()} onClick={(e) => handleSave(e)}>
+      <Button
+        variant="light"
+        disabled={!projectForm.isDirty()}
+        onClick={(e) => handleSave(e)}
+      >
         Edit
       </Button>
     </Flex>

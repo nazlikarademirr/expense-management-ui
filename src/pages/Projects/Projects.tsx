@@ -1,19 +1,20 @@
 import { useForm } from "@mantine/form";
-import { Project, ProjectResponse } from "../../types/project";
+import { Project, ProjectRequest } from "../../types/project";
 import { modals } from "@mantine/modals";
 import useProjects from "../../hooks/useProjects";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ActionIcon,
   Button,
   Card,
+  Checkbox,
   Divider,
   Flex,
   Table,
   TextInput,
   Title,
 } from "@mantine/core";
-import { IconEdit, IconTrash } from "@tabler/icons-react";
+import { IconEdit, IconSearch } from "@tabler/icons-react";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import EditProjectModal from "./components/EditProjectModal";
@@ -24,47 +25,56 @@ import {
 import urls from "../../constants/urls";
 import RequestType from "../../request-handler/request-type";
 import useRequestHandler from "../../hooks/useRequestHandler";
+import { TiTick, TiTimes } from "react-icons/ti";
+import {
+  BOOLEAN_ICON_SIZE,
+  SEARCH_ICON_SIZE,
+  TITLE_DIVIDER_MY,
+} from "../../constants/constants";
+import { IoMdAddCircleOutline, IoMdRemoveCircleOutline } from "react-icons/io";
 
 function Projects() {
-  const { projects, addProject, updateProject } = useProjects({
-    hasValueLabel: false,
-  });
+  const { projects, addProject, updateProject, fetchProjects } = useProjects();
+
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const [showActiveProjects, setShowActiveProjects] = useState(true);
 
   const { handleDataRequest } = useRequestHandler();
 
-  const form = useForm({
+  const form = useForm<Project>({
     initialValues: {
       id: crypto.randomUUID(),
       name: "",
       code: "",
       searchText: "",
       isActive: false,
-      createUser: "",
+      createUser: crypto.randomUUID(),
       createDate: new Date(),
     },
     validate: {
       name: (value) =>
-        value.length === 0
+        value.trim().length === 0
           ? "Name cannot be empty."
           : value.length < 2
             ? "Name must have at least 2 letters."
             : value.length > 128
               ? "Name cannot exceed 128 characters."
-              : null,
+              : undefined,
       code: (value) =>
-        value.length === 0
+        value.trim().length === 0
           ? "Code cannot be empty."
           : value.length < 2
             ? "Code must have at least 2 letters."
             : value.length > 128
               ? "Code cannot exceed 128 characters."
-              : null,
+              : undefined,
     },
   });
 
   const openEditProject = (project: Project) => {
     modals.open({
-      title: "Edit Project",
+      title: <Title order={4}>Edit Project</Title>,
       size: "xl",
       children: (
         <EditProjectModal project={project} updateProject={updateProject} />
@@ -72,74 +82,150 @@ function Projects() {
     });
   };
 
-  const disableProject = async (project: Project) => {
-    const patchDocument = createJsonPatchDocumentFromObject({
-      isActive: false,
-    });
+  const getProjects = async () => {
+    const response = await handleDataRequest<never, Project[]>(
+      urls.project,
+      RequestType.Get,
+    );
 
-    const response = await handleDataRequest<
-      JsonPatchKeyValuePair[],
-      ProjectResponse
-    >(`${urls.project}/${project.id}`, RequestType.Patch, patchDocument);
+    if (!response.isSuccess) return;
 
-    if (response.isSuccess) {
-      updateProject({ ...project, isActive: false });
-
-      toast.success("Project deleted successfully.");
-    }
+    fetchProjects(response.value);
   };
-
-  const memoizedProjects = useMemo(
-    () =>
-      projects.map((x: Project) => (
-        <Table.Tr key={x.id}>
-          <Table.Td> {x.name} </Table.Td>
-          <Table.Td> {x.code} </Table.Td>
-          <Table.Td> {String(x.isActive)} </Table.Td>
-          <Table.Td> {x.createUser} </Table.Td>
-          <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
-          <Table.Td>
-            <Flex justify={"center"} gap={5}>
-              <ActionIcon
-                onClick={() => openEditProject(x)}
-                variant={"light"}
-                color={"blue"}
-              >
-                <IconEdit />
-              </ActionIcon>
-              <ActionIcon
-                onClick={() => disableProject(x)}
-                variant={"light"}
-                color={"red"}
-              >
-                <IconTrash />
-              </ActionIcon>
-            </Flex>
-          </Table.Td>
-        </Table.Tr>
-      )),
-    [projects]
-  );
 
   const handleSave = async () => {
     form.validate();
 
     if (!form.isValid()) return;
 
-    const retVal = await addProject(form.values);
+    const projectData = projects.find((x) => x.isActive);
 
-    if (retVal) {
-      form.reset();
-      toast.success("Project has been added successfully!");
+    if (projectData?.name === form.values.name) {
+      toast.error("There is a active project with the same name!");
+      return;
     }
+
+    if (projectData?.code === form.values.code) {
+      toast.error("There is a active project with the same code!");
+      return;
+    }
+
+    const request: ProjectRequest = {
+      name: form.values.name,
+      code: form.values.code,
+    };
+
+    const response = await handleDataRequest<ProjectRequest, Project>(
+      urls.project,
+      RequestType.Post,
+      request,
+    );
+
+    if (!response.isSuccess) return;
+
+    addProject(response.value);
+
+    form.reset();
+
+    toast.success("Project has been added successfully!");
   };
+
+  const updateProjectActivity = async (project: Project) => {
+    const projectData = projects.find((x) => x.isActive && x.id !== project.id);
+
+    if (projectData?.name === project.name) {
+      toast.error("There is a active project with the same name!");
+      return;
+    }
+
+    if (projectData?.code === project.code) {
+      toast.error("There is a active project with the same code!");
+      return;
+    }
+
+    const patchDocument = createJsonPatchDocumentFromObject({
+      isActive: !project.isActive,
+    });
+
+    const response = await handleDataRequest<JsonPatchKeyValuePair[], Project>(
+      `${urls.project}/${project.id}`,
+      RequestType.Patch,
+      patchDocument,
+    );
+
+    if (!response.isSuccess) return;
+
+    updateProject({ ...project, isActive: !project.isActive });
+
+    if (project.isActive) {
+      toast.success("Project deactivated successfully.");
+      return;
+    }
+
+    toast.success("Project activated successfully.");
+  };
+
+  const memoizedProjects = useMemo(
+    () =>
+      projects
+        .filter((x) => (showActiveProjects === true ? x.isActive : x))
+        .filter((x) =>
+          x.searchText.toLowerCase().includes(searchQuery.toLowerCase()),
+        )
+        .map((x: Project) => (
+          <Table.Tr key={x.id}>
+            <Table.Td> {x.name} </Table.Td>
+            <Table.Td> {x.code} </Table.Td>
+            <Table.Td>
+              {x.isActive ? (
+                <TiTick size={BOOLEAN_ICON_SIZE} color="green" />
+              ) : (
+                <TiTimes size={BOOLEAN_ICON_SIZE} color="#BA1A1A" />
+              )}
+            </Table.Td>
+            <Table.Td> {x.createUser} </Table.Td>
+            <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
+            <Table.Td>
+              <Flex justify={"center"} gap={5}>
+                {x.isActive ? (
+                  <ActionIcon
+                    onClick={() => openEditProject(x)}
+                    variant={"light"}
+                    color={"blue"}
+                  >
+                    <IconEdit />
+                  </ActionIcon>
+                ) : (
+                  <div></div>
+                )}
+                <ActionIcon
+                  onClick={() => updateProjectActivity(x)}
+                  variant={"light"}
+                  color={x.isActive ? "red" : "green"}
+                >
+                  {x.isActive ? (
+                    <IoMdRemoveCircleOutline size={22} />
+                  ) : (
+                    <IoMdAddCircleOutline size={22} />
+                  )}
+                </ActionIcon>
+              </Flex>
+            </Table.Td>
+          </Table.Tr>
+        )),
+    [projects, showActiveProjects, searchQuery],
+  );
+
+  useEffect(() => {
+    getProjects();
+  }, []);
 
   return (
     <div>
       <Title order={3}>Projects</Title>
-      <Divider my={15} />
-      <Card shadow={"md"} radius={"md"} withBorder>
-        <Flex gap="xl" direction="row">
+      <Divider my={TITLE_DIVIDER_MY} />
+      <Card shadow={"xs"} radius={"md"} withBorder>
+        <Flex gap="md" direction="row">
           <TextInput
             key={form.key("name")}
             {...form.getInputProps("name")}
@@ -155,34 +241,57 @@ function Projects() {
             label={"Code"}
           />
         </Flex>
-        <Flex gap="xl" direction="column">
-          <Button
-            onClick={handleSave}
-            variant={"light"}
-            style={{ flexGrow: 2, marginTop: "15px" }}
-          >
-            Add New Project
-          </Button>
-        </Flex>
+        <Button
+          onClick={handleSave}
+          variant={"light"}
+          style={{ flexGrow: 2, marginTop: "15px" }}
+        >
+          Add New Project
+        </Button>
       </Card>
-      <Table
-        stickyHeader
-        highlightOnHover
-        withTableBorder
-        withColumnBorders
-        mt={16}
-      >
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>Name</Table.Th>
-            <Table.Th>Code</Table.Th>
-            <Table.Th>Is Active</Table.Th>
-            <Table.Th>Create User</Table.Th>
-            <Table.Th>Create Date</Table.Th>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>{memoizedProjects}</Table.Tbody>
-      </Table>
+
+      <Card mt={"xs"} withBorder padding={"sm"}>
+        <Flex gap={"xs"}>
+          <TextInput
+            size="xs"
+            radius="xl"
+            rightSection={<IconSearch size={SEARCH_ICON_SIZE}></IconSearch>}
+            style={{ flexGrow: 120 }}
+            {...form.getInputProps("searchText")}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <Checkbox
+            labelPosition="left"
+            label={"Show Active Projects"}
+            style={{ marginTop: "5px", marginLeft: "10px" }}
+            checked={showActiveProjects}
+            onChange={() => setShowActiveProjects(!showActiveProjects)}
+            type="checkbox"
+          />
+        </Flex>
+        <Table
+          striped
+          stickyHeader
+          highlightOnHover
+          withTableBorder
+          withColumnBorders
+          mt={15}
+          style={{ tableLayout: "fixed" }}
+        >
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th>Name</Table.Th>
+              <Table.Th>Code</Table.Th>
+              <Table.Th>Is Active</Table.Th>
+              <Table.Th>Create User</Table.Th>
+              <Table.Th>Create Date</Table.Th>
+              <Table.Th></Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>{memoizedProjects}</Table.Tbody>
+        </Table>
+      </Card>
     </div>
   );
 }
