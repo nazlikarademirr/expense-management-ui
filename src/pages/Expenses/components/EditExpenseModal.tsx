@@ -180,12 +180,16 @@ function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
     }
 
     const expenseRequest: ExpenseRequest = {
-      ...expenseForm.values,
       userId: expenseForm.values.userId ?? "",
       projectId: expenseForm.values.projectId ?? "",
-      reportId: expenseForm.values.reportId ?? "",
       expenseType: Number(expenseForm.values.expenseType),
+      expenseDate: expenseForm.values.expenseDate,
+      totalPrice: expenseForm.values.totalPrice,
       currency: Number(expenseForm.values.currency),
+      tripDescription: expenseForm.values.tripDescription,
+      outOfOffice: expenseForm.values.outOfOffice,
+      reportId: expenseForm.values.reportId ?? "",
+      overtimeMembers: expenseForm.values.overtimeMembers,
     };
 
     const response = await handleDataRequest<ExpenseRequest, ExpenseResponse>(

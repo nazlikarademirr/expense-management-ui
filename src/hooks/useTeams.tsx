@@ -41,6 +41,15 @@ function useTeams() {
     });
   };
 
+  const fetchActiveTeamsSelectData = (teams: Team[]) => {
+    dispatch({
+      type: ReducerActions.Replace,
+      payload: teams,
+    });
+
+    return teams.map((x) => ({ value: x.id, label: x.name }));
+  };
+
   return {
     teams,
     fetchTeams,
@@ -48,6 +57,7 @@ function useTeams() {
     deleteTeam,
     updateTeam,
     replaceTeams,
+    fetchActiveTeamsSelectData,
   };
 }
 

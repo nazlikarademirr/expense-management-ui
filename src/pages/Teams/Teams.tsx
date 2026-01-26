@@ -33,11 +33,12 @@ import {
 } from "../../constants/constants";
 import useUsers from "../../hooks/useUsers";
 import { IoMdAddCircleOutline, IoMdRemoveCircleOutline } from "react-icons/io";
+import { User } from "../../types/user";
 
 function Teams() {
   const { teams, addTeam, updateTeam, fetchTeams } = useTeams();
 
-  const { users } = useUsers();
+  const { users, fetchUsers } = useUsers();
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -72,6 +73,17 @@ function Teams() {
       size: "xl",
       children: <EditTeamModal team={team} updateTeam={updateTeam} />,
     });
+  };
+
+  const getUsers = async () => {
+    const response = await handleDataRequest<never, User[]>(
+      urls.user,
+      RequestType.Get,
+    );
+
+    if (!response.isSuccess) return;
+
+    fetchUsers(response.value);
   };
 
   const getTeams = async () => {
@@ -204,6 +216,7 @@ function Teams() {
 
   useEffect(() => {
     getTeams();
+    getUsers();
   }, []);
 
   return (

@@ -44,7 +44,7 @@ import { Team } from "../../types/team.ts";
 function Users() {
   const { users, addUser, updateUser, fetchUsers } = useUsers();
 
-  const { fetchTeams } = useTeams();
+  const { fetchActiveTeamsSelectData } = useTeams();
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -124,24 +124,28 @@ function Users() {
     modals.open({
       title: <Title order={4}>Edit User</Title>,
       size: "xl",
-      children: <EditUserModal user={user} updateUser={updateUser} />,
+      children: (
+        <EditUserModal
+          user={user}
+          activeTeamSelectData={activeTeamSelectData}
+          updateUser={updateUser}
+        />
+      ),
     });
   };
 
-  const getTeams = async () => {
-    const response = await handleDataRequest<never, Team[]>(
+  const getActiveTeams = async () => {
+    const activeTeamResponse = await handleDataRequest<never, Team[]>(
       urls.team,
       RequestType.Get,
+      undefined,
+      { isActive: true },
     );
 
-    if (!response.isSuccess) return;
-
-    fetchTeams(response.value);
+    if (!activeTeamResponse.isSuccess) return;
 
     setActiveTeamSelectData(
-      response.value
-        .filter((x) => x.isActive)
-        .map((x) => ({ value: x.id, label: x.name })),
+      fetchActiveTeamsSelectData(activeTeamResponse.value),
     );
   };
 
@@ -301,7 +305,7 @@ function Users() {
 
   useEffect(() => {
     getUsers();
-    getTeams();
+    getActiveTeams();
   }, []);
 
   return (
