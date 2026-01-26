@@ -92,6 +92,7 @@ function EditUserModal({
       email: userForm.values.email,
       password: initialValues.current.password,
       role: Number(userForm.values.role),
+      isActive: userForm.values.isActive,
     };
 
     const response = await handleDataRequest<UserRequest, UserResponse>(

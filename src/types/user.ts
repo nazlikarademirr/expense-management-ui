@@ -24,6 +24,7 @@ type UserRequest = {
   email: string;
   password: string;
   role: number;
+  isActive: boolean;
 };
 
 type UserResponse = {

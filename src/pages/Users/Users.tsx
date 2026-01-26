@@ -189,6 +189,7 @@ function Users() {
       email: form.values.email,
       password: form.values.password,
       role: Number(form.values.role),
+      isActive: true,
     };
 
     const response = await handleDataRequest<UserRequest, UserResponse>(
