@@ -34,16 +34,8 @@ function useTeams() {
     });
   };
 
-  const fetchTeams = (teams: Team[]) => {
-    dispatch({
-      type: ReducerActions.Replace,
-      payload: teams,
-    });
-  };
-
   return {
     teams,
-    fetchTeams,
     addTeam,
     deleteTeam,
     updateTeam,

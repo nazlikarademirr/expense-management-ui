@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { modals } from "@mantine/modals";
 import {
   Button,
@@ -9,34 +9,27 @@ import {
   Select,
   TextInput,
 } from "@mantine/core";
-import { User, UserResponse } from "../../../types/user";
+import { User, UserRequest, UserResponse } from "../../../types/user";
 import { useForm } from "@mantine/form";
 import useRequestHandler from "../../../hooks/useRequestHandler";
 import urls from "../../../constants/urls";
 import RequestType from "../../../request-handler/request-type";
-import {
-  createJsonPatchDocumentFromDirtyForm,
-  JsonPatchKeyValuePair,
-} from "../../../types/json-patch-document";
 import toast from "react-hot-toast";
-import useTeams from "../../../hooks/useTeams";
 import { genders, roles } from "../../../constants/static-data";
 import { SelectItem } from "../../../types/select-item";
-import { Team } from "../../../types/team";
 
 interface EditUserProps {
   user: User;
+  activeTeamSelectData: SelectItem[];
   updateUser: (userForm: User) => void;
 }
 
-function EditUserModal({ user, updateUser }: EditUserProps) {
+function EditUserModal({
+  user,
+  activeTeamSelectData,
+  updateUser,
+}: EditUserProps) {
   const { handleDataRequest } = useRequestHandler();
-
-  const { fetchTeams } = useTeams();
-
-  const [activeTeamSelectData, setActiveTeamSelectData] = useState<
-    SelectItem[]
-  >([]);
 
   const userForm = useForm({
     initialValues: {
@@ -83,23 +76,6 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
 
   const nameInputRef = useRef<HTMLInputElement>(null);
 
-  const getTeams = async () => {
-    const response = await handleDataRequest<never, Team[]>(
-      urls.team,
-      RequestType.Get,
-    );
-
-    if (!response.isSuccess) return;
-
-    fetchTeams(response.value);
-
-    setActiveTeamSelectData(
-      response.value
-        .filter((x) => x.isActive)
-        .map((x) => ({ value: x.id, label: x.name })),
-    );
-  };
-
   const handleSave = async (e: React.MouseEvent) => {
     e.preventDefault();
 
@@ -107,15 +83,23 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
 
     if (!userForm.isValid()) return;
 
-    const patchDocument = createJsonPatchDocumentFromDirtyForm(
-      userForm,
-      userForm.values,
-    );
+    const userRequest: UserRequest = {
+      name: userForm.values.name,
+      surname: userForm.values.surname,
+      teamId: userForm.values.teamId,
+      gender: Number(userForm.values.gender),
+      cardNumber: userForm.values.cardNumber,
+      email: userForm.values.email,
+      password: initialValues.current.password,
+      role: Number(userForm.values.role),
+      isActive: userForm.values.isActive,
+    };
 
-    const response = await handleDataRequest<
-      JsonPatchKeyValuePair[],
-      UserResponse
-    >(`${urls.user}/${user.id}`, RequestType.Patch, patchDocument);
+    const response = await handleDataRequest<UserRequest, UserResponse>(
+      `${urls.user}/${user.id}`,
+      RequestType.Put,
+      userRequest,
+    );
 
     if (!response.isSuccess) return;
 
@@ -138,8 +122,6 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
   };
 
   useEffect(() => {
-    getTeams();
-
     if (nameInputRef.current) {
       nameInputRef.current.focus();
     }
@@ -165,6 +147,7 @@ function EditUserModal({ user, updateUser }: EditUserProps) {
         data={activeTeamSelectData}
         searchable
         label={"Team Name"}
+        placeholder="Bir takım seçiniz."
       />
       <Radio.Group
         label="Gender"

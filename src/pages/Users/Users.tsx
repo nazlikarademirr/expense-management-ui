@@ -22,7 +22,6 @@ import { useForm } from "@mantine/form";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
 import { genders, roles } from "../../constants/static-data.ts";
-import useTeams from "../../hooks/useTeams.tsx";
 import {
   createJsonPatchDocumentFromObject,
   JsonPatchKeyValuePair,
@@ -42,9 +41,7 @@ import { SelectItem } from "../../types/select-item.ts";
 import { Team } from "../../types/team.ts";
 
 function Users() {
-  const { users, addUser, updateUser, fetchUsers } = useUsers();
-
-  const { fetchTeams } = useTeams();
+  const { users, addUser, updateUser, replaceUsers } = useUsers();
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -124,24 +121,28 @@ function Users() {
     modals.open({
       title: <Title order={4}>Edit User</Title>,
       size: "xl",
-      children: <EditUserModal user={user} updateUser={updateUser} />,
+      children: (
+        <EditUserModal
+          user={user}
+          activeTeamSelectData={activeTeamSelectData}
+          updateUser={updateUser}
+        />
+      ),
     });
   };
 
-  const getTeams = async () => {
-    const response = await handleDataRequest<never, Team[]>(
+  const getActiveTeamsSelectData = async () => {
+    const activeTeamResponse = await handleDataRequest<never, Team[]>(
       urls.team,
       RequestType.Get,
+      undefined,
+      { isActive: true },
     );
 
-    if (!response.isSuccess) return;
-
-    fetchTeams(response.value);
+    if (!activeTeamResponse.isSuccess) return;
 
     setActiveTeamSelectData(
-      response.value
-        .filter((x) => x.isActive)
-        .map((x) => ({ value: x.id, label: x.name })),
+      activeTeamResponse.value.map((x) => ({ value: x.id, label: x.name })),
     );
   };
 
@@ -159,7 +160,7 @@ function Users() {
       role: x.role.toString(),
     }));
 
-    fetchUsers(users);
+    replaceUsers(users);
   };
 
   const handleSave = async () => {
@@ -188,6 +189,7 @@ function Users() {
       email: form.values.email,
       password: form.values.password,
       role: Number(form.values.role),
+      isActive: true,
     };
 
     const response = await handleDataRequest<UserRequest, UserResponse>(
@@ -301,7 +303,7 @@ function Users() {
 
   useEffect(() => {
     getUsers();
-    getTeams();
+    getActiveTeamsSelectData();
   }, []);
 
   return (

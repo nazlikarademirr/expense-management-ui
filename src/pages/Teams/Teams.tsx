@@ -33,11 +33,12 @@ import {
 } from "../../constants/constants";
 import useUsers from "../../hooks/useUsers";
 import { IoMdAddCircleOutline, IoMdRemoveCircleOutline } from "react-icons/io";
+import { User } from "../../types/user";
 
 function Teams() {
-  const { teams, addTeam, updateTeam, fetchTeams } = useTeams();
+  const { teams, addTeam, updateTeam, replaceTeams } = useTeams();
 
-  const { users } = useUsers();
+  const { users, replaceUsers } = useUsers();
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -74,6 +75,17 @@ function Teams() {
     });
   };
 
+  const getUsers = async () => {
+    const response = await handleDataRequest<never, User[]>(
+      urls.user,
+      RequestType.Get,
+    );
+
+    if (!response.isSuccess) return;
+
+    replaceUsers(response.value);
+  };
+
   const getTeams = async () => {
     const response = await handleDataRequest<never, Team[]>(
       urls.team,
@@ -82,7 +94,7 @@ function Teams() {
 
     if (!response.isSuccess) return;
 
-    fetchTeams(response.value);
+    replaceTeams(response.value);
   };
 
   const handleSave = async () => {
@@ -204,6 +216,7 @@ function Teams() {
 
   useEffect(() => {
     getTeams();
+    getUsers();
   }, []);
 
   return (
