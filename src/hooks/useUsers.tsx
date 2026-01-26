@@ -34,16 +34,8 @@ function useUsers() {
     });
   };
 
-  const fetchUsers = (users: User[]) => {
-    dispatch({
-      type: ReducerActions.Replace,
-      payload: users,
-    });
-  };
-
   return {
     users,
-    fetchUsers,
     addUser,
     deleteUser,
     replaceUsers,

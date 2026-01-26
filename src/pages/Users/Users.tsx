@@ -22,7 +22,6 @@ import { useForm } from "@mantine/form";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
 import { genders, roles } from "../../constants/static-data.ts";
-import useTeams from "../../hooks/useTeams.tsx";
 import {
   createJsonPatchDocumentFromObject,
   JsonPatchKeyValuePair,
@@ -42,9 +41,7 @@ import { SelectItem } from "../../types/select-item.ts";
 import { Team } from "../../types/team.ts";
 
 function Users() {
-  const { users, addUser, updateUser, fetchUsers } = useUsers();
-
-  const { fetchActiveTeamsSelectData } = useTeams();
+  const { users, addUser, updateUser, replaceUsers } = useUsers();
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -134,7 +131,7 @@ function Users() {
     });
   };
 
-  const getActiveTeams = async () => {
+  const getActiveTeamsSelectData = async () => {
     const activeTeamResponse = await handleDataRequest<never, Team[]>(
       urls.team,
       RequestType.Get,
@@ -145,7 +142,7 @@ function Users() {
     if (!activeTeamResponse.isSuccess) return;
 
     setActiveTeamSelectData(
-      fetchActiveTeamsSelectData(activeTeamResponse.value),
+      activeTeamResponse.value.map((x) => ({ value: x.id, label: x.name })),
     );
   };
 
@@ -163,7 +160,7 @@ function Users() {
       role: x.role.toString(),
     }));
 
-    fetchUsers(users);
+    replaceUsers(users);
   };
 
   const handleSave = async () => {
@@ -305,7 +302,7 @@ function Users() {
 
   useEffect(() => {
     getUsers();
-    getActiveTeams();
+    getActiveTeamsSelectData();
   }, []);
 
   return (
