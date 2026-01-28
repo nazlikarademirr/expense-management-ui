@@ -26,10 +26,7 @@ import { DateInput } from "@mantine/dates";
 import { OvertimeMember } from "../../types/overtime-member";
 import EditExpenseModal from "./components/EditExpenseModal";
 import { useEffect, useMemo, useState } from "react";
-import useProjects from "../../hooks/useProjects";
 import { currencyTypes, expenseTypes } from "../../constants/static-data";
-import useUsers from "../../hooks/useUsers";
-import useReports from "../../hooks/useReports";
 import ExpenseType from "../../enums/expense-type";
 import { TiTick, TiTimes } from "react-icons/ti";
 import {
@@ -46,14 +43,17 @@ import { Project } from "../../types/project";
 import { Report } from "../../types/report";
 
 function Expenses() {
-  const { expenses, addExpense, updateExpense, deleteExpense, fetchExpenses } =
-    useExpenses();
+  const {
+    expenses,
+    addExpense,
+    updateExpense,
+    deleteExpense,
+    replaceExpenses,
+  } = useExpenses();
 
   const { handleDataRequest } = useRequestHandler();
 
-  const { fetchUsers } = useUsers();
-  const { fetchProjects } = useProjects();
-  const { fetchReports } = useReports();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const [activeUserSelectData, setActiveUserSelectData] = useState<
     SelectItem[]
@@ -151,7 +151,13 @@ function Expenses() {
       title: <Title order={4}>Edit Expense</Title>,
       size: 2000,
       children: (
-        <EditExpenseModal expense={expense} updateExpense={updateExpense} />
+        <EditExpenseModal
+          expense={expense}
+          updateExpense={updateExpense}
+          activeUserSelectData={activeUserSelectData}
+          activeProjectSelectData={activeProjectSelectData}
+          unapprovedReportSelectData={unapprovedReportSelectData}
+        />
       ),
     });
   };
@@ -166,6 +172,7 @@ function Expenses() {
           <Flex direction={"row"} gap={10}>
             <Button
               style={{ flexGrow: 1 }}
+              loading={isLoading}
               onClick={() => {
                 handleDelete(id);
                 modals.closeAll();
@@ -189,37 +196,36 @@ function Expenses() {
     });
   };
 
-  const getUsers = async () => {
+  const getActiveUsers = async () => {
     const response = await handleDataRequest<never, User[]>(
       urls.user,
       RequestType.Get,
+      undefined,
+      { isActive: true },
     );
 
     if (!response.isSuccess) return;
 
-    fetchUsers(response.value);
-
     setActiveUserSelectData(
-      response.value
-        .filter((x) => x.isActive)
-        .map((x) => ({ value: x.id, label: `${x.name} ${x.surname}` })),
+      response.value.map((x) => ({
+        value: x.id,
+        label: `${x.name} ${x.surname}`,
+      })),
     );
   };
 
-  const getProjects = async () => {
+  const getActiveProjects = async () => {
     const response = await handleDataRequest<never, Project[]>(
       urls.project,
       RequestType.Get,
+      undefined,
+      { isActive: true },
     );
 
     if (!response.isSuccess) return;
 
-    fetchProjects(response.value);
-
     setActiveProjectSelectData(
-      response.value
-        .filter((x) => x.isActive)
-        .map((x) => ({ value: x.id, label: x.name })),
+      response.value.map((x) => ({ value: x.id, label: x.name })),
     );
   };
 
@@ -230,8 +236,6 @@ function Expenses() {
     );
 
     if (!response.isSuccess) return;
-
-    fetchReports(response.value);
 
     setReportSelectData(
       response.value.map((x) => ({ value: x.id, label: x.name })),
@@ -258,16 +262,33 @@ function Expenses() {
       currency: x.currency.toString(),
     }));
 
-    fetchExpenses(expenseList);
+    replaceExpenses(expenseList);
   };
 
   const handleSave = async () => {
+    setIsLoading(true);
     form.validate();
 
-    if (!form.isValid()) return;
+    if (!form.isValid()) {
+      setIsLoading(false);
+      return;
+    }
 
     if (form.values.expenseDate > new Date()) {
       toast.error("Expenses cannot be entered for future dates.");
+      setIsLoading(false);
+      return;
+    }
+
+    let totalPrice = 0;
+
+    form.values.overtimeMembers.forEach((x) => {
+      totalPrice = totalPrice + x.price;
+    });
+
+    if (totalPrice > form.values.totalPrice) {
+      toast.error("The total price cannot be less than the sum of the prices.");
+      setIsLoading(false);
       return;
     }
 
@@ -290,7 +311,10 @@ function Expenses() {
       expenseRequest,
     );
 
-    if (!response.isSuccess) return false;
+    if (!response.isSuccess) {
+      setIsLoading(false);
+      return;
+    }
 
     addExpense({
       ...response.value,
@@ -302,9 +326,13 @@ function Expenses() {
     overtimeMemberForm.reset();
 
     toast.success("Expense has been added successfully!");
+
+    setIsLoading(false);
   };
 
   const handleDelete = async (id: string) => {
+    setIsLoading(true);
+
     const response = await handleDataRequest<string, never>(
       urls.expense,
       RequestType.Delete,
@@ -312,20 +340,22 @@ function Expenses() {
       { id },
     );
 
-    if (!response.isSuccess) return;
+    if (!response.isSuccess) {
+      setIsLoading(false);
+      return;
+    }
 
     deleteExpense(id);
 
     toast.success("Expense has been deleted successfully!");
+
+    setIsLoading(false);
   };
 
   const saveOvertimeMember = async () => {
     overtimeMemberForm.validate();
 
     if (!overtimeMemberForm.isValid()) return;
-
-    overtimeMemberForm.values.id = crypto.randomUUID();
-    overtimeMemberForm.values.createDate = new Date();
 
     if (
       form.values.overtimeMembers.some(
@@ -335,9 +365,16 @@ function Expenses() {
       return toast.error("There is a entry for this user.");
     }
 
+    const overtimeMemberFullName = activeUserSelectData.find(
+      (x) => x.value === overtimeMemberForm.values.userId,
+    )?.label;
+
     form.setFieldValue("overtimeMembers", [
       ...form.values.overtimeMembers,
-      overtimeMemberForm.values,
+      {
+        ...overtimeMemberForm.values,
+        userFullName: overtimeMemberFullName ?? "",
+      },
     ]);
 
     overtimeMemberForm.reset();
@@ -387,8 +424,8 @@ function Expenses() {
                 <TiTimes size={BOOLEAN_ICON_SIZE} color="#BA1A1A" />
               )}
             </Table.Td>
-            <Table.Td>{x.reportName ?? "-"}</Table.Td>
-            <Table.Td> {x.createUser} </Table.Td>
+            <Table.Td>{x.reportId !== null ? x.reportName : "-"}</Table.Td>
+            <Table.Td> {x.userFullName} </Table.Td>
             <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
             <Table.Td>
               <Flex justify={"center"} gap={5}>
@@ -427,7 +464,7 @@ function Expenses() {
         <Table.Tr key={x.id}>
           <Table.Td>{x.userFullName}</Table.Td>
           <Table.Td>{x.price}</Table.Td>
-          <Table.Td>{x.createUser}</Table.Td>
+          <Table.Td>{x.userFullName}</Table.Td>
           <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
           <Table.Td>
             <Flex justify={"center"} gap={5}>
@@ -445,8 +482,8 @@ function Expenses() {
   );
 
   useEffect(() => {
-    getUsers();
-    getProjects();
+    getActiveUsers();
+    getActiveProjects();
     getReports();
     getExpenses();
   }, []);
@@ -456,9 +493,9 @@ function Expenses() {
       <Title order={3}>Expenses</Title>
       <Divider my={TITLE_DIVIDER_MY} />
       <Card shadow={"xs"} radius={"xs"} withBorder padding={10}>
-        <Flex gap={"md"}>
-          <Flex direction={"column"} w={"60%"}>
-            <Flex gap={"sm"} style={{ flexGrow: 1 }} align={"center"}>
+        <Flex gap={"md"} justify={"center"}>
+          <Flex direction={"column"} w={"60%"} justify={"center"}>
+            <Flex gap={"sm"} style={{ flexGrow: 1, minHeight: 110 }}>
               <Select
                 w={"20%"}
                 {...form.getInputProps("userId")}
@@ -484,11 +521,11 @@ function Expenses() {
                 data={unapprovedReportSelectData}
                 searchable
                 label={"Report Name"}
-                style={{ flexGrow: 1 }}
                 clearable
+                style={{ flexGrow: 1 }}
               />
             </Flex>
-            <Flex gap={"sm"} style={{ flexGrow: 1 }} align={"center"}>
+            <Flex gap={"sm"} style={{ flexGrow: 1, minHeight: 110 }}>
               <DateInput
                 w={"20%"}
                 {...form.getInputProps("expenseDate")}
@@ -512,8 +549,8 @@ function Expenses() {
                 label="Expense Type"
                 withAsterisk
                 {...form.getInputProps("expenseType")}
-                style={{ flexGrow: 1 }}
                 display={"center"}
+                style={{ flexGrow: 1 }}
               >
                 <Group mt="xs">
                   {expenseTypes.map((x) => (
@@ -522,7 +559,7 @@ function Expenses() {
                 </Group>
               </Radio.Group>
             </Flex>
-            <Flex gap={"sm"} style={{ flexGrow: 1 }} align={"center"}>
+            <Flex gap={"sm"} style={{ flexGrow: 1, minHeight: 110 }}>
               <TextInput
                 w={"20%"}
                 {...form.getInputProps("tripDescription")}
@@ -533,7 +570,6 @@ function Expenses() {
                 disabled={form.values.expenseType === ExpenseType.Food}
                 style={{ flexGrow: 1 }}
               />
-
               <Select
                 w={"20%"}
                 {...form.getInputProps("currency")}
@@ -544,15 +580,15 @@ function Expenses() {
               />
 
               <Checkbox
-                mt={25}
                 w={"20%"}
+                mt={32}
                 label="Out Of Office"
                 {...form.getInputProps("outOfOffice", { type: "checkbox" })}
                 style={{ flexGrow: 1 }}
               />
             </Flex>
           </Flex>
-          <Flex w={"40%"}>
+          <Flex w={"40%"} justify={"center"}>
             <Card
               shadow={"xs"}
               radius={"md"}
@@ -560,7 +596,7 @@ function Expenses() {
               padding={10}
               w={"100%"}
             >
-              <Flex gap="sm" align={"flex-end"}>
+              <Flex gap="sm" align-items={"flex-end"} style={{ minHeight: 90 }}>
                 <Select
                   {...overtimeMemberForm.getInputProps("userId")}
                   withAsterisk
@@ -578,7 +614,7 @@ function Expenses() {
                   style={{ flexGrow: 1 }}
                 />
 
-                <Button onClick={saveOvertimeMember} variant={"light"}>
+                <Button onClick={saveOvertimeMember} variant={"light"} mt={25}>
                   Add Overtime Member
                 </Button>
               </Flex>
@@ -589,10 +625,9 @@ function Expenses() {
                 highlightOnHover
                 withTableBorder
                 withColumnBorders
-                mt={15}
                 style={{ tableLayout: "fixed" }}
               >
-                <ScrollArea h={200}>
+                <ScrollArea h={"100%"}>
                   <Table.Thead>
                     <Table.Tr>
                       <Table.Th>User Name</Table.Th>
@@ -608,7 +643,12 @@ function Expenses() {
             </Card>
           </Flex>
         </Flex>
-        <Button onClick={handleSave} variant={"light"} mt={10}>
+        <Button
+          onClick={handleSave}
+          variant={"light"}
+          mt={10}
+          loading={isLoading}
+        >
           Add New Expense
         </Button>
       </Card>
@@ -656,23 +696,25 @@ function Expenses() {
           mt={15}
           style={{ tableLayout: "fixed" }}
         >
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>User Name</Table.Th>
-              <Table.Th>Project Name</Table.Th>
-              <Table.Th>Expense Type</Table.Th>
-              <Table.Th>Expense Date</Table.Th>
-              <Table.Th>Total Price</Table.Th>
-              <Table.Th>Currency</Table.Th>
-              <Table.Th>Trip Description</Table.Th>
-              <Table.Th>Out Of Office</Table.Th>
-              <Table.Th>Report Name</Table.Th>
-              <Table.Th>Create User</Table.Th>
-              <Table.Th>Create Date</Table.Th>
-              <Table.Th></Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>{memoizedExpenses}</Table.Tbody>
+          <ScrollArea h={"100%"}>
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>User Name</Table.Th>
+                <Table.Th>Project Name</Table.Th>
+                <Table.Th>Expense Type</Table.Th>
+                <Table.Th>Expense Date</Table.Th>
+                <Table.Th>Total Price</Table.Th>
+                <Table.Th>Currency</Table.Th>
+                <Table.Th>Trip Description</Table.Th>
+                <Table.Th>Out Of Office</Table.Th>
+                <Table.Th>Report Name</Table.Th>
+                <Table.Th>Create User</Table.Th>
+                <Table.Th>Create Date</Table.Th>
+                <Table.Th></Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>{memoizedExpenses}</Table.Tbody>
+          </ScrollArea>
         </Table>
       </Card>
     </div>
