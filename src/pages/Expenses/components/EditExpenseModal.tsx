@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import {
   Expense,
   ExpenseRequest,
@@ -27,41 +27,28 @@ import { useForm } from "@mantine/form";
 import toast from "react-hot-toast";
 import { DateInput } from "@mantine/dates";
 import { currencyTypes, expenseTypes } from "../../../constants/static-data";
-import useUsers from "../../../hooks/useUsers";
-import useProjects from "../../../hooks/useProjects";
-import useReports from "../../../hooks/useReports";
 import { OvertimeMember } from "../../../types/overtime-member";
 import { format } from "date-fns";
 import { IconTrash } from "@tabler/icons-react";
 import ExpenseType from "../../../enums/expense-type";
 import { SelectItem } from "../../../types/select-item";
-import { Project } from "../../../types/project";
-import { User } from "../../../types/user";
-import { Report } from "../../../types/report";
 
 interface EditExpenseProps {
   expense: Expense;
   updateExpense: (expenseForm: Expense) => void;
+  activeUserSelectData: SelectItem[];
+  activeProjectSelectData: SelectItem[];
+  unapprovedReportSelectData: SelectItem[];
 }
 
-function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
+function EditExpenseModal({
+  expense,
+  updateExpense,
+  activeUserSelectData,
+  activeProjectSelectData,
+  unapprovedReportSelectData,
+}: EditExpenseProps) {
   const { handleDataRequest } = useRequestHandler();
-
-  const { fetchUsers } = useUsers();
-  const { fetchProjects } = useProjects();
-  const { fetchReports } = useReports();
-
-  const [activeUserSelectData, setActiveUserSelectData] = useState<
-    SelectItem[]
-  >([]);
-
-  const [activeProjectSelectData, setActiveProjectSelectData] = useState<
-    SelectItem[]
-  >([]);
-
-  const [unapprovedReportSelectData, setUnapprovedReportSelectData] = useState<
-    SelectItem[]
-  >([]);
 
   const expenseForm = useForm<Expense>({
     initialValues: {
@@ -115,57 +102,6 @@ function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
   });
 
   const nameInputRef = useRef<HTMLInputElement>(null);
-
-  const getUsers = async () => {
-    const response = await handleDataRequest<never, User[]>(
-      urls.user,
-      RequestType.Get,
-    );
-
-    if (!response.isSuccess) return;
-
-    fetchUsers(response.value);
-
-    setActiveUserSelectData(
-      response.value
-        .filter((x) => x.isActive)
-        .map((x) => ({ value: x.id, label: `${x.name} ${x.surname}` })),
-    );
-  };
-
-  const getProjects = async () => {
-    const response = await handleDataRequest<never, Project[]>(
-      urls.project,
-      RequestType.Get,
-    );
-
-    if (!response.isSuccess) return;
-
-    fetchProjects(response.value);
-
-    setActiveProjectSelectData(
-      response.value
-        .filter((x) => x.isActive)
-        .map((x) => ({ value: x.id, label: x.name })),
-    );
-  };
-
-  const getReports = async () => {
-    const response = await handleDataRequest<never, Report[]>(
-      urls.report,
-      RequestType.Get,
-    );
-
-    if (!response.isSuccess) return;
-
-    fetchReports(response.value);
-
-    setUnapprovedReportSelectData(
-      response.value
-        .filter((x) => !x.isApproved)
-        .map((x) => ({ value: x.id, label: x.name })),
-    );
-  };
 
   const handleSave = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -274,7 +210,7 @@ function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
         <Table.Tr key={x.id}>
           <Table.Td>{x.userFullName}</Table.Td>
           <Table.Td>{x.price}</Table.Td>
-          <Table.Td>{x.createUser}</Table.Td>
+          <Table.Td>{x.userFullName}</Table.Td>
           <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
           <Table.Td>
             <Flex justify={"center"} gap={5}>
@@ -292,10 +228,6 @@ function EditExpenseModal({ expense, updateExpense }: EditExpenseProps) {
   );
 
   useEffect(() => {
-    getUsers();
-    getProjects();
-    getReports();
-
     if (nameInputRef.current) {
       nameInputRef.current.focus();
     }

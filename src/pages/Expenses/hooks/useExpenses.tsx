@@ -34,20 +34,12 @@ function useExpenses() {
     });
   };
 
-  const fetchExpenses = (expenses: Expense[]) => {
-    dispatch({
-      type: ReducerActions.Replace,
-      payload: expenses,
-    });
-  };
-
   return {
     expenses,
     addExpense,
     deleteExpense,
     updateExpense,
     replaceExpenses,
-    fetchExpenses,
   };
 }
 

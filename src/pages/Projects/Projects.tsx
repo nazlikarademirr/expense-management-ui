@@ -34,7 +34,8 @@ import {
 import { IoMdAddCircleOutline, IoMdRemoveCircleOutline } from "react-icons/io";
 
 function Projects() {
-  const { projects, addProject, updateProject, fetchProjects } = useProjects();
+  const { projects, addProject, updateProject, replaceProjects } =
+    useProjects();
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -90,7 +91,7 @@ function Projects() {
 
     if (!response.isSuccess) return;
 
-    fetchProjects(response.value);
+    replaceProjects(response.value);
   };
 
   const handleSave = async () => {
@@ -98,15 +99,31 @@ function Projects() {
 
     if (!form.isValid()) return;
 
-    const projectData = projects.find((x) => x.isActive);
+    const nameConflict = projects.find((x) => x.name === form.values.name);
 
-    if (projectData?.name === form.values.name) {
+    if (nameConflict && nameConflict?.isActive) {
       toast.error("There is a active project with the same name!");
       return;
     }
 
-    if (projectData?.code === form.values.code) {
+    if (nameConflict && !nameConflict?.isActive) {
+      toast.error(
+        "There is an passive project with this name. You can activate that project.",
+      );
+      return;
+    }
+
+    const codeConflict = projects.find((x) => x.code === form.values.code);
+
+    if (codeConflict && codeConflict?.isActive) {
       toast.error("There is a active project with the same code!");
+      return;
+    }
+
+    if (codeConflict && !codeConflict?.isActive) {
+      toast.error(
+        "There is an passive project with this code. You can activate that project.",
+      );
       return;
     }
 
@@ -131,18 +148,6 @@ function Projects() {
   };
 
   const updateProjectActivity = async (project: Project) => {
-    const projectData = projects.find((x) => x.isActive && x.id !== project.id);
-
-    if (projectData?.name === project.name) {
-      toast.error("There is a active project with the same name!");
-      return;
-    }
-
-    if (projectData?.code === project.code) {
-      toast.error("There is a active project with the same code!");
-      return;
-    }
-
     const patchDocument = createJsonPatchDocumentFromObject({
       isActive: !project.isActive,
     });

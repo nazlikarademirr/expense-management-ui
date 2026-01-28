@@ -34,16 +34,8 @@ function useProjects() {
     });
   };
 
-  const fetchProjects = (projects: Project[]) => {
-    dispatch({
-      type: ReducerActions.Replace,
-      payload: projects,
-    });
-  };
-
   return {
     projects,
-    fetchProjects,
     addProject,
     updateProject,
     replaceProjects,

@@ -27,7 +27,7 @@ function useReports() {
     });
   };
 
-  const fetchReports = (reports: Report[]) => {
+  const replaceReports = (reports: Report[]) => {
     dispatch({
       type: ReducerActions.Replace,
       payload: reports,
@@ -39,7 +39,7 @@ function useReports() {
     addReport,
     updateReport,
     deleteReport,
-    fetchReports,
+    replaceReports,
   };
 }
 
