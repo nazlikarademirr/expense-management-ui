@@ -627,7 +627,7 @@ function Expenses() {
                 withColumnBorders
                 style={{ tableLayout: "fixed" }}
               >
-                <ScrollArea h={220}>
+                <ScrollArea h={"100%"}>
                   <Table.Thead>
                     <Table.Tr>
                       <Table.Th>User Name</Table.Th>
@@ -696,7 +696,7 @@ function Expenses() {
           mt={15}
           style={{ tableLayout: "fixed" }}
         >
-          <ScrollArea h={400}>
+          <ScrollArea h={"100%"}>
             <Table.Thead>
               <Table.Tr>
                 <Table.Th>User Name</Table.Th>
