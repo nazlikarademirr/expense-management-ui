@@ -14,13 +14,13 @@ import {
   Table,
   TextInput,
   Title,
+  Tooltip,
 } from "@mantine/core";
 import { IconEdit, IconSearch } from "@tabler/icons-react";
 import { modals } from "@mantine/modals";
 import useUsers from "../../hooks/useUsers.tsx";
 import { useForm } from "@mantine/form";
 import toast from "react-hot-toast";
-import { format } from "date-fns";
 import { genders, roles } from "../../constants/static-data.ts";
 import {
   createJsonPatchDocumentFromObject,
@@ -54,6 +54,8 @@ function Users() {
   const [activeTeamSelectData, setActiveTeamSelectData] = useState<
     SelectItem[]
   >([]);
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const { handleDataRequest } = useRequestHandler();
 
@@ -124,6 +126,7 @@ function Users() {
       children: (
         <EditUserModal
           user={user}
+          users={users}
           activeTeamSelectData={activeTeamSelectData}
           updateUser={updateUser}
         />
@@ -164,19 +167,26 @@ function Users() {
   };
 
   const handleSave = async () => {
+    setIsLoading(true);
+
     form.validate();
 
-    if (!form.isValid()) return;
-
-    const userData = users.find((x) => x.isActive);
-
-    if (userData?.cardNumber === form.values.cardNumber) {
-      toast.error("There is a active user with the same card number!");
+    if (!form.isValid()) {
+      setIsLoading(false);
       return;
     }
 
-    if (userData?.email === form.values.email) {
-      toast.error("There is a user with the same email!");
+    if (
+      users.some((x) => x.cardNumber.trim() === form.values.cardNumber.trim())
+    ) {
+      toast.error("There is a user with the same card number!");
+      setIsLoading(false);
+      return;
+    }
+
+    if (users.some((x) => x.email.trim() === form.values.email.trim())) {
+      toast.error("There is a with the same email!");
+      setIsLoading(false);
       return;
     }
 
@@ -198,7 +208,10 @@ function Users() {
       userRequest,
     );
 
-    if (!response.isSuccess) return false;
+    if (!response.isSuccess) {
+      setIsLoading(false);
+      return;
+    }
 
     addUser({
       ...response.value,
@@ -209,20 +222,12 @@ function Users() {
     form.reset();
 
     toast.success("User has been added successfully!");
+
+    setIsLoading(false);
   };
 
   const changeUserActivity = async (user: User) => {
-    const userData = users.find((x) => x.isActive && x.id !== user.id);
-
-    if (userData?.cardNumber === user.cardNumber) {
-      toast.error("There is a active user with the same card number!");
-      return;
-    }
-
-    if (userData?.email === user.email) {
-      toast.error("There is a active user with the same card number!");
-      return;
-    }
+    setIsLoading(true);
 
     const patchDocument = createJsonPatchDocumentFromObject({
       isActive: !user.isActive,
@@ -233,16 +238,22 @@ function Users() {
       UserResponse
     >(`${urls.user}/${user.id}`, RequestType.Patch, patchDocument);
 
-    if (!response.isSuccess) return;
+    if (!response.isSuccess) {
+      setIsLoading(false);
+      return;
+    }
 
     updateUser({ ...user, isActive: !user.isActive });
 
     if (user.isActive) {
       toast.success("User deactivated successfully.");
+      setIsLoading(false);
       return;
     }
 
     toast.success("User activated successfully.");
+
+    setIsLoading(false);
   };
 
   const memoizedUsers = useMemo(
@@ -270,35 +281,49 @@ function Users() {
                 <TiTimes size={BOOLEAN_ICON_SIZE} color="#BA1A1A" />
               )}
             </Table.Td>
-            <Table.Td> {x.createUser} </Table.Td>
-            <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
+            <Table.Td> {`${x.name} ${x.surname}`} </Table.Td>
             <Table.Td>
               <Flex justify={"center"} gap={5}>
                 {x.isActive && (
-                  <ActionIcon
-                    onClick={() => openEditUser(x)}
-                    variant={"light"}
-                    color={"blue"}
-                  >
-                    <IconEdit />
-                  </ActionIcon>
+                  <Tooltip label="Edit" withArrow>
+                    <ActionIcon
+                      onClick={() => openEditUser(x)}
+                      variant={"light"}
+                      color={"blue"}
+                    >
+                      <IconEdit />
+                    </ActionIcon>
+                  </Tooltip>
                 )}
-                <ActionIcon
-                  onClick={() => changeUserActivity(x)}
-                  variant={"light"}
-                  color={x.isActive ? "red" : "green"}
+                <Tooltip
+                  label={x.isActive ? "Deactivate User" : "Activate User"}
+                  withArrow
                 >
-                  {x.isActive ? (
-                    <IoMdRemoveCircleOutline size={22} />
-                  ) : (
-                    <IoMdAddCircleOutline size={22} />
-                  )}
-                </ActionIcon>
+                  <ActionIcon
+                    onClick={() => changeUserActivity(x)}
+                    variant={"light"}
+                    color={x.isActive ? "red" : "green"}
+                    loading={isLoading}
+                  >
+                    {x.isActive ? (
+                      <IoMdRemoveCircleOutline size={22} />
+                    ) : (
+                      <IoMdAddCircleOutline size={22} />
+                    )}
+                  </ActionIcon>
+                </Tooltip>
               </Flex>
             </Table.Td>
           </Table.Tr>
         )),
-    [users, searchQuery, showActiveUsers, selectedTeam, selectedRole],
+    [
+      users,
+      searchQuery,
+      showActiveUsers,
+      selectedTeam,
+      selectedRole,
+      isLoading,
+    ],
   );
 
   useEffect(() => {
@@ -311,19 +336,19 @@ function Users() {
       <Title order={3}>Users</Title>
       <Divider my={TITLE_DIVIDER_MY} />
       <Card shadow={"xs"} radius={"md"} withBorder>
-        <Flex gap={"xl"} direction={"row"}>
+        <Flex gap={"xl"} direction={"row"} justify={"center"}>
           <Flex gap={"xl"} direction={"column"} style={{ flexGrow: 1 }}>
             <TextInput
               {...form.getInputProps("name")}
               withAsterisk
-              style={{ flexGrow: 1 }}
+              style={{ flexGrow: 1, minHeight: 80 }}
               label={"Name"}
             />
 
             <TextInput
               {...form.getInputProps("cardNumber")}
               withAsterisk
-              style={{ flexGrow: 1 }}
+              style={{ flexGrow: 1, minHeight: 80 }}
               label={"Card Number"}
             />
           </Flex>
@@ -331,14 +356,14 @@ function Users() {
             <TextInput
               {...form.getInputProps("surname")}
               withAsterisk
-              style={{ flexGrow: 1 }}
+              style={{ flexGrow: 1, minHeight: 80 }}
               label={"Surname"}
             />
 
             <TextInput
               {...form.getInputProps("email")}
               withAsterisk
-              style={{ flexGrow: 1 }}
+              style={{ flexGrow: 1, minHeight: 80 }}
               label={"Email"}
             />
           </Flex>
@@ -348,14 +373,14 @@ function Users() {
               withAsterisk
               data={activeTeamSelectData}
               searchable
-              style={{ flexGrow: 1 }}
+              style={{ flexGrow: 1, minHeight: 80 }}
               label={"Team Name"}
             />
 
             <PasswordInput
               {...form.getInputProps("password")}
               withAsterisk
-              style={{ flexGrow: 1 }}
+              style={{ flexGrow: 1, minHeight: 80 }}
               label={"Password"}
             />
           </Flex>
@@ -363,7 +388,7 @@ function Users() {
             <Radio.Group
               label="Gender"
               withAsterisk
-              style={{ flexGrow: 1 }}
+              style={{ flexGrow: 1, minHeight: 80 }}
               {...form.getInputProps("gender")}
             >
               <Group mt="xs">
@@ -376,7 +401,7 @@ function Users() {
             <Radio.Group
               label="Role"
               withAsterisk
-              style={{ flexGrow: 1 }}
+              style={{ flexGrow: 1, minHeight: 80 }}
               {...form.getInputProps("role")}
             >
               <Group mt="xs">
@@ -391,6 +416,7 @@ function Users() {
           onClick={handleSave}
           variant={"light"}
           style={{ flexGrow: 1, marginTop: 15 }}
+          loading={isLoading}
         >
           Add New User
         </Button>
@@ -439,7 +465,6 @@ function Users() {
           withTableBorder
           withColumnBorders
           mt={15}
-          style={{ tableLayout: "fixed" }}
         >
           <Table.Thead>
             <Table.Tr>
@@ -450,9 +475,8 @@ function Users() {
               <Table.Th>Card Number</Table.Th>
               <Table.Th>Email</Table.Th>
               <Table.Th>Role</Table.Th>
-              <Table.Th>Is Active</Table.Th>
+              <Table.Th>Status</Table.Th>
               <Table.Th>Create User</Table.Th>
-              <Table.Th>Create Date</Table.Th>
               <Table.Th></Table.Th>
             </Table.Tr>
           </Table.Thead>

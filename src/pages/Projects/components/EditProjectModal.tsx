@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Project } from "../../../types/project";
 import { modals } from "@mantine/modals";
 import { Button, Flex, TextInput } from "@mantine/core";
@@ -15,10 +15,17 @@ import toast from "react-hot-toast";
 interface EditProjectProps {
   project: Project;
   updateProject: (updateProject: Project) => void;
+  projects: Project[];
 }
 
-function EditProjectModal({ project, updateProject }: EditProjectProps) {
+function EditProjectModal({
+  project,
+  projects,
+  updateProject,
+}: EditProjectProps) {
   const { handleDataRequest } = useRequestHandler();
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const projectForm = useForm({
     initialValues: {
@@ -52,11 +59,32 @@ function EditProjectModal({ project, updateProject }: EditProjectProps) {
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   const handleSave = async (e: React.MouseEvent) => {
+    setIsLoading(true);
+
     e.preventDefault();
 
     projectForm.validate();
 
-    if (!projectForm.isValid()) return;
+    if (!projectForm.isValid()) {
+      setIsLoading(false);
+      return;
+    }
+
+    if (
+      projects.some((x) => x.name.trim() === projectForm.values.name.trim())
+    ) {
+      toast.error("There is a project with the same name!");
+      setIsLoading(false);
+      return;
+    }
+
+    if (
+      projects.some((x) => x.code.trim() === projectForm.values.code.trim())
+    ) {
+      toast.error("There is a project with the same code!");
+      setIsLoading(false);
+      return;
+    }
 
     const patchDocument = createJsonPatchDocumentFromDirtyForm(
       projectForm,
@@ -69,7 +97,10 @@ function EditProjectModal({ project, updateProject }: EditProjectProps) {
       patchDocument,
     );
 
-    if (!response.isSuccess) return;
+    if (!response.isSuccess) {
+      setIsLoading(false);
+      return;
+    }
 
     initialValues.current = {
       ...projectForm.values,
@@ -82,6 +113,8 @@ function EditProjectModal({ project, updateProject }: EditProjectProps) {
     toast.success("Project edited successfully.");
 
     modals.closeAll();
+
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -93,16 +126,22 @@ function EditProjectModal({ project, updateProject }: EditProjectProps) {
   return (
     <Flex direction={"column"} gap={10}>
       <TextInput
+        style={{ minHeight: 80 }}
         ref={nameInputRef}
         {...projectForm.getInputProps("name")}
         label={"Name"}
       />
 
-      <TextInput {...projectForm.getInputProps("code")} label={"Code"} />
+      <TextInput
+        style={{ minHeight: 80 }}
+        {...projectForm.getInputProps("code")}
+        label={"Code"}
+      />
       <Button
         variant="light"
         disabled={!projectForm.isDirty()}
         onClick={(e) => handleSave(e)}
+        loading={isLoading}
       >
         Edit
       </Button>

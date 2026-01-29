@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Team } from "../../../types/team";
 import { Button, Flex, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
@@ -14,11 +14,14 @@ import { modals } from "@mantine/modals";
 
 interface EditTeamProps {
   team: Team;
+  teams: Team[];
   updateTeam: (teamForm: Team) => void;
 }
 
-function EditTeamModal({ team, updateTeam }: EditTeamProps) {
+function EditTeamModal({ team, teams, updateTeam }: EditTeamProps) {
   const { handleDataRequest } = useRequestHandler();
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const teamForm = useForm({
     initialValues: {
@@ -45,11 +48,22 @@ function EditTeamModal({ team, updateTeam }: EditTeamProps) {
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   const handleSave = async (e: React.MouseEvent) => {
+    setIsLoading(true);
+
     e.preventDefault();
 
     teamForm.validate();
 
-    if (!teamForm.isValid()) return;
+    if (!teamForm.isValid()) {
+      setIsLoading(false);
+      return;
+    }
+
+    if (teams.some((x) => x.name.trim() === teamForm.values.name.trim())) {
+      toast.error("There is a team with the same name!");
+      setIsLoading(false);
+      return;
+    }
 
     const patchDocument = createJsonPatchDocumentFromDirtyForm(
       teamForm,
@@ -62,7 +76,10 @@ function EditTeamModal({ team, updateTeam }: EditTeamProps) {
       patchDocument,
     );
 
-    if (!response.isSuccess) return;
+    if (!response.isSuccess) {
+      setIsLoading(false);
+      return;
+    }
 
     initialValues.current = {
       ...teamForm.values,
@@ -75,6 +92,8 @@ function EditTeamModal({ team, updateTeam }: EditTeamProps) {
     toast.success("Team edited successfully.");
 
     modals.closeAll();
+
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -88,6 +107,7 @@ function EditTeamModal({ team, updateTeam }: EditTeamProps) {
       <TextInput
         ref={nameInputRef}
         {...teamForm.getInputProps("name")}
+        style={{ minHeight: 80 }}
         withAsterisk
         label={"Name"}
       />
@@ -96,6 +116,7 @@ function EditTeamModal({ team, updateTeam }: EditTeamProps) {
         variant="light"
         disabled={!teamForm.isDirty()}
         onClick={(e) => handleSave(e)}
+        loading={isLoading}
       >
         Edit
       </Button>

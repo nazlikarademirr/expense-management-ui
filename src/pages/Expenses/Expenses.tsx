@@ -9,12 +9,12 @@ import {
   Group,
   NumberInput,
   Radio,
-  ScrollArea,
   Select,
   Table,
   TextInput,
   Title,
   Text,
+  Tooltip,
 } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import { Expense, ExpenseRequest, ExpenseResponse } from "../../types/expense";
@@ -267,6 +267,7 @@ function Expenses() {
 
   const handleSave = async () => {
     setIsLoading(true);
+
     form.validate();
 
     if (!form.isValid()) {
@@ -429,22 +430,26 @@ function Expenses() {
             <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
             <Table.Td>
               <Flex justify={"center"} gap={5}>
-                <ActionIcon
-                  disabled={x.isApproved}
-                  onClick={() => openEditExpense(x)}
-                  variant={"light"}
-                  color={"blue"}
-                >
-                  <IconEdit />
-                </ActionIcon>
-                <ActionIcon
-                  disabled={x.isApproved}
-                  onClick={() => openDeleteExpenseModal(x.id)}
-                  variant={"light"}
-                  color={"red"}
-                >
-                  <IconTrash />
-                </ActionIcon>
+                <Tooltip label="Edit" withArrow>
+                  <ActionIcon
+                    disabled={x.isApproved}
+                    onClick={() => openEditExpense(x)}
+                    variant={"light"}
+                    color={"blue"}
+                  >
+                    <IconEdit />
+                  </ActionIcon>
+                </Tooltip>
+                <Tooltip label="Delete" withArrow>
+                  <ActionIcon
+                    disabled={x.isApproved}
+                    onClick={() => openDeleteExpenseModal(x.id)}
+                    variant={"light"}
+                    color={"red"}
+                  >
+                    <IconTrash />
+                  </ActionIcon>
+                </Tooltip>
               </Flex>
             </Table.Td>
           </Table.Tr>
@@ -596,7 +601,7 @@ function Expenses() {
               padding={10}
               w={"100%"}
             >
-              <Flex gap="sm" align-items={"flex-end"} style={{ minHeight: 90 }}>
+              <Flex gap="sm" style={{ minHeight: 90 }}>
                 <Select
                   {...overtimeMemberForm.getInputProps("userId")}
                   withAsterisk
@@ -618,27 +623,23 @@ function Expenses() {
                   Add Overtime Member
                 </Button>
               </Flex>
-
               <Table
                 striped
                 stickyHeader
                 highlightOnHover
                 withTableBorder
                 withColumnBorders
-                style={{ tableLayout: "fixed" }}
               >
-                <ScrollArea h={"100%"}>
-                  <Table.Thead>
-                    <Table.Tr>
-                      <Table.Th>User Name</Table.Th>
-                      <Table.Th>Price</Table.Th>
-                      <Table.Th>Create User</Table.Th>
-                      <Table.Th>Create Date</Table.Th>
-                      <Table.Th></Table.Th>
-                    </Table.Tr>
-                  </Table.Thead>
-                  <Table.Tbody>{memoizedOvertimeMembers}</Table.Tbody>
-                </ScrollArea>
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th>User Name</Table.Th>
+                    <Table.Th>Price</Table.Th>
+                    <Table.Th>Create User</Table.Th>
+                    <Table.Th>Create Date</Table.Th>
+                    <Table.Th></Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>{memoizedOvertimeMembers}</Table.Tbody>
               </Table>
             </Card>
           </Flex>
@@ -694,27 +695,24 @@ function Expenses() {
           withTableBorder
           withColumnBorders
           mt={15}
-          style={{ tableLayout: "fixed" }}
         >
-          <ScrollArea h={"100%"}>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>User Name</Table.Th>
-                <Table.Th>Project Name</Table.Th>
-                <Table.Th>Expense Type</Table.Th>
-                <Table.Th>Expense Date</Table.Th>
-                <Table.Th>Total Price</Table.Th>
-                <Table.Th>Currency</Table.Th>
-                <Table.Th>Trip Description</Table.Th>
-                <Table.Th>Out Of Office</Table.Th>
-                <Table.Th>Report Name</Table.Th>
-                <Table.Th>Create User</Table.Th>
-                <Table.Th>Create Date</Table.Th>
-                <Table.Th></Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>{memoizedExpenses}</Table.Tbody>
-          </ScrollArea>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th>User Name</Table.Th>
+              <Table.Th>Project Name</Table.Th>
+              <Table.Th>Expense Type</Table.Th>
+              <Table.Th>Expense Date</Table.Th>
+              <Table.Th>Total Price</Table.Th>
+              <Table.Th>Currency</Table.Th>
+              <Table.Th>Trip Description</Table.Th>
+              <Table.Th>Out Of Office</Table.Th>
+              <Table.Th>Report Name</Table.Th>
+              <Table.Th>Create User</Table.Th>
+              <Table.Th>Create Date</Table.Th>
+              <Table.Th></Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>{memoizedExpenses}</Table.Tbody>
         </Table>
       </Card>
     </div>

@@ -1,7 +1,7 @@
 import { useForm } from "@mantine/form";
 import useRequestHandler from "../../../hooks/useRequestHandler";
 import { Report } from "../../../types/report";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button, Flex, TextInput } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import toast from "react-hot-toast";
@@ -11,17 +11,17 @@ import {
   createJsonPatchDocumentFromDirtyForm,
   JsonPatchKeyValuePair,
 } from "../../../types/json-patch-document";
-import useReports from "../../../hooks/useReports";
 
 interface EditReportProps {
   report: Report;
+  reports: Report[];
   updateReport: (formEditedReport: Report) => void;
 }
 
-function EditReportModal({ report, updateReport }: EditReportProps) {
+function EditReportModal({ report, reports, updateReport }: EditReportProps) {
   const { handleDataRequest } = useRequestHandler();
 
-  const { reports } = useReports();
+  const [isLoading, setIsLoading] = useState(false);
 
   const reportForm = useForm({
     initialValues: {
@@ -44,16 +44,20 @@ function EditReportModal({ report, updateReport }: EditReportProps) {
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   const handleSave = async (e: React.MouseEvent) => {
+    setIsLoading(true);
+
     e.preventDefault();
 
     reportForm.validate();
 
-    if (!reportForm.isValid()) return;
+    if (!reportForm.isValid()) {
+      setIsLoading(false);
+      return;
+    }
 
-    if (
-      reports.some((x) => x.isApproved && x.name === reportForm.values.name)
-    ) {
+    if (reports.some((x) => x.name.trim() === reportForm.values.name.trim())) {
       toast.error("There is a report with the same name!");
+      setIsLoading(false);
       return;
     }
 
@@ -68,7 +72,10 @@ function EditReportModal({ report, updateReport }: EditReportProps) {
       patchDocument,
     );
 
-    if (!response.isSuccess) return;
+    if (!response.isSuccess) {
+      setIsLoading(false);
+      return;
+    }
 
     initialValues.current = reportForm.values;
 
@@ -77,6 +84,8 @@ function EditReportModal({ report, updateReport }: EditReportProps) {
     toast.success("Report edited successfully.");
 
     modals.closeAll();
+
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -90,12 +99,14 @@ function EditReportModal({ report, updateReport }: EditReportProps) {
       <TextInput
         ref={nameInputRef}
         label={"Name"}
+        style={{ minHeight: 80 }}
         {...reportForm.getInputProps("name")}
       />
       <Button
         variant="light"
         disabled={!reportForm.isDirty()}
         onClick={(e) => handleSave(e)}
+        loading={isLoading}
       >
         Edit
       </Button>

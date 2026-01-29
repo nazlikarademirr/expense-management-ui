@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { modals } from "@mantine/modals";
 import {
   Button,
@@ -20,16 +20,20 @@ import { SelectItem } from "../../../types/select-item";
 
 interface EditUserProps {
   user: User;
+  users: User[];
   activeTeamSelectData: SelectItem[];
   updateUser: (userForm: User) => void;
 }
 
 function EditUserModal({
   user,
+  users,
   activeTeamSelectData,
   updateUser,
 }: EditUserProps) {
   const { handleDataRequest } = useRequestHandler();
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const userForm = useForm({
     initialValues: {
@@ -77,11 +81,32 @@ function EditUserModal({
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   const handleSave = async (e: React.MouseEvent) => {
+    setIsLoading(true);
+
     e.preventDefault();
 
     userForm.validate();
 
-    if (!userForm.isValid()) return;
+    if (!userForm.isValid()) {
+      setIsLoading(false);
+      return;
+    }
+
+    if (
+      users.some(
+        (x) => x.cardNumber.trim() === userForm.values.cardNumber.trim(),
+      )
+    ) {
+      toast.error("There is a user with the same card number!");
+      setIsLoading(false);
+      return;
+    }
+
+    if (users.some((x) => x.email.trim() === userForm.values.email.trim())) {
+      toast.error("There is a with the same email!");
+      setIsLoading(false);
+      return;
+    }
 
     const userRequest: UserRequest = {
       name: userForm.values.name,
@@ -101,7 +126,10 @@ function EditUserModal({
       userRequest,
     );
 
-    if (!response.isSuccess) return;
+    if (!response.isSuccess) {
+      setIsLoading(false);
+      return;
+    }
 
     initialValues.current = {
       ...userForm.values,
@@ -114,6 +142,8 @@ function EditUserModal({
     toast.success("User edited successfully.");
 
     modals.closeAll();
+
+    setIsLoading(false);
   };
 
   const changeTeam = (team: ComboboxItem) => {
@@ -132,17 +162,20 @@ function EditUserModal({
       <TextInput
         ref={nameInputRef}
         {...userForm.getInputProps("name")}
+        style={{ minHeight: 80 }}
         withAsterisk
         label={"Name"}
       />
       <TextInput
         {...userForm.getInputProps("surname")}
+        style={{ minHeight: 80 }}
         withAsterisk
         label={"Surname"}
       />
       <Select
         {...userForm.getInputProps("teamId")}
         onChange={(_, option) => changeTeam(option)}
+        style={{ minHeight: 80 }}
         withAsterisk
         data={activeTeamSelectData}
         searchable
@@ -152,7 +185,7 @@ function EditUserModal({
       <Radio.Group
         label="Gender"
         withAsterisk
-        style={{ flexGrow: 1 }}
+        style={{ flexGrow: 1, minHeight: 80 }}
         {...userForm.getInputProps("gender")}
       >
         <Group mt="xs">
@@ -163,18 +196,20 @@ function EditUserModal({
       </Radio.Group>
       <TextInput
         {...userForm.getInputProps("cardNumber")}
+        style={{ minHeight: 80 }}
         withAsterisk
         label={"Card Number"}
       />
       <TextInput
         {...userForm.getInputProps("email")}
+        style={{ minHeight: 80 }}
         withAsterisk
         label={"Email"}
       />
       <Radio.Group
         label="Role"
         withAsterisk
-        style={{ flexGrow: 1 }}
+        style={{ flexGrow: 1, minHeight: 80 }}
         {...userForm.getInputProps("role")}
       >
         <Group mt="xs">
@@ -188,6 +223,7 @@ function EditUserModal({
         variant={"light"}
         disabled={!userForm.isDirty()}
         onClick={(e) => handleSave(e)}
+        loading={isLoading}
       >
         Edit
       </Button>
