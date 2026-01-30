@@ -80,17 +80,17 @@ function Users() {
       name: (value) =>
         value.trim().length === 0
           ? "Name cannot be empty."
-          : value.length < 2
+          : value.trim().length < 2
             ? "Name must have at least 2 letters."
-            : value.length > 128
+            : value.trim().length > 128
               ? "Name cannot exceed 128 characters."
               : undefined,
       surname: (value) =>
         value.trim().length === 0
           ? "Surname cannot be empty."
-          : value.length < 2
+          : value.trim().length < 2
             ? "Surname must have at least 2 letters."
-            : value.length > 128
+            : value.trim().length > 128
               ? "Surname cannot exceed 128 characters."
               : undefined,
       teamId: (value) => (!value ? "Team must be selected." : undefined),
@@ -98,21 +98,21 @@ function Users() {
       cardNumber: (value) =>
         value.trim().length === 0
           ? "Card number cannot be empty."
-          : value.length > 8
+          : value.trim().length > 8
             ? "Card number cannot exceed 8 characters."
             : undefined,
       email: (value) =>
         value.trim().length === 0
           ? "Email cannot be empty."
-          : value.length > 128
+          : value.trim().length > 128
             ? "Email cannot exceed 128 characters."
             : undefined,
       password: (value) =>
         value.trim().length === 0
           ? "Password cannot be empty."
-          : value.length < 8
+          : value.trim().length < 8
             ? "Password cannot be less than 8 characters."
-            : value.length > 32
+            : value.trim().length > 32
               ? "Password cannot exceed 32 characters."
               : undefined,
       role: (value) => (!value ? "Role must be selected." : undefined),
@@ -126,9 +126,9 @@ function Users() {
       children: (
         <EditUserModal
           user={user}
-          users={users}
           activeTeamSelectData={activeTeamSelectData}
           updateUser={updateUser}
+          checkIfUserIsValid={checkIfUserIsValid}
         />
       ),
     });
@@ -166,6 +166,20 @@ function Users() {
     replaceUsers(users);
   };
 
+  const checkIfUserIsValid = (user: User) => {
+    if (users.some((x) => x.cardNumber.trim() === user.cardNumber.trim())) {
+      toast.error("There is a user with the same card number!");
+      return false;
+    }
+
+    if (users.some((x) => x.email.trim() === user.email.trim())) {
+      toast.error("There is a user with the same email!");
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSave = async () => {
     setIsLoading(true);
 
@@ -177,15 +191,11 @@ function Users() {
     }
 
     if (
-      users.some((x) => x.cardNumber.trim() === form.values.cardNumber.trim())
+      !checkIfUserIsValid({
+        ...form.values,
+        teamId: String(form.values.teamId),
+      })
     ) {
-      toast.error("There is a user with the same card number!");
-      setIsLoading(false);
-      return;
-    }
-
-    if (users.some((x) => x.email.trim() === form.values.email.trim())) {
-      toast.error("There is a with the same email!");
       setIsLoading(false);
       return;
     }
@@ -341,14 +351,14 @@ function Users() {
             <TextInput
               {...form.getInputProps("name")}
               withAsterisk
-              style={{ flexGrow: 1, minHeight: 80 }}
+              style={{ flexGrow: 1, minHeight: 80, minWidth: 200 }}
               label={"Name"}
             />
 
             <TextInput
               {...form.getInputProps("cardNumber")}
               withAsterisk
-              style={{ flexGrow: 1, minHeight: 80 }}
+              style={{ flexGrow: 1, minHeight: 80, minWidth: 200 }}
               label={"Card Number"}
             />
           </Flex>
@@ -356,14 +366,14 @@ function Users() {
             <TextInput
               {...form.getInputProps("surname")}
               withAsterisk
-              style={{ flexGrow: 1, minHeight: 80 }}
+              style={{ flexGrow: 1, minHeight: 80, minWidth: 200 }}
               label={"Surname"}
             />
 
             <TextInput
               {...form.getInputProps("email")}
               withAsterisk
-              style={{ flexGrow: 1, minHeight: 80 }}
+              style={{ flexGrow: 1, minHeight: 80, minWidth: 200 }}
               label={"Email"}
             />
           </Flex>
@@ -373,14 +383,14 @@ function Users() {
               withAsterisk
               data={activeTeamSelectData}
               searchable
-              style={{ flexGrow: 1, minHeight: 80 }}
+              style={{ flexGrow: 1, minHeight: 80, minWidth: 200 }}
               label={"Team Name"}
             />
 
             <PasswordInput
               {...form.getInputProps("password")}
               withAsterisk
-              style={{ flexGrow: 1, minHeight: 80 }}
+              style={{ flexGrow: 1, minHeight: 80, minWidth: 200 }}
               label={"Password"}
             />
           </Flex>
@@ -388,7 +398,7 @@ function Users() {
             <Radio.Group
               label="Gender"
               withAsterisk
-              style={{ flexGrow: 1, minHeight: 80 }}
+              style={{ flexGrow: 1, minHeight: 80, minWidth: 200 }}
               {...form.getInputProps("gender")}
             >
               <Group mt="xs">
@@ -401,7 +411,7 @@ function Users() {
             <Radio.Group
               label="Role"
               withAsterisk
-              style={{ flexGrow: 1, minHeight: 80 }}
+              style={{ flexGrow: 1, minHeight: 80, minWidth: 200 }}
               {...form.getInputProps("role")}
             >
               <Group mt="xs">

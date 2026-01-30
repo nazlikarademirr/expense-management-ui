@@ -62,9 +62,9 @@ function Teams() {
       name: (value) =>
         value.trim().length === 0
           ? "Name cannot be empty."
-          : value.length < 2
+          : value.trim().length < 2
             ? "Name must have at least 2 letters."
-            : value.length > 128
+            : value.trim().length > 128
               ? "Name cannot exceed 128 characters."
               : undefined,
     },
@@ -75,7 +75,11 @@ function Teams() {
       title: <Title order={4}>Edit Team</Title>,
       size: "xl",
       children: (
-        <EditTeamModal team={team} teams={teams} updateTeam={updateTeam} />
+        <EditTeamModal
+          team={team}
+          updateTeam={updateTeam}
+          checkIfTeamIsValid={checkIfTeamIsValid}
+        />
       ),
     });
   };
@@ -102,6 +106,15 @@ function Teams() {
     replaceTeams(response.value);
   };
 
+  const checkIfTeamIsValid = (team: Team) => {
+    if (teams.some((x) => x.name.trim() === team.name.trim())) {
+      toast.error("There is a team with the same name!");
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSave = async () => {
     setIsLoading(true);
 
@@ -112,8 +125,7 @@ function Teams() {
       return;
     }
 
-    if (teams.some((x) => x.name.trim() === form.values.name.trim())) {
-      toast.error("There is a team with the same name!");
+    if (!checkIfTeamIsValid(form.values)) {
       setIsLoading(false);
       return;
     }

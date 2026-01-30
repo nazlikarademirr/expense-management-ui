@@ -38,6 +38,7 @@ interface EditExpenseProps {
   activeUserSelectData: SelectItem[];
   activeProjectSelectData: SelectItem[];
   unapprovedReportSelectData: SelectItem[];
+  checkIfExpenseIsValid: (expense: Expense) => boolean;
 }
 
 function EditExpenseModal({
@@ -46,6 +47,7 @@ function EditExpenseModal({
   activeUserSelectData,
   activeProjectSelectData,
   unapprovedReportSelectData,
+  checkIfExpenseIsValid,
 }: EditExpenseProps) {
   const { handleDataRequest } = useRequestHandler();
 
@@ -74,7 +76,7 @@ function EditExpenseModal({
         values.expenseType === ExpenseType.Transportation &&
         value.trim().length === 0
           ? "Trip description cannot be empty."
-          : value.length > 256
+          : value.trim().length > 256
             ? "Trip description cannot exceed 256 characters."
             : undefined,
       outOfOffice: (value) =>
@@ -116,20 +118,7 @@ function EditExpenseModal({
       return;
     }
 
-    if (expenseForm.values.expenseDate > new Date()) {
-      toast.error("Expenses cannot be entered for future dates.");
-      setIsLoading(false);
-      return;
-    }
-
-    let totalPrice = 0;
-
-    expenseForm.values.overtimeMembers.forEach((x) => {
-      totalPrice = totalPrice + x.price;
-    });
-
-    if (totalPrice > expenseForm.values.totalPrice) {
-      toast.error("The total price cannot be less than the sum of the prices.");
+    if (!checkIfExpenseIsValid(expenseForm.values)) {
       setIsLoading(false);
       return;
     }
@@ -363,7 +352,7 @@ function EditExpenseModal({
         </Flex>
         <Flex w={"40%"}>
           <Card shadow={"xs"} radius={"md"} withBorder padding={10} w={"100%"}>
-            <Flex gap="sm" style={{ minHeight: 90 }}>
+            <Flex gap="sm" style={{ minHeight: 80 }}>
               <Select
                 {...overtimeMemberForm.getInputProps("userId")}
                 onChange={(_, option) => changeOvertimeMember(option)}

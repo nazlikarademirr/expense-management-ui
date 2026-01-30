@@ -15,13 +15,13 @@ import toast from "react-hot-toast";
 interface EditProjectProps {
   project: Project;
   updateProject: (updateProject: Project) => void;
-  projects: Project[];
+  checkIfProjectIsValid: (project: Project) => boolean;
 }
 
 function EditProjectModal({
   project,
-  projects,
   updateProject,
+  checkIfProjectIsValid,
 }: EditProjectProps) {
   const { handleDataRequest } = useRequestHandler();
 
@@ -35,20 +35,19 @@ function EditProjectModal({
       name: (value) =>
         value.trim().length === 0
           ? "Name cannot be empty."
-          : value.length < 2
+          : value.trim().length < 2
             ? "Name must have at least 2 letters."
-            : value.length > 128
+            : value.trim().length > 128
               ? "Name cannot exceed 128 characters."
               : null,
       code: (value) =>
         value.trim().length === 0
           ? "Code cannot be empty."
-          : value.length < 2
+          : value.trim().length < 2
             ? "Code must have at least 2 letters."
-            : value.length > 128
+            : value.trim().length > 128
               ? "Code cannot exceed 128 characters."
               : null,
-      isActive: (value) => (!value ? "Activity must be selected." : undefined),
     },
   });
 
@@ -70,18 +69,7 @@ function EditProjectModal({
       return;
     }
 
-    if (
-      projects.some((x) => x.name.trim() === projectForm.values.name.trim())
-    ) {
-      toast.error("There is a project with the same name!");
-      setIsLoading(false);
-      return;
-    }
-
-    if (
-      projects.some((x) => x.code.trim() === projectForm.values.code.trim())
-    ) {
-      toast.error("There is a project with the same code!");
+    if (!checkIfProjectIsValid(projectForm.values)) {
       setIsLoading(false);
       return;
     }

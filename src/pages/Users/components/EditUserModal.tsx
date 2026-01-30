@@ -20,16 +20,16 @@ import { SelectItem } from "../../../types/select-item";
 
 interface EditUserProps {
   user: User;
-  users: User[];
   activeTeamSelectData: SelectItem[];
   updateUser: (userForm: User) => void;
+  checkIfUserIsValid: (user: User) => boolean;
 }
 
 function EditUserModal({
   user,
-  users,
   activeTeamSelectData,
   updateUser,
+  checkIfUserIsValid,
 }: EditUserProps) {
   const { handleDataRequest } = useRequestHandler();
 
@@ -43,17 +43,17 @@ function EditUserModal({
       name: (value) =>
         value.trim().length === 0
           ? "Name cannot be empty."
-          : value.length < 2
+          : value.trim().length < 2
             ? "Name must have at least 2 letters."
-            : value.length > 128
+            : value.trim().length > 128
               ? "Name cannot exceed 128 characters."
               : undefined,
       surname: (value) =>
         value.trim().length === 0
           ? "Surname cannot be empty."
-          : value.length < 2
+          : value.trim().length < 2
             ? "Surname must have at least 2 letters."
-            : value.length > 128
+            : value.trim().length > 128
               ? "Surname cannot exceed 128 characters."
               : undefined,
       teamId: (value) => (!value ? "Team must be selected." : undefined),
@@ -61,13 +61,13 @@ function EditUserModal({
       cardNumber: (value) =>
         value.trim().length === 0
           ? "Card number cannot be empty."
-          : value.length > 8
+          : value.trim().length > 8
             ? "Card number cannot exceed 8 characters."
             : undefined,
       email: (value) =>
         value.trim().length === 0
           ? "Email cannot be empty."
-          : value.length > 128
+          : value.trim().length > 128
             ? "Email cannot exceed 128 characters."
             : undefined,
       role: (value) => (!value ? "Role must be selected." : undefined),
@@ -92,18 +92,7 @@ function EditUserModal({
       return;
     }
 
-    if (
-      users.some(
-        (x) => x.cardNumber.trim() === userForm.values.cardNumber.trim(),
-      )
-    ) {
-      toast.error("There is a user with the same card number!");
-      setIsLoading(false);
-      return;
-    }
-
-    if (users.some((x) => x.email.trim() === userForm.values.email.trim())) {
-      toast.error("There is a with the same email!");
+    if (checkIfUserIsValid(userForm.values)) {
       setIsLoading(false);
       return;
     }

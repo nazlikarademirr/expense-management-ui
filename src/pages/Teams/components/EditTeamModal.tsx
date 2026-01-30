@@ -14,11 +14,15 @@ import { modals } from "@mantine/modals";
 
 interface EditTeamProps {
   team: Team;
-  teams: Team[];
   updateTeam: (teamForm: Team) => void;
+  checkIfTeamIsValid: (team: Team) => boolean;
 }
 
-function EditTeamModal({ team, teams, updateTeam }: EditTeamProps) {
+function EditTeamModal({
+  team,
+  updateTeam,
+  checkIfTeamIsValid,
+}: EditTeamProps) {
   const { handleDataRequest } = useRequestHandler();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -31,13 +35,11 @@ function EditTeamModal({ team, teams, updateTeam }: EditTeamProps) {
       name: (value) =>
         value.trim().length === 0
           ? "Name cannot be empty."
-          : value.length < 2
+          : value.trim().length < 2
             ? "Name must have at least 2 letters."
-            : value.length > 128
+            : value.trim().length > 128
               ? "Name cannot exceed 128 characters."
               : null,
-      isActive: (value) =>
-        value === null ? "Activity must be selected." : undefined,
     },
   });
 
@@ -59,8 +61,7 @@ function EditTeamModal({ team, teams, updateTeam }: EditTeamProps) {
       return;
     }
 
-    if (teams.some((x) => x.name.trim() === teamForm.values.name.trim())) {
-      toast.error("There is a team with the same name!");
+    if (!checkIfTeamIsValid(teamForm.values)) {
       setIsLoading(false);
       return;
     }

@@ -60,17 +60,17 @@ function Projects() {
       name: (value) =>
         value.trim().length === 0
           ? "Name cannot be empty."
-          : value.length < 2
+          : value.trim().length < 2
             ? "Name must have at least 2 letters."
-            : value.length > 128
+            : value.trim().length > 128
               ? "Name cannot exceed 128 characters."
               : undefined,
       code: (value) =>
         value.trim().length === 0
           ? "Code cannot be empty."
-          : value.length < 2
+          : value.trim().length < 2
             ? "Code must have at least 2 letters."
-            : value.length > 128
+            : value.trim().length > 128
               ? "Code cannot exceed 128 characters."
               : undefined,
     },
@@ -83,8 +83,8 @@ function Projects() {
       children: (
         <EditProjectModal
           project={project}
-          projects={projects}
           updateProject={updateProject}
+          checkIfProjectIsValid={checkIfProjectIsValid}
         />
       ),
     });
@@ -101,6 +101,20 @@ function Projects() {
     replaceProjects(response.value);
   };
 
+  const checkIfProjectIsValid = (project: Project) => {
+    if (projects.some((x) => x.name.trim() === project.name.trim())) {
+      toast.error("There is a project with the same name!");
+      return false;
+    }
+
+    if (projects.some((x) => x.code.trim() === project.code.trim())) {
+      toast.error("There is a project with the same code!");
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSave = async () => {
     setIsLoading(true);
 
@@ -111,14 +125,7 @@ function Projects() {
       return;
     }
 
-    if (projects.some((x) => x.name.trim() === form.values.name.trim())) {
-      toast.error("There is a project with the same name!");
-      setIsLoading(false);
-      return;
-    }
-
-    if (projects.some((x) => x.code.trim() === form.values.code.trim())) {
-      toast.error("There is a project with the same code!");
+    if (!checkIfProjectIsValid(form.values)) {
       setIsLoading(false);
       return;
     }

@@ -66,9 +66,9 @@ function Reports() {
       name: (value) =>
         value.trim().length === 0
           ? "Name cannot be empty."
-          : value.length < 2
+          : value.trim().length < 2
             ? "Name must have at least 2 letters."
-            : value.length > 128
+            : value.trim().length > 128
               ? "Name cannot exceed 128 characters."
               : undefined,
     },
@@ -81,8 +81,8 @@ function Reports() {
       children: (
         <EditReportModal
           report={report}
-          reports={reports}
           updateReport={updateReport}
+          checkIfReportIsValid={checkIfReportIsValid}
         />
       ),
     });
@@ -184,6 +184,14 @@ function Reports() {
     replaceReports(response.value);
   };
 
+  const checkIfReportIsValid = (report: Report) => {
+    if (reports.some((x) => x.name.trim() === report.name.trim())) {
+      toast.error("There is a report with the same name!");
+      return false;
+    }
+    return true;
+  };
+
   const handleSave = async () => {
     setIsLoading(true);
 
@@ -194,8 +202,7 @@ function Reports() {
       return;
     }
 
-    if (reports.some((x) => x.name.trim() === form.values.name.trim())) {
-      toast.error("There is a report with the same name!");
+    if (!checkIfReportIsValid(form.values)) {
       setIsLoading(false);
       return;
     }

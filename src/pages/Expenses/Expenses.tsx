@@ -117,7 +117,7 @@ function Expenses() {
         values.expenseType === ExpenseType.Transportation &&
         value.trim().length === 0
           ? "Trip description cannot be empty."
-          : value.length > 256
+          : value.trim().length > 256
             ? "Trip description cannot exceed 256 characters."
             : undefined,
       outOfOffice: (value) =>
@@ -157,6 +157,7 @@ function Expenses() {
           activeUserSelectData={activeUserSelectData}
           activeProjectSelectData={activeProjectSelectData}
           unapprovedReportSelectData={unapprovedReportSelectData}
+          checkIfExpenseIsValid={checkIfExpenseIsValid}
         />
       ),
     });
@@ -265,6 +266,26 @@ function Expenses() {
     replaceExpenses(expenseList);
   };
 
+  const checkIfExpenseIsValid = (expense: Expense) => {
+    if (expense.expenseDate > new Date()) {
+      toast.error("Expenses cannot be entered for future dates.");
+      return false;
+    }
+
+    let totalPrice = 0;
+
+    expense.overtimeMembers.forEach((x) => {
+      totalPrice = totalPrice + x.price;
+    });
+
+    if (totalPrice > expense.totalPrice) {
+      toast.error("The total price cannot be less than the sum of the prices.");
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSave = async () => {
     setIsLoading(true);
 
@@ -275,20 +296,7 @@ function Expenses() {
       return;
     }
 
-    if (form.values.expenseDate > new Date()) {
-      toast.error("Expenses cannot be entered for future dates.");
-      setIsLoading(false);
-      return;
-    }
-
-    let totalPrice = 0;
-
-    form.values.overtimeMembers.forEach((x) => {
-      totalPrice = totalPrice + x.price;
-    });
-
-    if (totalPrice > form.values.totalPrice) {
-      toast.error("The total price cannot be less than the sum of the prices.");
+    if (!checkIfExpenseIsValid(form.values)) {
       setIsLoading(false);
       return;
     }

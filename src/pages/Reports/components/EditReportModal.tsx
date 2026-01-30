@@ -14,11 +14,15 @@ import {
 
 interface EditReportProps {
   report: Report;
-  reports: Report[];
   updateReport: (formEditedReport: Report) => void;
+  checkIfReportIsValid: (report: Report) => boolean;
 }
 
-function EditReportModal({ report, reports, updateReport }: EditReportProps) {
+function EditReportModal({
+  report,
+  updateReport,
+  checkIfReportIsValid,
+}: EditReportProps) {
   const { handleDataRequest } = useRequestHandler();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -31,9 +35,9 @@ function EditReportModal({ report, reports, updateReport }: EditReportProps) {
       name: (value) =>
         value.trim().length === 0
           ? "Name cannot be empty."
-          : value.length < 2
+          : value.trim().length < 2
             ? "Name must have at least 2 letters."
-            : value.length > 128
+            : value.trim().length > 128
               ? "Name cannot exceed 128 characters."
               : null,
     },
@@ -55,8 +59,7 @@ function EditReportModal({ report, reports, updateReport }: EditReportProps) {
       return;
     }
 
-    if (reports.some((x) => x.name.trim() === reportForm.values.name.trim())) {
-      toast.error("There is a report with the same name!");
+    if (!checkIfReportIsValid(reportForm.values)) {
       setIsLoading(false);
       return;
     }
