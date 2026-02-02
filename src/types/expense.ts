@@ -1,6 +1,7 @@
 import z from "zod/v4";
 import { OvertimeMember } from "./overtime-member";
 import ExpenseType from "../enums/expense-type";
+import CurrencyType from "../enums/currency-type";
 
 type Expense = {
   id: string;
@@ -63,19 +64,19 @@ const expenseSchema = z
   .object({
     userId: z.string("User must be selected."),
     projectId: z.string("Project must be selected."),
-    expenseType: z.string().min(1, "Expense type must be selected."),
+    expenseType: z.enum(ExpenseType, "Expense type must be selected."),
     expenseDate: z.date("Expense date must be selected."),
     totalPrice: z
       .number("Total price cannot be empty.")
       .min(1, "Total price cannot be 0 or less."),
-    currency: z.string("Currency must be selected."),
-    tripDescription: z.string(),
+    currency: z.enum(CurrencyType, "Currency must be selected."),
+    tripDescription: z.string().nullish(),
     outOfOffice: z.boolean("Out of office cannot be empty."),
   })
   .superRefine((data, ctx) => {
     if (
       data.expenseType === ExpenseType.Transportation &&
-      data.tripDescription.length < 1
+      !data.tripDescription
     ) {
       ctx.addIssue({
         code: "custom",
