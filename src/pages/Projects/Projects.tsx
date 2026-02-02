@@ -1,5 +1,5 @@
 import { useForm } from "@mantine/form";
-import { Project, ProjectRequest } from "../../types/project";
+import projectSchema, { Project, ProjectRequest } from "../../types/project";
 import { modals } from "@mantine/modals";
 import useProjects from "../../hooks/useProjects";
 import { useEffect, useMemo, useState } from "react";
@@ -33,6 +33,7 @@ import {
   TITLE_DIVIDER_MY,
 } from "../../constants/constants";
 import { IoMdAddCircleOutline, IoMdRemoveCircleOutline } from "react-icons/io";
+import { zod4Resolver } from "mantine-form-zod-resolver";
 
 function Projects() {
   const { projects, addProject, updateProject, replaceProjects } =
@@ -56,24 +57,7 @@ function Projects() {
       createUser: crypto.randomUUID(),
       createDate: new Date(),
     },
-    validate: {
-      name: (value) =>
-        value.trim().length === 0
-          ? "Name cannot be empty."
-          : value.trim().length < 2
-            ? "Name must have at least 2 letters."
-            : value.trim().length > 128
-              ? "Name cannot exceed 128 characters."
-              : undefined,
-      code: (value) =>
-        value.trim().length === 0
-          ? "Code cannot be empty."
-          : value.trim().length < 2
-            ? "Code must have at least 2 letters."
-            : value.trim().length > 128
-              ? "Code cannot exceed 128 characters."
-              : undefined,
-    },
+    validate: zod4Resolver(projectSchema),
   });
 
   const openEditProject = (project: Project) => {

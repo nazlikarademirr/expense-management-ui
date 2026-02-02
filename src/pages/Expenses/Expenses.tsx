@@ -17,13 +17,19 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { modals } from "@mantine/modals";
-import { Expense, ExpenseRequest, ExpenseResponse } from "../../types/expense";
+import expenseSchema, {
+  Expense,
+  ExpenseRequest,
+  ExpenseResponse,
+} from "../../types/expense";
 import useExpenses from "./hooks/useExpenses";
 import { IconEdit, IconSearch, IconTrash } from "@tabler/icons-react";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import { DateInput } from "@mantine/dates";
-import { OvertimeMember } from "../../types/overtime-member";
+import overtimeMemberSchema, {
+  OvertimeMember,
+} from "../../types/overtime-member";
 import EditExpenseModal from "./components/EditExpenseModal";
 import { useEffect, useMemo, useState } from "react";
 import { currencyTypes, expenseTypes } from "../../constants/static-data";
@@ -41,8 +47,11 @@ import { SelectItem } from "../../types/select-item";
 import { User } from "../../types/user";
 import { Project } from "../../types/project";
 import { Report } from "../../types/report";
+import { zod4Resolver } from "mantine-form-zod-resolver";
 
 function Expenses() {
+  const MIN_FLEX_HEIGHT = 110;
+
   const {
     expenses,
     addExpense,
@@ -99,30 +108,7 @@ function Expenses() {
       createUser: crypto.randomUUID(),
       createDate: new Date(),
     },
-    validate: {
-      userId: (value) => (!value ? "User must be selected." : undefined),
-      projectId: (value) => (!value ? "Project must be selected." : undefined),
-      expenseType: (value) =>
-        !value ? "Expense type must be selected." : undefined,
-      expenseDate: (value) =>
-        !value ? "Expense date must be selected." : undefined,
-      totalPrice: (value) =>
-        !value
-          ? "Total price cannot be empty."
-          : value < 0 || value === 0
-            ? "Total price cannot be 0 or less."
-            : undefined,
-      currency: (value) => (!value ? "Currency must be selected." : undefined),
-      tripDescription: (value, values) =>
-        values.expenseType === ExpenseType.Transportation &&
-        value.trim().length === 0
-          ? "Trip description cannot be empty."
-          : value.trim().length > 256
-            ? "Trip description cannot exceed 256 characters."
-            : undefined,
-      outOfOffice: (value) =>
-        value === null ? "Out of office cannot be empty." : undefined,
-    },
+    validate: zod4Resolver(expenseSchema),
   });
 
   const overtimeMemberForm = useForm<OvertimeMember>({
@@ -135,15 +121,7 @@ function Expenses() {
       createUser: crypto.randomUUID(),
       createDate: new Date(),
     },
-    validate: {
-      userId: (value) => (!value ? "User must be selected." : undefined),
-      price: (value) =>
-        !value
-          ? "Price cannot be empty."
-          : value < 0 || value === 0
-            ? "Price cannot be 0 or less."
-            : undefined,
-    },
+    validate: zod4Resolver(overtimeMemberSchema),
   });
 
   const openEditExpense = (expense: Expense) => {
@@ -508,7 +486,10 @@ function Expenses() {
       <Card shadow={"xs"} radius={"xs"} withBorder padding={10}>
         <Flex gap={"md"} justify={"center"}>
           <Flex direction={"column"} w={"60%"} justify={"center"}>
-            <Flex gap={"sm"} style={{ flexGrow: 1, minHeight: 110 }}>
+            <Flex
+              gap={"sm"}
+              style={{ flexGrow: 1, minHeight: MIN_FLEX_HEIGHT }}
+            >
               <Select
                 w={"20%"}
                 {...form.getInputProps("userId")}
@@ -538,7 +519,10 @@ function Expenses() {
                 style={{ flexGrow: 1 }}
               />
             </Flex>
-            <Flex gap={"sm"} style={{ flexGrow: 1, minHeight: 110 }}>
+            <Flex
+              gap={"sm"}
+              style={{ flexGrow: 1, minHeight: MIN_FLEX_HEIGHT }}
+            >
               <DateInput
                 w={"20%"}
                 {...form.getInputProps("expenseDate")}
@@ -572,7 +556,10 @@ function Expenses() {
                 </Group>
               </Radio.Group>
             </Flex>
-            <Flex gap={"sm"} style={{ flexGrow: 1, minHeight: 110 }}>
+            <Flex
+              gap={"sm"}
+              style={{ flexGrow: 1, minHeight: MIN_FLEX_HEIGHT }}
+            >
               <TextInput
                 w={"20%"}
                 {...form.getInputProps("tripDescription")}

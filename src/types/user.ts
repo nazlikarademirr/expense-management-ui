@@ -1,3 +1,5 @@
+import { z } from "zod/v4";
+
 type User = {
   id: string;
   name: string;
@@ -44,4 +46,36 @@ type UserResponse = {
   createDate: Date;
 };
 
+const userSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(2, "Name must have at least 2 letters.")
+    .max(128, "Name cannot exceed 128 characters."),
+  surname: z
+    .string()
+    .trim()
+    .min(2, "Surname must have at least 2 letters.")
+    .max(128, "Surname cannot exceed 128 characters."),
+  teamId: z.string("Team must be selected."),
+  gender: z.string().min(1, "Gender must be selected."),
+  cardNumber: z
+    .string()
+    .trim()
+    .min(1, "Card number cannot be empty.")
+    .max(8, "Card number cannot exceed 8 characters."),
+  email: z
+    .string()
+    .trim()
+    .min(14, "Email must have at least 14 letters.")
+    .max(128, "Email cannot exceed 128 characters."),
+  password: z
+    .string()
+    .trim()
+    .min(8, "Password cannot be less than 8 characters.")
+    .max(32, "Password cannot exceed 32 characters."),
+  role: z.string().min(1, "Role must be selected."),
+});
+
+export default userSchema;
 export type { User, UserRequest, UserResponse };

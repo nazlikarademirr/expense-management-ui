@@ -1,5 +1,5 @@
 import { useForm } from "@mantine/form";
-import { Team, TeamRequest } from "../../types/team";
+import teamSchema, { Team, TeamRequest } from "../../types/team";
 import { modals } from "@mantine/modals";
 import useTeams from "../../hooks/useTeams";
 import {
@@ -35,6 +35,7 @@ import {
 import useUsers from "../../hooks/useUsers";
 import { IoMdAddCircleOutline, IoMdRemoveCircleOutline } from "react-icons/io";
 import { User } from "../../types/user";
+import { zod4Resolver } from "mantine-form-zod-resolver";
 
 function Teams() {
   const { teams, addTeam, updateTeam, replaceTeams } = useTeams();
@@ -58,16 +59,7 @@ function Teams() {
       createUser: "",
       createDate: new Date(),
     },
-    validate: {
-      name: (value) =>
-        value.trim().length === 0
-          ? "Name cannot be empty."
-          : value.trim().length < 2
-            ? "Name must have at least 2 letters."
-            : value.trim().length > 128
-              ? "Name cannot exceed 128 characters."
-              : undefined,
-    },
+    validate: zod4Resolver(teamSchema),
   });
 
   const openEditTeam = (team: Team) => {

@@ -1,6 +1,6 @@
 import { useForm } from "@mantine/form";
 import useRequestHandler from "../../../hooks/useRequestHandler";
-import { Report } from "../../../types/report";
+import reportSchema, { Report } from "../../../types/report";
 import { useEffect, useRef, useState } from "react";
 import { Button, Flex, TextInput } from "@mantine/core";
 import { modals } from "@mantine/modals";
@@ -11,6 +11,7 @@ import {
   createJsonPatchDocumentFromDirtyForm,
   JsonPatchKeyValuePair,
 } from "../../../types/json-patch-document";
+import { zod4Resolver } from "mantine-form-zod-resolver";
 
 interface EditReportProps {
   report: Report;
@@ -31,16 +32,7 @@ function EditReportModal({
     initialValues: {
       ...report,
     },
-    validate: {
-      name: (value) =>
-        value.trim().length === 0
-          ? "Name cannot be empty."
-          : value.trim().length < 2
-            ? "Name must have at least 2 letters."
-            : value.trim().length > 128
-              ? "Name cannot exceed 128 characters."
-              : null,
-    },
+    validate: zod4Resolver(reportSchema),
   });
 
   const initialValues = useRef<Report>(reportForm.values);

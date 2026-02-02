@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
+import expenseSchema, {
   Expense,
   ExpenseRequest,
   ExpenseResponse,
@@ -26,11 +26,14 @@ import { useForm } from "@mantine/form";
 import toast from "react-hot-toast";
 import { DateInput } from "@mantine/dates";
 import { currencyTypes, expenseTypes } from "../../../constants/static-data";
-import { OvertimeMember } from "../../../types/overtime-member";
+import overtimeMemberSchema, {
+  OvertimeMember,
+} from "../../../types/overtime-member";
 import { format } from "date-fns";
 import { IconTrash } from "@tabler/icons-react";
 import ExpenseType from "../../../enums/expense-type";
 import { SelectItem } from "../../../types/select-item";
+import { zod4Resolver } from "mantine-form-zod-resolver";
 
 interface EditExpenseProps {
   expense: Expense;
@@ -49,6 +52,8 @@ function EditExpenseModal({
   unapprovedReportSelectData,
   checkIfExpenseIsValid,
 }: EditExpenseProps) {
+  const MIN_FLEX_HEIGHT = 90;
+
   const { handleDataRequest } = useRequestHandler();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -58,30 +63,7 @@ function EditExpenseModal({
       ...expense,
       expenseDate: new Date(expense.expenseDate),
     },
-    validate: {
-      userId: (value) => (!value ? "User must be selected." : undefined),
-      projectId: (value) => (!value ? "Project must be selected." : undefined),
-      expenseType: (value) =>
-        !value ? "Expense type must be selected." : undefined,
-      expenseDate: (value) =>
-        !value ? "Expense date must be selected." : undefined,
-      totalPrice: (value) =>
-        !value
-          ? "Total price cannot be empty."
-          : value < 0 || value === 0
-            ? "Total price cannot be 0 or less."
-            : undefined,
-      currency: (value) => (!value ? "Currency must be selected." : undefined),
-      tripDescription: (value, values) =>
-        values.expenseType === ExpenseType.Transportation &&
-        value.trim().length === 0
-          ? "Trip description cannot be empty."
-          : value.trim().length > 256
-            ? "Trip description cannot exceed 256 characters."
-            : undefined,
-      outOfOffice: (value) =>
-        value === null ? "Out of office cannot be empty." : undefined,
-    },
+    validate: zod4Resolver(expenseSchema),
   });
 
   const overtimeMemberForm = useForm<OvertimeMember>({
@@ -94,10 +76,7 @@ function EditExpenseModal({
       createUser: crypto.randomUUID(),
       createDate: new Date(),
     },
-    validate: {
-      userId: (value) => (!value ? "User must be selected." : undefined),
-      price: (value) => (!value ? "Total price cannot be empty." : undefined),
-    },
+    validate: zod4Resolver(overtimeMemberSchema),
   });
 
   const initialValues = useRef<Expense>({
@@ -250,7 +229,7 @@ function EditExpenseModal({
     <Card shadow={"xs"} radius={"xs"} withBorder padding={10}>
       <Flex gap={"md"}>
         <Flex direction={"column"} w={"60%"}>
-          <Flex gap={"sm"} style={{ flexGrow: 1, minHeight: 90 }}>
+          <Flex gap={"sm"} style={{ flexGrow: 1, minHeight: MIN_FLEX_HEIGHT }}>
             <Select
               w={"20%"}
               {...expenseForm.getInputProps("userId")}
@@ -284,7 +263,7 @@ function EditExpenseModal({
               clearable
             />
           </Flex>
-          <Flex gap={"sm"} style={{ flexGrow: 1, minHeight: 90 }}>
+          <Flex gap={"sm"} style={{ flexGrow: 1, minHeight: MIN_FLEX_HEIGHT }}>
             <DateInput
               w={"20%"}
               {...expenseForm.getInputProps("expenseDate")}
@@ -318,7 +297,7 @@ function EditExpenseModal({
               </Group>
             </Radio.Group>
           </Flex>
-          <Flex gap={"sm"} style={{ flexGrow: 1, minHeight: 90 }}>
+          <Flex gap={"sm"} style={{ flexGrow: 1, minHeight: MIN_FLEX_HEIGHT }}>
             <TextInput
               w={"20%"}
               {...expenseForm.getInputProps("tripDescription")}

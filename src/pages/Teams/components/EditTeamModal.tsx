@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Team } from "../../../types/team";
+import teamSchema, { Team } from "../../../types/team";
 import { Button, Flex, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import {
@@ -11,6 +11,7 @@ import RequestType from "../../../request-handler/request-type";
 import urls from "../../../constants/urls";
 import toast from "react-hot-toast";
 import { modals } from "@mantine/modals";
+import { zod4Resolver } from "mantine-form-zod-resolver";
 
 interface EditTeamProps {
   team: Team;
@@ -31,16 +32,7 @@ function EditTeamModal({
     initialValues: {
       ...team,
     },
-    validate: {
-      name: (value) =>
-        value.trim().length === 0
-          ? "Name cannot be empty."
-          : value.trim().length < 2
-            ? "Name must have at least 2 letters."
-            : value.trim().length > 128
-              ? "Name cannot exceed 128 characters."
-              : null,
-    },
+    validate: zod4Resolver(teamSchema),
   });
 
   const initialValues = useRef<Team>({

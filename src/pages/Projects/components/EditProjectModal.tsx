@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Project } from "../../../types/project";
+import projectSchema, { Project } from "../../../types/project";
 import { modals } from "@mantine/modals";
 import { Button, Flex, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
@@ -11,6 +11,7 @@ import useRequestHandler from "../../../hooks/useRequestHandler";
 import urls from "../../../constants/urls";
 import RequestType from "../../../request-handler/request-type";
 import toast from "react-hot-toast";
+import { zod4Resolver } from "mantine-form-zod-resolver";
 
 interface EditProjectProps {
   project: Project;
@@ -23,6 +24,8 @@ function EditProjectModal({
   updateProject,
   checkIfProjectIsValid,
 }: EditProjectProps) {
+  const MIN_INPUT_HEIGHT = 80;
+
   const { handleDataRequest } = useRequestHandler();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -31,24 +34,7 @@ function EditProjectModal({
     initialValues: {
       ...project,
     },
-    validate: {
-      name: (value) =>
-        value.trim().length === 0
-          ? "Name cannot be empty."
-          : value.trim().length < 2
-            ? "Name must have at least 2 letters."
-            : value.trim().length > 128
-              ? "Name cannot exceed 128 characters."
-              : null,
-      code: (value) =>
-        value.trim().length === 0
-          ? "Code cannot be empty."
-          : value.trim().length < 2
-            ? "Code must have at least 2 letters."
-            : value.trim().length > 128
-              ? "Code cannot exceed 128 characters."
-              : null,
-    },
+    validate: zod4Resolver(projectSchema),
   });
 
   const initialValues = useRef<Project>({
@@ -114,14 +100,14 @@ function EditProjectModal({
   return (
     <Flex direction={"column"} gap={10}>
       <TextInput
-        style={{ minHeight: 80 }}
+        style={{ minHeight: MIN_INPUT_HEIGHT }}
         ref={nameInputRef}
         {...projectForm.getInputProps("name")}
         label={"Name"}
       />
 
       <TextInput
-        style={{ minHeight: 80 }}
+        style={{ minHeight: MIN_INPUT_HEIGHT }}
         {...projectForm.getInputProps("code")}
         label={"Code"}
       />

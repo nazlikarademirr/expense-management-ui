@@ -1,5 +1,5 @@
 import { useForm } from "@mantine/form";
-import { Report, ReportRequest } from "../../types/report";
+import reportSchema, { Report, ReportRequest } from "../../types/report";
 import { useEffect, useMemo, useState } from "react";
 import {
   ActionIcon,
@@ -40,6 +40,7 @@ import {
 import urls from "../../constants/urls";
 import RequestType from "../../request-handler/request-type";
 import useRequestHandler from "../../hooks/useRequestHandler";
+import { zod4Resolver } from "mantine-form-zod-resolver";
 
 function Reports() {
   const { reports, addReport, updateReport, deleteReport, replaceReports } =
@@ -62,16 +63,7 @@ function Reports() {
       createUser: "",
       createDate: new Date(),
     },
-    validate: {
-      name: (value) =>
-        value.trim().length === 0
-          ? "Name cannot be empty."
-          : value.trim().length < 2
-            ? "Name must have at least 2 letters."
-            : value.trim().length > 128
-              ? "Name cannot exceed 128 characters."
-              : undefined,
-    },
+    validate: zod4Resolver(reportSchema),
   });
 
   const openEditReport = (report: Report) => {

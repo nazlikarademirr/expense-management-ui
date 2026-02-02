@@ -1,3 +1,5 @@
+import z from "zod/v4";
+
 type OvertimeMember = {
   id: string;
   userId: string | null;
@@ -24,4 +26,12 @@ type OvertimeMemberResponse = {
   createDate: Date;
 };
 
+const overtimeMemberSchema = z.object({
+  userId: z.string("User must be selected."),
+  price: z
+    .number("Price cannot be empty.")
+    .min(1, "Price cannot be 0 or less."),
+});
+
+export default overtimeMemberSchema;
 export type { OvertimeMember, OvertimeMemberRequest, OvertimeMemberResponse };

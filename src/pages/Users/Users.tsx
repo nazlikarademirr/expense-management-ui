@@ -1,4 +1,8 @@
-import { User, UserRequest, UserResponse } from "../../types/user.ts";
+import userSchema, {
+  User,
+  UserRequest,
+  UserResponse,
+} from "../../types/user.ts";
 import EditUserModal from "./components/EditUserModal.tsx";
 import {
   ActionIcon,
@@ -39,8 +43,12 @@ import {
 } from "../../constants/constants.ts";
 import { SelectItem } from "../../types/select-item.ts";
 import { Team } from "../../types/team.ts";
+import { zod4Resolver } from "mantine-form-zod-resolver";
 
 function Users() {
+  const MIN_INPUT_HEIGHT = 80;
+  const MIN_INPUT_WIDTH = 250;
+
   const { users, addUser, updateUser, replaceUsers } = useUsers();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -76,47 +84,7 @@ function Users() {
       createUser: "",
       createDate: new Date(),
     },
-    validate: {
-      name: (value) =>
-        value.trim().length === 0
-          ? "Name cannot be empty."
-          : value.trim().length < 2
-            ? "Name must have at least 2 letters."
-            : value.trim().length > 128
-              ? "Name cannot exceed 128 characters."
-              : undefined,
-      surname: (value) =>
-        value.trim().length === 0
-          ? "Surname cannot be empty."
-          : value.trim().length < 2
-            ? "Surname must have at least 2 letters."
-            : value.trim().length > 128
-              ? "Surname cannot exceed 128 characters."
-              : undefined,
-      teamId: (value) => (!value ? "Team must be selected." : undefined),
-      gender: (value) => (!value ? "Gender must be selected." : undefined),
-      cardNumber: (value) =>
-        value.trim().length === 0
-          ? "Card number cannot be empty."
-          : value.trim().length > 8
-            ? "Card number cannot exceed 8 characters."
-            : undefined,
-      email: (value) =>
-        value.trim().length === 0
-          ? "Email cannot be empty."
-          : value.trim().length > 128
-            ? "Email cannot exceed 128 characters."
-            : undefined,
-      password: (value) =>
-        value.trim().length === 0
-          ? "Password cannot be empty."
-          : value.trim().length < 8
-            ? "Password cannot be less than 8 characters."
-            : value.trim().length > 32
-              ? "Password cannot exceed 32 characters."
-              : undefined,
-      role: (value) => (!value ? "Role must be selected." : undefined),
-    },
+    validate: zod4Resolver(userSchema),
   });
 
   const openEditUser = (user: User) => {
@@ -351,14 +319,22 @@ function Users() {
             <TextInput
               {...form.getInputProps("name")}
               withAsterisk
-              style={{ flexGrow: 1, minHeight: 80, minWidth: 200 }}
+              style={{
+                flexGrow: 1,
+                minHeight: MIN_INPUT_HEIGHT,
+                minWidth: MIN_INPUT_WIDTH,
+              }}
               label={"Name"}
             />
 
             <TextInput
               {...form.getInputProps("cardNumber")}
               withAsterisk
-              style={{ flexGrow: 1, minHeight: 80, minWidth: 200 }}
+              style={{
+                flexGrow: 1,
+                minHeight: MIN_INPUT_HEIGHT,
+                minWidth: MIN_INPUT_WIDTH,
+              }}
               label={"Card Number"}
             />
           </Flex>
@@ -366,14 +342,22 @@ function Users() {
             <TextInput
               {...form.getInputProps("surname")}
               withAsterisk
-              style={{ flexGrow: 1, minHeight: 80, minWidth: 200 }}
+              style={{
+                flexGrow: 1,
+                minHeight: MIN_INPUT_HEIGHT,
+                minWidth: MIN_INPUT_WIDTH,
+              }}
               label={"Surname"}
             />
 
             <TextInput
               {...form.getInputProps("email")}
               withAsterisk
-              style={{ flexGrow: 1, minHeight: 80, minWidth: 200 }}
+              style={{
+                flexGrow: 1,
+                minHeight: MIN_INPUT_HEIGHT,
+                minWidth: MIN_INPUT_WIDTH,
+              }}
               label={"Email"}
             />
           </Flex>
@@ -383,14 +367,22 @@ function Users() {
               withAsterisk
               data={activeTeamSelectData}
               searchable
-              style={{ flexGrow: 1, minHeight: 80, minWidth: 200 }}
+              style={{
+                flexGrow: 1,
+                minHeight: MIN_INPUT_HEIGHT,
+                minWidth: MIN_INPUT_WIDTH,
+              }}
               label={"Team Name"}
             />
 
             <PasswordInput
               {...form.getInputProps("password")}
               withAsterisk
-              style={{ flexGrow: 1, minHeight: 80, minWidth: 200 }}
+              style={{
+                flexGrow: 1,
+                minHeight: MIN_INPUT_HEIGHT,
+                minWidth: MIN_INPUT_WIDTH,
+              }}
               label={"Password"}
             />
           </Flex>
@@ -398,7 +390,11 @@ function Users() {
             <Radio.Group
               label="Gender"
               withAsterisk
-              style={{ flexGrow: 1, minHeight: 80, minWidth: 200 }}
+              style={{
+                flexGrow: 1,
+                minHeight: MIN_INPUT_HEIGHT,
+                minWidth: MIN_INPUT_WIDTH,
+              }}
               {...form.getInputProps("gender")}
             >
               <Group mt="xs">
@@ -411,7 +407,11 @@ function Users() {
             <Radio.Group
               label="Role"
               withAsterisk
-              style={{ flexGrow: 1, minHeight: 80, minWidth: 200 }}
+              style={{
+                flexGrow: 1,
+                minHeight: MIN_INPUT_HEIGHT,
+                minWidth: MIN_INPUT_WIDTH,
+              }}
               {...form.getInputProps("role")}
             >
               <Group mt="xs">
