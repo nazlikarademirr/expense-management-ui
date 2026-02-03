@@ -70,7 +70,7 @@ const userSchema = z.object({
     .email()
     .trim()
     .refine((v) => v.includes("@acibadem.com"), {
-      message: "Please enter a valid email address.",
+      message: "Please enter your Acıbadem email address.",
     })
     .min(14, "Email must have at least 14 letters.")
     .max(128, "Email cannot exceed 128 characters."),
