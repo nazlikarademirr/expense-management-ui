@@ -1,4 +1,8 @@
-import { User, UserRequest, UserResponse } from "../../types/user.ts";
+import userSchema, {
+  User,
+  UserRequest,
+  UserResponse,
+} from "../../types/user.ts";
 import EditUserModal from "./components/EditUserModal.tsx";
 import {
   ActionIcon,
@@ -14,13 +18,13 @@ import {
   Table,
   TextInput,
   Title,
+  Tooltip,
 } from "@mantine/core";
 import { IconEdit, IconSearch } from "@tabler/icons-react";
 import { modals } from "@mantine/modals";
 import useUsers from "../../hooks/useUsers.tsx";
 import { useForm } from "@mantine/form";
 import toast from "react-hot-toast";
-import { format } from "date-fns";
 import { genders, roles } from "../../constants/static-data.ts";
 import {
   createJsonPatchDocumentFromObject,
@@ -39,8 +43,12 @@ import {
 } from "../../constants/constants.ts";
 import { SelectItem } from "../../types/select-item.ts";
 import { Team } from "../../types/team.ts";
+import { zod4Resolver } from "mantine-form-zod-resolver";
 
 function Users() {
+  const MIN_INPUT_HEIGHT = 80;
+  const MIN_INPUT_WIDTH = 250;
+
   const { users, addUser, updateUser, replaceUsers } = useUsers();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -54,6 +62,8 @@ function Users() {
   const [activeTeamSelectData, setActiveTeamSelectData] = useState<
     SelectItem[]
   >([]);
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const { handleDataRequest } = useRequestHandler();
 
@@ -74,47 +84,7 @@ function Users() {
       createUser: "",
       createDate: new Date(),
     },
-    validate: {
-      name: (value) =>
-        value.trim().length === 0
-          ? "Name cannot be empty."
-          : value.length < 2
-            ? "Name must have at least 2 letters."
-            : value.length > 128
-              ? "Name cannot exceed 128 characters."
-              : undefined,
-      surname: (value) =>
-        value.trim().length === 0
-          ? "Surname cannot be empty."
-          : value.length < 2
-            ? "Surname must have at least 2 letters."
-            : value.length > 128
-              ? "Surname cannot exceed 128 characters."
-              : undefined,
-      teamId: (value) => (!value ? "Team must be selected." : undefined),
-      gender: (value) => (!value ? "Gender must be selected." : undefined),
-      cardNumber: (value) =>
-        value.trim().length === 0
-          ? "Card number cannot be empty."
-          : value.length > 8
-            ? "Card number cannot exceed 8 characters."
-            : undefined,
-      email: (value) =>
-        value.trim().length === 0
-          ? "Email cannot be empty."
-          : value.length > 128
-            ? "Email cannot exceed 128 characters."
-            : undefined,
-      password: (value) =>
-        value.trim().length === 0
-          ? "Password cannot be empty."
-          : value.length < 8
-            ? "Password cannot be less than 8 characters."
-            : value.length > 32
-              ? "Password cannot exceed 32 characters."
-              : undefined,
-      role: (value) => (!value ? "Role must be selected." : undefined),
-    },
+    validate: zod4Resolver(userSchema),
   });
 
   const openEditUser = (user: User) => {
@@ -126,6 +96,7 @@ function Users() {
           user={user}
           activeTeamSelectData={activeTeamSelectData}
           updateUser={updateUser}
+          checkIfUserIsValid={checkIfUserIsValid}
         />
       ),
     });
@@ -163,20 +134,37 @@ function Users() {
     replaceUsers(users);
   };
 
+  const checkIfUserIsValid = (user: User) => {
+    if (users.some((x) => x.cardNumber.trim() === user.cardNumber.trim())) {
+      toast.error("There is a user with the same card number!");
+      return false;
+    }
+
+    if (users.some((x) => x.email.trim() === user.email.trim())) {
+      toast.error("There is a user with the same email!");
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSave = async () => {
+    setIsLoading(true);
+
     form.validate();
 
-    if (!form.isValid()) return;
-
-    const userData = users.find((x) => x.isActive);
-
-    if (userData?.cardNumber === form.values.cardNumber) {
-      toast.error("There is a active user with the same card number!");
+    if (!form.isValid()) {
+      setIsLoading(false);
       return;
     }
 
-    if (userData?.email === form.values.email) {
-      toast.error("There is a user with the same email!");
+    if (
+      !checkIfUserIsValid({
+        ...form.values,
+        teamId: String(form.values.teamId),
+      })
+    ) {
+      setIsLoading(false);
       return;
     }
 
@@ -198,7 +186,10 @@ function Users() {
       userRequest,
     );
 
-    if (!response.isSuccess) return false;
+    if (!response.isSuccess) {
+      setIsLoading(false);
+      return;
+    }
 
     addUser({
       ...response.value,
@@ -209,20 +200,12 @@ function Users() {
     form.reset();
 
     toast.success("User has been added successfully!");
+
+    setIsLoading(false);
   };
 
   const changeUserActivity = async (user: User) => {
-    const userData = users.find((x) => x.isActive && x.id !== user.id);
-
-    if (userData?.cardNumber === user.cardNumber) {
-      toast.error("There is a active user with the same card number!");
-      return;
-    }
-
-    if (userData?.email === user.email) {
-      toast.error("There is a active user with the same card number!");
-      return;
-    }
+    setIsLoading(true);
 
     const patchDocument = createJsonPatchDocumentFromObject({
       isActive: !user.isActive,
@@ -233,16 +216,22 @@ function Users() {
       UserResponse
     >(`${urls.user}/${user.id}`, RequestType.Patch, patchDocument);
 
-    if (!response.isSuccess) return;
+    if (!response.isSuccess) {
+      setIsLoading(false);
+      return;
+    }
 
     updateUser({ ...user, isActive: !user.isActive });
 
     if (user.isActive) {
       toast.success("User deactivated successfully.");
+      setIsLoading(false);
       return;
     }
 
     toast.success("User activated successfully.");
+
+    setIsLoading(false);
   };
 
   const memoizedUsers = useMemo(
@@ -270,35 +259,49 @@ function Users() {
                 <TiTimes size={BOOLEAN_ICON_SIZE} color="#BA1A1A" />
               )}
             </Table.Td>
-            <Table.Td> {x.createUser} </Table.Td>
-            <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
+            <Table.Td> {`${x.name} ${x.surname}`} </Table.Td>
             <Table.Td>
               <Flex justify={"center"} gap={5}>
                 {x.isActive && (
-                  <ActionIcon
-                    onClick={() => openEditUser(x)}
-                    variant={"light"}
-                    color={"blue"}
-                  >
-                    <IconEdit />
-                  </ActionIcon>
+                  <Tooltip label="Edit" withArrow>
+                    <ActionIcon
+                      onClick={() => openEditUser(x)}
+                      variant={"light"}
+                      color={"blue"}
+                    >
+                      <IconEdit />
+                    </ActionIcon>
+                  </Tooltip>
                 )}
-                <ActionIcon
-                  onClick={() => changeUserActivity(x)}
-                  variant={"light"}
-                  color={x.isActive ? "red" : "green"}
+                <Tooltip
+                  label={x.isActive ? "Deactivate User" : "Activate User"}
+                  withArrow
                 >
-                  {x.isActive ? (
-                    <IoMdRemoveCircleOutline size={22} />
-                  ) : (
-                    <IoMdAddCircleOutline size={22} />
-                  )}
-                </ActionIcon>
+                  <ActionIcon
+                    onClick={() => changeUserActivity(x)}
+                    variant={"light"}
+                    color={x.isActive ? "red" : "green"}
+                    loading={isLoading}
+                  >
+                    {x.isActive ? (
+                      <IoMdRemoveCircleOutline size={22} />
+                    ) : (
+                      <IoMdAddCircleOutline size={22} />
+                    )}
+                  </ActionIcon>
+                </Tooltip>
               </Flex>
             </Table.Td>
           </Table.Tr>
         )),
-    [users, searchQuery, showActiveUsers, selectedTeam, selectedRole],
+    [
+      users,
+      searchQuery,
+      showActiveUsers,
+      selectedTeam,
+      selectedRole,
+      isLoading,
+    ],
   );
 
   useEffect(() => {
@@ -311,19 +314,27 @@ function Users() {
       <Title order={3}>Users</Title>
       <Divider my={TITLE_DIVIDER_MY} />
       <Card shadow={"xs"} radius={"md"} withBorder>
-        <Flex gap={"xl"} direction={"row"}>
+        <Flex gap={"xl"} direction={"row"} justify={"center"}>
           <Flex gap={"xl"} direction={"column"} style={{ flexGrow: 1 }}>
             <TextInput
               {...form.getInputProps("name")}
               withAsterisk
-              style={{ flexGrow: 1 }}
+              style={{
+                flexGrow: 1,
+                minHeight: MIN_INPUT_HEIGHT,
+                minWidth: MIN_INPUT_WIDTH,
+              }}
               label={"Name"}
             />
 
             <TextInput
               {...form.getInputProps("cardNumber")}
               withAsterisk
-              style={{ flexGrow: 1 }}
+              style={{
+                flexGrow: 1,
+                minHeight: MIN_INPUT_HEIGHT,
+                minWidth: MIN_INPUT_WIDTH,
+              }}
               label={"Card Number"}
             />
           </Flex>
@@ -331,14 +342,22 @@ function Users() {
             <TextInput
               {...form.getInputProps("surname")}
               withAsterisk
-              style={{ flexGrow: 1 }}
+              style={{
+                flexGrow: 1,
+                minHeight: MIN_INPUT_HEIGHT,
+                minWidth: MIN_INPUT_WIDTH,
+              }}
               label={"Surname"}
             />
 
             <TextInput
               {...form.getInputProps("email")}
               withAsterisk
-              style={{ flexGrow: 1 }}
+              style={{
+                flexGrow: 1,
+                minHeight: MIN_INPUT_HEIGHT,
+                minWidth: MIN_INPUT_WIDTH,
+              }}
               label={"Email"}
             />
           </Flex>
@@ -348,14 +367,22 @@ function Users() {
               withAsterisk
               data={activeTeamSelectData}
               searchable
-              style={{ flexGrow: 1 }}
+              style={{
+                flexGrow: 1,
+                minHeight: MIN_INPUT_HEIGHT,
+                minWidth: MIN_INPUT_WIDTH,
+              }}
               label={"Team Name"}
             />
 
             <PasswordInput
               {...form.getInputProps("password")}
               withAsterisk
-              style={{ flexGrow: 1 }}
+              style={{
+                flexGrow: 1,
+                minHeight: MIN_INPUT_HEIGHT,
+                minWidth: MIN_INPUT_WIDTH,
+              }}
               label={"Password"}
             />
           </Flex>
@@ -363,7 +390,11 @@ function Users() {
             <Radio.Group
               label="Gender"
               withAsterisk
-              style={{ flexGrow: 1 }}
+              style={{
+                flexGrow: 1,
+                minHeight: MIN_INPUT_HEIGHT,
+                minWidth: MIN_INPUT_WIDTH,
+              }}
               {...form.getInputProps("gender")}
             >
               <Group mt="xs">
@@ -376,7 +407,11 @@ function Users() {
             <Radio.Group
               label="Role"
               withAsterisk
-              style={{ flexGrow: 1 }}
+              style={{
+                flexGrow: 1,
+                minHeight: MIN_INPUT_HEIGHT,
+                minWidth: MIN_INPUT_WIDTH,
+              }}
               {...form.getInputProps("role")}
             >
               <Group mt="xs">
@@ -391,6 +426,7 @@ function Users() {
           onClick={handleSave}
           variant={"light"}
           style={{ flexGrow: 1, marginTop: 15 }}
+          loading={isLoading}
         >
           Add New User
         </Button>
@@ -439,7 +475,6 @@ function Users() {
           withTableBorder
           withColumnBorders
           mt={15}
-          style={{ tableLayout: "fixed" }}
         >
           <Table.Thead>
             <Table.Tr>
@@ -450,9 +485,8 @@ function Users() {
               <Table.Th>Card Number</Table.Th>
               <Table.Th>Email</Table.Th>
               <Table.Th>Role</Table.Th>
-              <Table.Th>Is Active</Table.Th>
+              <Table.Th>Status</Table.Th>
               <Table.Th>Create User</Table.Th>
-              <Table.Th>Create Date</Table.Th>
               <Table.Th></Table.Th>
             </Table.Tr>
           </Table.Thead>

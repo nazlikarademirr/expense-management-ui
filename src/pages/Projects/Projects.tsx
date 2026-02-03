@@ -1,5 +1,5 @@
 import { useForm } from "@mantine/form";
-import { Project, ProjectRequest } from "../../types/project";
+import projectSchema, { Project, ProjectRequest } from "../../types/project";
 import { modals } from "@mantine/modals";
 import useProjects from "../../hooks/useProjects";
 import { useEffect, useMemo, useState } from "react";
@@ -13,9 +13,9 @@ import {
   Table,
   TextInput,
   Title,
+  Tooltip,
 } from "@mantine/core";
 import { IconEdit, IconSearch } from "@tabler/icons-react";
-import { format } from "date-fns";
 import toast from "react-hot-toast";
 import EditProjectModal from "./components/EditProjectModal";
 import {
@@ -28,10 +28,12 @@ import useRequestHandler from "../../hooks/useRequestHandler";
 import { TiTick, TiTimes } from "react-icons/ti";
 import {
   BOOLEAN_ICON_SIZE,
+  CREATE_USER,
   SEARCH_ICON_SIZE,
   TITLE_DIVIDER_MY,
 } from "../../constants/constants";
 import { IoMdAddCircleOutline, IoMdRemoveCircleOutline } from "react-icons/io";
+import { zod4Resolver } from "mantine-form-zod-resolver";
 
 function Projects() {
   const { projects, addProject, updateProject, replaceProjects } =
@@ -43,6 +45,8 @@ function Projects() {
 
   const { handleDataRequest } = useRequestHandler();
 
+  const [isLoading, setIsLoading] = useState(false);
+
   const form = useForm<Project>({
     initialValues: {
       id: crypto.randomUUID(),
@@ -53,24 +57,7 @@ function Projects() {
       createUser: crypto.randomUUID(),
       createDate: new Date(),
     },
-    validate: {
-      name: (value) =>
-        value.trim().length === 0
-          ? "Name cannot be empty."
-          : value.length < 2
-            ? "Name must have at least 2 letters."
-            : value.length > 128
-              ? "Name cannot exceed 128 characters."
-              : undefined,
-      code: (value) =>
-        value.trim().length === 0
-          ? "Code cannot be empty."
-          : value.length < 2
-            ? "Code must have at least 2 letters."
-            : value.length > 128
-              ? "Code cannot exceed 128 characters."
-              : undefined,
-    },
+    validate: zod4Resolver(projectSchema),
   });
 
   const openEditProject = (project: Project) => {
@@ -78,7 +65,11 @@ function Projects() {
       title: <Title order={4}>Edit Project</Title>,
       size: "xl",
       children: (
-        <EditProjectModal project={project} updateProject={updateProject} />
+        <EditProjectModal
+          project={project}
+          updateProject={updateProject}
+          checkIfProjectIsValid={checkIfProjectIsValid}
+        />
       ),
     });
   };
@@ -94,18 +85,32 @@ function Projects() {
     replaceProjects(response.value);
   };
 
+  const checkIfProjectIsValid = (project: Project) => {
+    if (projects.some((x) => x.name.trim() === project.name.trim())) {
+      toast.error("There is a project with the same name!");
+      return false;
+    }
+
+    if (projects.some((x) => x.code.trim() === project.code.trim())) {
+      toast.error("There is a project with the same code!");
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSave = async () => {
+    setIsLoading(true);
+
     form.validate();
 
-    if (!form.isValid()) return;
-
-    if (projects.some((x) => x.name === form.values.name)) {
-      toast.error("There is a project with the same name!");
+    if (!form.isValid()) {
+      setIsLoading(false);
       return;
     }
 
-    if (projects.some((x) => x.code === form.values.code)) {
-      toast.error("There is a project with the same code!");
+    if (!checkIfProjectIsValid(form.values)) {
+      setIsLoading(false);
       return;
     }
 
@@ -120,16 +125,23 @@ function Projects() {
       request,
     );
 
-    if (!response.isSuccess) return;
+    if (!response.isSuccess) {
+      setIsLoading(false);
+      return;
+    }
 
     addProject(response.value);
 
     form.reset();
 
     toast.success("Project has been added successfully!");
+
+    setIsLoading(false);
   };
 
-  const updateProjectActivity = async (project: Project) => {
+  const changeProjectActivity = async (project: Project) => {
+    setIsLoading(true);
+
     const patchDocument = createJsonPatchDocumentFromObject({
       isActive: !project.isActive,
     });
@@ -140,16 +152,22 @@ function Projects() {
       patchDocument,
     );
 
-    if (!response.isSuccess) return;
+    if (!response.isSuccess) {
+      setIsLoading(false);
+      return;
+    }
 
     updateProject({ ...project, isActive: !project.isActive });
 
     if (project.isActive) {
       toast.success("Project deactivated successfully.");
+      setIsLoading(false);
       return;
     }
 
     toast.success("Project activated successfully.");
+
+    setIsLoading(false);
   };
 
   const memoizedProjects = useMemo(
@@ -170,37 +188,44 @@ function Projects() {
                 <TiTimes size={BOOLEAN_ICON_SIZE} color="#BA1A1A" />
               )}
             </Table.Td>
-            <Table.Td> {x.createUser} </Table.Td>
-            <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
+            <Table.Td> {CREATE_USER} </Table.Td>
             <Table.Td>
               <Flex justify={"center"} gap={5}>
                 {x.isActive ? (
-                  <ActionIcon
-                    onClick={() => openEditProject(x)}
-                    variant={"light"}
-                    color={"blue"}
-                  >
-                    <IconEdit />
-                  </ActionIcon>
+                  <Tooltip label="Edit" withArrow>
+                    <ActionIcon
+                      onClick={() => openEditProject(x)}
+                      variant={"light"}
+                      color={"blue"}
+                    >
+                      <IconEdit />
+                    </ActionIcon>
+                  </Tooltip>
                 ) : (
                   <div></div>
                 )}
-                <ActionIcon
-                  onClick={() => updateProjectActivity(x)}
-                  variant={"light"}
-                  color={x.isActive ? "red" : "green"}
+                <Tooltip
+                  label={x.isActive ? "Deactivate Project" : "Activate Project"}
+                  withArrow
                 >
-                  {x.isActive ? (
-                    <IoMdRemoveCircleOutline size={22} />
-                  ) : (
-                    <IoMdAddCircleOutline size={22} />
-                  )}
-                </ActionIcon>
+                  <ActionIcon
+                    onClick={() => changeProjectActivity(x)}
+                    variant={"light"}
+                    loading={isLoading}
+                    color={x.isActive ? "red" : "green"}
+                  >
+                    {x.isActive ? (
+                      <IoMdRemoveCircleOutline size={22} />
+                    ) : (
+                      <IoMdAddCircleOutline size={22} />
+                    )}
+                  </ActionIcon>
+                </Tooltip>
               </Flex>
             </Table.Td>
           </Table.Tr>
         )),
-    [projects, showActiveProjects, searchQuery],
+    [projects, showActiveProjects, searchQuery, isLoading],
   );
 
   useEffect(() => {
@@ -212,7 +237,7 @@ function Projects() {
       <Title order={3}>Projects</Title>
       <Divider my={TITLE_DIVIDER_MY} />
       <Card shadow={"xs"} radius={"md"} withBorder>
-        <Flex gap="md" direction="row">
+        <Flex gap="md" direction="row" style={{ minHeight: 80 }}>
           <TextInput
             key={form.key("name")}
             {...form.getInputProps("name")}
@@ -231,6 +256,7 @@ function Projects() {
         <Button
           onClick={handleSave}
           variant={"light"}
+          loading={isLoading}
           style={{ flexGrow: 2, marginTop: "15px" }}
         >
           Add New Project
@@ -264,15 +290,13 @@ function Projects() {
           withTableBorder
           withColumnBorders
           mt={15}
-          style={{ tableLayout: "fixed" }}
         >
           <Table.Thead>
             <Table.Tr>
               <Table.Th>Name</Table.Th>
               <Table.Th>Code</Table.Th>
-              <Table.Th>Is Active</Table.Th>
+              <Table.Th>Status</Table.Th>
               <Table.Th>Create User</Table.Th>
-              <Table.Th>Create Date</Table.Th>
               <Table.Th></Table.Th>
             </Table.Tr>
           </Table.Thead>

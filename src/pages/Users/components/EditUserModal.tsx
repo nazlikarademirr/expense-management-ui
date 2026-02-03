@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { modals } from "@mantine/modals";
 import {
   Button,
@@ -9,7 +9,11 @@ import {
   Select,
   TextInput,
 } from "@mantine/core";
-import { User, UserRequest, UserResponse } from "../../../types/user";
+import userSchema, {
+  User,
+  UserRequest,
+  UserResponse,
+} from "../../../types/user";
 import { useForm } from "@mantine/form";
 import useRequestHandler from "../../../hooks/useRequestHandler";
 import urls from "../../../constants/urls";
@@ -17,57 +21,32 @@ import RequestType from "../../../request-handler/request-type";
 import toast from "react-hot-toast";
 import { genders, roles } from "../../../constants/static-data";
 import { SelectItem } from "../../../types/select-item";
+import { zod4Resolver } from "mantine-form-zod-resolver";
 
 interface EditUserProps {
   user: User;
   activeTeamSelectData: SelectItem[];
   updateUser: (userForm: User) => void;
+  checkIfUserIsValid: (user: User) => boolean;
 }
 
 function EditUserModal({
   user,
   activeTeamSelectData,
   updateUser,
+  checkIfUserIsValid,
 }: EditUserProps) {
+  const MIN_INPUT_HEIGHT = 80;
+
   const { handleDataRequest } = useRequestHandler();
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const userForm = useForm({
     initialValues: {
       ...user,
     },
-    validate: {
-      name: (value) =>
-        value.trim().length === 0
-          ? "Name cannot be empty."
-          : value.length < 2
-            ? "Name must have at least 2 letters."
-            : value.length > 128
-              ? "Name cannot exceed 128 characters."
-              : undefined,
-      surname: (value) =>
-        value.trim().length === 0
-          ? "Surname cannot be empty."
-          : value.length < 2
-            ? "Surname must have at least 2 letters."
-            : value.length > 128
-              ? "Surname cannot exceed 128 characters."
-              : undefined,
-      teamId: (value) => (!value ? "Team must be selected." : undefined),
-      gender: (value) => (!value ? "Gender must be selected." : undefined),
-      cardNumber: (value) =>
-        value.trim().length === 0
-          ? "Card number cannot be empty."
-          : value.length > 8
-            ? "Card number cannot exceed 8 characters."
-            : undefined,
-      email: (value) =>
-        value.trim().length === 0
-          ? "Email cannot be empty."
-          : value.length > 128
-            ? "Email cannot exceed 128 characters."
-            : undefined,
-      role: (value) => (!value ? "Role must be selected." : undefined),
-    },
+    validate: zod4Resolver(userSchema),
   });
 
   const initialValues = useRef<User>({
@@ -77,11 +56,21 @@ function EditUserModal({
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   const handleSave = async (e: React.MouseEvent) => {
+    setIsLoading(true);
+
     e.preventDefault();
 
     userForm.validate();
 
-    if (!userForm.isValid()) return;
+    if (!userForm.isValid()) {
+      setIsLoading(false);
+      return;
+    }
+
+    if (checkIfUserIsValid(userForm.values)) {
+      setIsLoading(false);
+      return;
+    }
 
     const userRequest: UserRequest = {
       name: userForm.values.name,
@@ -101,7 +90,10 @@ function EditUserModal({
       userRequest,
     );
 
-    if (!response.isSuccess) return;
+    if (!response.isSuccess) {
+      setIsLoading(false);
+      return;
+    }
 
     initialValues.current = {
       ...userForm.values,
@@ -114,6 +106,8 @@ function EditUserModal({
     toast.success("User edited successfully.");
 
     modals.closeAll();
+
+    setIsLoading(false);
   };
 
   const changeTeam = (team: ComboboxItem) => {
@@ -132,17 +126,20 @@ function EditUserModal({
       <TextInput
         ref={nameInputRef}
         {...userForm.getInputProps("name")}
+        style={{ minHeight: MIN_INPUT_HEIGHT }}
         withAsterisk
         label={"Name"}
       />
       <TextInput
         {...userForm.getInputProps("surname")}
+        style={{ minHeight: MIN_INPUT_HEIGHT }}
         withAsterisk
         label={"Surname"}
       />
       <Select
         {...userForm.getInputProps("teamId")}
         onChange={(_, option) => changeTeam(option)}
+        style={{ minHeight: MIN_INPUT_HEIGHT }}
         withAsterisk
         data={activeTeamSelectData}
         searchable
@@ -152,7 +149,7 @@ function EditUserModal({
       <Radio.Group
         label="Gender"
         withAsterisk
-        style={{ flexGrow: 1 }}
+        style={{ flexGrow: 1, minHeight: MIN_INPUT_HEIGHT }}
         {...userForm.getInputProps("gender")}
       >
         <Group mt="xs">
@@ -163,18 +160,20 @@ function EditUserModal({
       </Radio.Group>
       <TextInput
         {...userForm.getInputProps("cardNumber")}
+        style={{ minHeight: MIN_INPUT_HEIGHT }}
         withAsterisk
         label={"Card Number"}
       />
       <TextInput
         {...userForm.getInputProps("email")}
+        style={{ minHeight: MIN_INPUT_HEIGHT }}
         withAsterisk
         label={"Email"}
       />
       <Radio.Group
         label="Role"
         withAsterisk
-        style={{ flexGrow: 1 }}
+        style={{ flexGrow: 1, minHeight: MIN_INPUT_HEIGHT }}
         {...userForm.getInputProps("role")}
       >
         <Group mt="xs">
@@ -188,6 +187,7 @@ function EditUserModal({
         variant={"light"}
         disabled={!userForm.isDirty()}
         onClick={(e) => handleSave(e)}
+        loading={isLoading}
       >
         Edit
       </Button>

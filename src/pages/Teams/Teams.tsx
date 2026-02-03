@@ -1,5 +1,5 @@
 import { useForm } from "@mantine/form";
-import { Team, TeamRequest } from "../../types/team";
+import teamSchema, { Team, TeamRequest } from "../../types/team";
 import { modals } from "@mantine/modals";
 import useTeams from "../../hooks/useTeams";
 import {
@@ -12,9 +12,9 @@ import {
   Table,
   TextInput,
   Title,
+  Tooltip,
 } from "@mantine/core";
 import { IconEdit, IconSearch } from "@tabler/icons-react";
-import { format } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import EditTeamModal from "./components/EditTeamModal";
@@ -28,12 +28,14 @@ import useRequestHandler from "../../hooks/useRequestHandler";
 import { TiTick, TiTimes } from "react-icons/ti";
 import {
   BOOLEAN_ICON_SIZE,
+  CREATE_USER,
   SEARCH_ICON_SIZE,
   TITLE_DIVIDER_MY,
 } from "../../constants/constants";
 import useUsers from "../../hooks/useUsers";
 import { IoMdAddCircleOutline, IoMdRemoveCircleOutline } from "react-icons/io";
 import { User } from "../../types/user";
+import { zod4Resolver } from "mantine-form-zod-resolver";
 
 function Teams() {
   const { teams, addTeam, updateTeam, replaceTeams } = useTeams();
@@ -46,6 +48,8 @@ function Teams() {
 
   const { handleDataRequest } = useRequestHandler();
 
+  const [isLoading, setIsLoading] = useState(false);
+
   const form = useForm({
     initialValues: {
       id: crypto.randomUUID(),
@@ -55,23 +59,20 @@ function Teams() {
       createUser: "",
       createDate: new Date(),
     },
-    validate: {
-      name: (value) =>
-        value.trim().length === 0
-          ? "Name cannot be empty."
-          : value.length < 2
-            ? "Name must have at least 2 letters."
-            : value.length > 128
-              ? "Name cannot exceed 128 characters."
-              : undefined,
-    },
+    validate: zod4Resolver(teamSchema),
   });
 
   const openEditTeam = (team: Team) => {
     modals.open({
       title: <Title order={4}>Edit Team</Title>,
       size: "xl",
-      children: <EditTeamModal team={team} updateTeam={updateTeam} />,
+      children: (
+        <EditTeamModal
+          team={team}
+          updateTeam={updateTeam}
+          checkIfTeamIsValid={checkIfTeamIsValid}
+        />
+      ),
     });
   };
 
@@ -97,13 +98,27 @@ function Teams() {
     replaceTeams(response.value);
   };
 
+  const checkIfTeamIsValid = (team: Team) => {
+    if (teams.some((x) => x.name.trim() === team.name.trim())) {
+      toast.error("There is a team with the same name!");
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSave = async () => {
+    setIsLoading(true);
+
     form.validate();
 
-    if (!form.isValid()) return;
+    if (!form.isValid()) {
+      setIsLoading(false);
+      return;
+    }
 
-    if (teams.some((x) => x.isActive && x.name === form.values.name)) {
-      toast.error("There is a active team with the same name!");
+    if (!checkIfTeamIsValid(form.values)) {
+      setIsLoading(false);
       return;
     }
 
@@ -115,22 +130,22 @@ function Teams() {
       request,
     );
 
-    if (!response.isSuccess) return;
+    if (!response.isSuccess) {
+      setIsLoading(false);
+      return;
+    }
 
     addTeam(response.value);
 
     form.reset();
 
     toast.success("Team has been added successfully!");
+
+    setIsLoading(false);
   };
 
-  const updateTeamActivity = async (team: Team) => {
-    if (
-      teams.find((x) => x.isActive && x.id !== team.id && x.name === team.name)
-    ) {
-      toast.error("There is a active team with the same name.");
-      return;
-    }
+  const changeTeamActivity = async (team: Team) => {
+    setIsLoading(true);
 
     if (
       users.find((x) => x.isActive && team.isActive && x.teamId === team.id)
@@ -138,7 +153,7 @@ function Teams() {
       toast.error(
         "This team already has users; to deactivate the team, first delete the users in that team.",
       );
-
+      setIsLoading(false);
       return;
     }
 
@@ -152,16 +167,22 @@ function Teams() {
       patchDocument,
     );
 
-    if (!response.isSuccess) return;
+    if (!response.isSuccess) {
+      setIsLoading(false);
+      return;
+    }
 
     updateTeam({ ...team, isActive: !team.isActive });
 
     if (team.isActive) {
       toast.success("Team deactivated successfully.");
+      setIsLoading(false);
       return;
     }
 
     toast.success("Team activated successfully.");
+
+    setIsLoading(false);
   };
 
   const memoizedTeams = useMemo(
@@ -181,37 +202,44 @@ function Teams() {
                 <TiTimes size={BOOLEAN_ICON_SIZE} color="#BA1A1A" />
               )}
             </Table.Td>
-            <Table.Td> {x.createUser} </Table.Td>
-            <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
+            <Table.Td> {CREATE_USER} </Table.Td>
             <Table.Td>
               <Flex justify={"center"} gap={5}>
                 {x.isActive ? (
-                  <ActionIcon
-                    onClick={() => openEditTeam(x)}
-                    variant={"light"}
-                    color={"blue"}
-                  >
-                    <IconEdit />
-                  </ActionIcon>
+                  <Tooltip label="Edit" withArrow>
+                    <ActionIcon
+                      onClick={() => openEditTeam(x)}
+                      variant={"light"}
+                      color={"blue"}
+                    >
+                      <IconEdit />
+                    </ActionIcon>
+                  </Tooltip>
                 ) : (
                   <div></div>
                 )}
-                <ActionIcon
-                  onClick={() => updateTeamActivity(x)}
-                  variant={"light"}
-                  color={x.isActive ? "red" : "green"}
+                <Tooltip
+                  label={x.isActive ? "Deactivate Team" : "Activate Team"}
+                  withArrow
                 >
-                  {x.isActive ? (
-                    <IoMdRemoveCircleOutline size={22} />
-                  ) : (
-                    <IoMdAddCircleOutline size={22} />
-                  )}
-                </ActionIcon>
+                  <ActionIcon
+                    onClick={() => changeTeamActivity(x)}
+                    variant={"light"}
+                    color={x.isActive ? "red" : "green"}
+                    loading={isLoading}
+                  >
+                    {x.isActive ? (
+                      <IoMdRemoveCircleOutline size={22} />
+                    ) : (
+                      <IoMdAddCircleOutline size={22} />
+                    )}
+                  </ActionIcon>
+                </Tooltip>
               </Flex>
             </Table.Td>
           </Table.Tr>
         )),
-    [teams, showActiveTeams, searchQuery],
+    [teams, showActiveTeams, searchQuery, isLoading],
   );
 
   useEffect(() => {
@@ -227,10 +255,11 @@ function Teams() {
         <Flex gap={"md"} direction={"column"}>
           <TextInput
             {...form.getInputProps("name")}
+            style={{ minHeight: 80 }}
             withAsterisk
             label={"Name"}
           />
-          <Button onClick={handleSave} variant={"light"}>
+          <Button onClick={handleSave} variant={"light"} loading={isLoading}>
             Add New Team
           </Button>
         </Flex>
@@ -268,9 +297,8 @@ function Teams() {
             <Table.Thead>
               <Table.Tr>
                 <Table.Th>Name</Table.Th>
-                <Table.Th>Is Active</Table.Th>
+                <Table.Th>Status</Table.Th>
                 <Table.Th>Create User</Table.Th>
-                <Table.Th>Create Date</Table.Th>
                 <Table.Th></Table.Th>
               </Table.Tr>
             </Table.Thead>

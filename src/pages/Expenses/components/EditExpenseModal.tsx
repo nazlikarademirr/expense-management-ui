@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef } from "react";
-import {
+import { useEffect, useMemo, useRef, useState } from "react";
+import expenseSchema, {
   Expense,
   ExpenseRequest,
   ExpenseResponse,
@@ -15,7 +15,6 @@ import {
   Group,
   NumberInput,
   Radio,
-  ScrollArea,
   Select,
   Table,
   TextInput,
@@ -27,11 +26,14 @@ import { useForm } from "@mantine/form";
 import toast from "react-hot-toast";
 import { DateInput } from "@mantine/dates";
 import { currencyTypes, expenseTypes } from "../../../constants/static-data";
-import { OvertimeMember } from "../../../types/overtime-member";
+import overtimeMemberSchema, {
+  OvertimeMember,
+} from "../../../types/overtime-member";
 import { format } from "date-fns";
 import { IconTrash } from "@tabler/icons-react";
 import ExpenseType from "../../../enums/expense-type";
 import { SelectItem } from "../../../types/select-item";
+import { zod4Resolver } from "mantine-form-zod-resolver";
 
 interface EditExpenseProps {
   expense: Expense;
@@ -39,6 +41,7 @@ interface EditExpenseProps {
   activeUserSelectData: SelectItem[];
   activeProjectSelectData: SelectItem[];
   unapprovedReportSelectData: SelectItem[];
+  checkIfExpenseIsValid: (expense: Expense) => boolean;
 }
 
 function EditExpenseModal({
@@ -47,38 +50,20 @@ function EditExpenseModal({
   activeUserSelectData,
   activeProjectSelectData,
   unapprovedReportSelectData,
+  checkIfExpenseIsValid,
 }: EditExpenseProps) {
+  const MIN_FLEX_HEIGHT = 90;
+
   const { handleDataRequest } = useRequestHandler();
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const expenseForm = useForm<Expense>({
     initialValues: {
       ...expense,
       expenseDate: new Date(expense.expenseDate),
     },
-    validate: {
-      userId: (value) => (!value ? "User must be selected." : undefined),
-      projectId: (value) => (!value ? "Project must be selected." : undefined),
-      expenseType: (value) =>
-        !value ? "Expense type must be selected." : undefined,
-      expenseDate: (value) =>
-        !value ? "Expense date must be selected." : undefined,
-      totalPrice: (value) =>
-        !value
-          ? "Total price cannot be empty."
-          : value < 0 || value === 0
-            ? "Total price cannot be 0 or less."
-            : undefined,
-      currency: (value) => (!value ? "Currency must be selected." : undefined),
-      tripDescription: (value, values) =>
-        values.expenseType === ExpenseType.Transportation &&
-        value.trim().length === 0
-          ? "Trip description cannot be empty."
-          : value.length > 256
-            ? "Trip description cannot exceed 256 characters."
-            : undefined,
-      outOfOffice: (value) =>
-        value === null ? "Out of office cannot be empty." : undefined,
-    },
+    validate: zod4Resolver(expenseSchema),
   });
 
   const overtimeMemberForm = useForm<OvertimeMember>({
@@ -91,10 +76,7 @@ function EditExpenseModal({
       createUser: crypto.randomUUID(),
       createDate: new Date(),
     },
-    validate: {
-      userId: (value) => (!value ? "User must be selected." : undefined),
-      price: (value) => (!value ? "Total price cannot be empty." : undefined),
-    },
+    validate: zod4Resolver(overtimeMemberSchema),
   });
 
   const initialValues = useRef<Expense>({
@@ -104,14 +86,19 @@ function EditExpenseModal({
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   const handleSave = async (e: React.MouseEvent) => {
+    setIsLoading(true);
+
     e.preventDefault();
 
     expenseForm.validate();
 
-    if (!expenseForm.isValid()) return;
+    if (!expenseForm.isValid()) {
+      setIsLoading(false);
+      return;
+    }
 
-    if (expenseForm.values.expenseDate > new Date()) {
-      toast.error("Expenses cannot be entered for future dates.");
+    if (!checkIfExpenseIsValid(expenseForm.values)) {
+      setIsLoading(false);
       return;
     }
 
@@ -134,7 +121,10 @@ function EditExpenseModal({
       expenseRequest,
     );
 
-    if (!response.isSuccess) return;
+    if (!response.isSuccess) {
+      setIsLoading(false);
+      return;
+    }
 
     initialValues.current = {
       ...expenseForm.values,
@@ -150,6 +140,8 @@ function EditExpenseModal({
     toast.success("Expense edited successfully.");
 
     modals.closeAll();
+
+    setIsLoading(false);
   };
 
   const saveOvertimeMember = async () => {
@@ -237,7 +229,7 @@ function EditExpenseModal({
     <Card shadow={"xs"} radius={"xs"} withBorder padding={10}>
       <Flex gap={"md"}>
         <Flex direction={"column"} w={"60%"}>
-          <Flex gap={"sm"} style={{ flexGrow: 1 }}>
+          <Flex gap={"sm"} style={{ flexGrow: 1, minHeight: MIN_FLEX_HEIGHT }}>
             <Select
               w={"20%"}
               {...expenseForm.getInputProps("userId")}
@@ -264,13 +256,14 @@ function EditExpenseModal({
               {...expenseForm.getInputProps("reportId")}
               onChange={(_, option) => changeReport(option)}
               data={unapprovedReportSelectData}
+              placeholder="Select a report."
               searchable
               label={"Report Name"}
               style={{ flexGrow: 1 }}
               clearable
             />
           </Flex>
-          <Flex gap={"sm"} style={{ flexGrow: 1 }}>
+          <Flex gap={"sm"} style={{ flexGrow: 1, minHeight: MIN_FLEX_HEIGHT }}>
             <DateInput
               w={"20%"}
               {...expenseForm.getInputProps("expenseDate")}
@@ -304,7 +297,7 @@ function EditExpenseModal({
               </Group>
             </Radio.Group>
           </Flex>
-          <Flex gap={"sm"} style={{ flexGrow: 1 }}>
+          <Flex gap={"sm"} style={{ flexGrow: 1, minHeight: MIN_FLEX_HEIGHT }}>
             <TextInput
               w={"20%"}
               {...expenseForm.getInputProps("tripDescription")}
@@ -338,7 +331,7 @@ function EditExpenseModal({
         </Flex>
         <Flex w={"40%"}>
           <Card shadow={"xs"} radius={"md"} withBorder padding={10} w={"100%"}>
-            <Flex gap="sm" align={"flex-end"}>
+            <Flex gap="sm" style={{ minHeight: 80 }}>
               <Select
                 {...overtimeMemberForm.getInputProps("userId")}
                 onChange={(_, option) => changeOvertimeMember(option)}
@@ -357,7 +350,7 @@ function EditExpenseModal({
                 style={{ flexGrow: 1 }}
               />
 
-              <Button onClick={saveOvertimeMember} variant={"light"}>
+              <Button onClick={saveOvertimeMember} variant={"light"} mt={25}>
                 Add Overtime Member
               </Button>
             </Flex>
@@ -369,20 +362,17 @@ function EditExpenseModal({
               withTableBorder
               withColumnBorders
               mt={15}
-              style={{ tableLayout: "fixed" }}
             >
-              <ScrollArea h={300}>
-                <Table.Thead>
-                  <Table.Tr>
-                    <Table.Th>User Name</Table.Th>
-                    <Table.Th>Price</Table.Th>
-                    <Table.Th>Create User</Table.Th>
-                    <Table.Th>Create Date</Table.Th>
-                    <Table.Th></Table.Th>
-                  </Table.Tr>
-                </Table.Thead>
-                <Table.Tbody>{memoizedOvertimeMembers}</Table.Tbody>
-              </ScrollArea>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>User Name</Table.Th>
+                  <Table.Th>Price</Table.Th>
+                  <Table.Th>Create User</Table.Th>
+                  <Table.Th>Create Date</Table.Th>
+                  <Table.Th></Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>{memoizedOvertimeMembers}</Table.Tbody>
             </Table>
           </Card>
         </Flex>
@@ -391,6 +381,7 @@ function EditExpenseModal({
         onClick={handleSave}
         disabled={!expenseForm.isDirty()}
         variant={"light"}
+        loading={isLoading}
         mt={10}
       >
         Edit Expense

@@ -1,5 +1,5 @@
-import { useEffect, useRef } from "react";
-import { Team } from "../../../types/team";
+import { useEffect, useRef, useState } from "react";
+import teamSchema, { Team } from "../../../types/team";
 import { Button, Flex, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import {
@@ -11,31 +11,28 @@ import RequestType from "../../../request-handler/request-type";
 import urls from "../../../constants/urls";
 import toast from "react-hot-toast";
 import { modals } from "@mantine/modals";
+import { zod4Resolver } from "mantine-form-zod-resolver";
 
 interface EditTeamProps {
   team: Team;
   updateTeam: (teamForm: Team) => void;
+  checkIfTeamIsValid: (team: Team) => boolean;
 }
 
-function EditTeamModal({ team, updateTeam }: EditTeamProps) {
+function EditTeamModal({
+  team,
+  updateTeam,
+  checkIfTeamIsValid,
+}: EditTeamProps) {
   const { handleDataRequest } = useRequestHandler();
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const teamForm = useForm({
     initialValues: {
       ...team,
     },
-    validate: {
-      name: (value) =>
-        value.trim().length === 0
-          ? "Name cannot be empty."
-          : value.length < 2
-            ? "Name must have at least 2 letters."
-            : value.length > 128
-              ? "Name cannot exceed 128 characters."
-              : null,
-      isActive: (value) =>
-        value === null ? "Activity must be selected." : undefined,
-    },
+    validate: zod4Resolver(teamSchema),
   });
 
   const initialValues = useRef<Team>({
@@ -45,11 +42,21 @@ function EditTeamModal({ team, updateTeam }: EditTeamProps) {
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   const handleSave = async (e: React.MouseEvent) => {
+    setIsLoading(true);
+
     e.preventDefault();
 
     teamForm.validate();
 
-    if (!teamForm.isValid()) return;
+    if (!teamForm.isValid()) {
+      setIsLoading(false);
+      return;
+    }
+
+    if (!checkIfTeamIsValid(teamForm.values)) {
+      setIsLoading(false);
+      return;
+    }
 
     const patchDocument = createJsonPatchDocumentFromDirtyForm(
       teamForm,
@@ -62,7 +69,10 @@ function EditTeamModal({ team, updateTeam }: EditTeamProps) {
       patchDocument,
     );
 
-    if (!response.isSuccess) return;
+    if (!response.isSuccess) {
+      setIsLoading(false);
+      return;
+    }
 
     initialValues.current = {
       ...teamForm.values,
@@ -75,6 +85,8 @@ function EditTeamModal({ team, updateTeam }: EditTeamProps) {
     toast.success("Team edited successfully.");
 
     modals.closeAll();
+
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -88,6 +100,7 @@ function EditTeamModal({ team, updateTeam }: EditTeamProps) {
       <TextInput
         ref={nameInputRef}
         {...teamForm.getInputProps("name")}
+        style={{ minHeight: 80 }}
         withAsterisk
         label={"Name"}
       />
@@ -96,6 +109,7 @@ function EditTeamModal({ team, updateTeam }: EditTeamProps) {
         variant="light"
         disabled={!teamForm.isDirty()}
         onClick={(e) => handleSave(e)}
+        loading={isLoading}
       >
         Edit
       </Button>

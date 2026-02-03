@@ -1,5 +1,5 @@
-import { useEffect, useRef } from "react";
-import { Project } from "../../../types/project";
+import { useEffect, useRef, useState } from "react";
+import projectSchema, { Project } from "../../../types/project";
 import { modals } from "@mantine/modals";
 import { Button, Flex, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
@@ -11,38 +11,30 @@ import useRequestHandler from "../../../hooks/useRequestHandler";
 import urls from "../../../constants/urls";
 import RequestType from "../../../request-handler/request-type";
 import toast from "react-hot-toast";
+import { zod4Resolver } from "mantine-form-zod-resolver";
 
 interface EditProjectProps {
   project: Project;
   updateProject: (updateProject: Project) => void;
+  checkIfProjectIsValid: (project: Project) => boolean;
 }
 
-function EditProjectModal({ project, updateProject }: EditProjectProps) {
+function EditProjectModal({
+  project,
+  updateProject,
+  checkIfProjectIsValid,
+}: EditProjectProps) {
+  const MIN_INPUT_HEIGHT = 80;
+
   const { handleDataRequest } = useRequestHandler();
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const projectForm = useForm({
     initialValues: {
       ...project,
     },
-    validate: {
-      name: (value) =>
-        value.trim().length === 0
-          ? "Name cannot be empty."
-          : value.length < 2
-            ? "Name must have at least 2 letters."
-            : value.length > 128
-              ? "Name cannot exceed 128 characters."
-              : null,
-      code: (value) =>
-        value.trim().length === 0
-          ? "Code cannot be empty."
-          : value.length < 2
-            ? "Code must have at least 2 letters."
-            : value.length > 128
-              ? "Code cannot exceed 128 characters."
-              : null,
-      isActive: (value) => (!value ? "Activity must be selected." : undefined),
-    },
+    validate: zod4Resolver(projectSchema),
   });
 
   const initialValues = useRef<Project>({
@@ -52,11 +44,21 @@ function EditProjectModal({ project, updateProject }: EditProjectProps) {
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   const handleSave = async (e: React.MouseEvent) => {
+    setIsLoading(true);
+
     e.preventDefault();
 
     projectForm.validate();
 
-    if (!projectForm.isValid()) return;
+    if (!projectForm.isValid()) {
+      setIsLoading(false);
+      return;
+    }
+
+    if (!checkIfProjectIsValid(projectForm.values)) {
+      setIsLoading(false);
+      return;
+    }
 
     const patchDocument = createJsonPatchDocumentFromDirtyForm(
       projectForm,
@@ -69,7 +71,10 @@ function EditProjectModal({ project, updateProject }: EditProjectProps) {
       patchDocument,
     );
 
-    if (!response.isSuccess) return;
+    if (!response.isSuccess) {
+      setIsLoading(false);
+      return;
+    }
 
     initialValues.current = {
       ...projectForm.values,
@@ -82,6 +87,8 @@ function EditProjectModal({ project, updateProject }: EditProjectProps) {
     toast.success("Project edited successfully.");
 
     modals.closeAll();
+
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -93,16 +100,22 @@ function EditProjectModal({ project, updateProject }: EditProjectProps) {
   return (
     <Flex direction={"column"} gap={10}>
       <TextInput
+        style={{ minHeight: MIN_INPUT_HEIGHT }}
         ref={nameInputRef}
         {...projectForm.getInputProps("name")}
         label={"Name"}
       />
 
-      <TextInput {...projectForm.getInputProps("code")} label={"Code"} />
+      <TextInput
+        style={{ minHeight: MIN_INPUT_HEIGHT }}
+        {...projectForm.getInputProps("code")}
+        label={"Code"}
+      />
       <Button
         variant="light"
         disabled={!projectForm.isDirty()}
         onClick={(e) => handleSave(e)}
+        loading={isLoading}
       >
         Edit
       </Button>
