@@ -7,9 +7,7 @@ function UserMenu() {
   const auth = useAuthentication();
   const navigate = useNavigate();
 
-  if (!auth.currentUser) {
-    return;
-  }
+  if (!auth.currentUser) return null;
 
   const currentUserName = auth.currentUser.name.toUpperCase();
   const currentUserSurname = auth.currentUser.surname.toUpperCase();
