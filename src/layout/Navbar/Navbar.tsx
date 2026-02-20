@@ -8,19 +8,12 @@ import {
   IconReportAnalytics,
   IconApps,
 } from "@tabler/icons-react";
-import {
-  Avatar,
-  Divider,
-  Flex,
-  Menu,
-  Tooltip,
-  UnstyledButton,
-} from "@mantine/core";
+import { Flex, Tooltip, UnstyledButton } from "@mantine/core";
 import classes from "./Navbar.module.css";
 import { useNavigate } from "react-router";
 import routes from "../../constants/routes";
 import { RiFileTextLine } from "react-icons/ri";
-import { useAuth } from "../../AuthProvider";
+import UserMenu from "./UserMenu";
 
 interface Link {
   icon: React.ForwardRefExoticComponent<IconProps & React.RefAttributes<Icon>>;
@@ -38,8 +31,6 @@ const mainLinksMockdata: Link[] = [
 
 export function Navbar() {
   const [active, setActive] = useState("Releases");
-
-  const auth = useAuth();
 
   const navigate = useNavigate();
 
@@ -79,33 +70,7 @@ export function Navbar() {
           <Flex justify={"center"} direction={"column"}>
             {mainLinks}
             <Flex style={{ bottom: 15, position: "absolute" }}>
-              <Menu shadow="md">
-                <Menu.Target>
-                  <Avatar ml={3} radius={"xl"} color="cyan">
-                    {auth.currentUser?.name.toUpperCase()[0]}
-                    {auth.currentUser?.surname.toUpperCase()[0]}
-                  </Avatar>
-                </Menu.Target>
-                <Menu.Dropdown>
-                  <Menu.Label style={{ fontSize: 15, color: "black" }}>
-                    {auth.currentUser?.name.toUpperCase()}{" "}
-                    {auth.currentUser?.surname.toUpperCase()}
-                  </Menu.Label>
-                  <Menu.Label style={{ fontSize: 13 }}>
-                    {auth.currentUser?.email}
-                  </Menu.Label>
-                  <Divider mt={5} />
-                  <Menu.Item
-                    onClick={() => {
-                      auth.logout();
-                      navigate(routes.login);
-                    }}
-                    color="red"
-                  >
-                    Logout
-                  </Menu.Item>
-                </Menu.Dropdown>
-              </Menu>
+              <UserMenu />
             </Flex>
           </Flex>
         </div>

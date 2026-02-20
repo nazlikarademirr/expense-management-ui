@@ -1,19 +1,16 @@
-import { useAuth } from "./AuthProvider";
-import routes from "./constants/routes";
+import { useAuthentication } from "./AuthenticationProvider";
+import routes from "../../constants/routes";
 import toast from "react-hot-toast";
 import { jwtDecode } from "jwt-decode";
 import { Navigate } from "react-router";
 
 function RequireAuthentication({ children }: { children: React.ReactNode }) {
-  const auth = useAuth();
+  const auth = useAuthentication();
 
   const sessionToken = sessionStorage.getItem("token");
 
-  if (sessionToken === "") return <Navigate to={routes.login} replace />;
-
   if (!sessionToken) {
     auth.logout();
-    toast.error("Please log in.");
     return <Navigate to={routes.login} replace />;
   }
 

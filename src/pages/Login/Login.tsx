@@ -18,10 +18,10 @@ import {
   AuthenticationResponse,
 } from "../../types/authentication.types";
 import { useState } from "react";
-import { useAuth } from "../../AuthProvider";
+import { useAuthentication } from "../../contexts/AuthenticationContext/AuthenticationProvider";
 
 function Login() {
-  const auth = useAuth();
+  const auth = useAuthentication();
 
   const { handleDataRequest } = useRequestHandler();
 

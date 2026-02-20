@@ -8,11 +8,11 @@ import Expenses from "./pages/Expenses/Expenses";
 import Reports from "./pages/Reports/Reports";
 import Login from "./pages/Login/Login";
 import { useEffect } from "react";
-import { useAuth } from "./AuthProvider";
-import RequireAuthentication from "./RequireAuthentication";
+import { useAuthentication } from "./contexts/AuthenticationContext/AuthenticationProvider";
+import RequireAuthentication from "./contexts/AuthenticationContext/RequireAuthentication";
 
 function AppRouter() {
-  const auth = useAuth();
+  const auth = useAuthentication();
 
   useEffect(() => {
     const sessionUser = sessionStorage.getItem("current-user");

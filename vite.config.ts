@@ -7,7 +7,7 @@ export default defineConfig({
   build: {
     sourcemap: true,
   },
-  base: "./",
+  base: "/login",
   server: {
     host: "0.0.0.0",
     open: true,
