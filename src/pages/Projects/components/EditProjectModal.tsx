@@ -19,13 +19,13 @@ interface EditProjectProps {
   checkIfProjectIsValid: (project: Project) => boolean;
 }
 
+const MIN_INPUT_HEIGHT = 80;
+
 function EditProjectModal({
   project,
   updateProject,
   checkIfProjectIsValid,
 }: EditProjectProps) {
-  const MIN_INPUT_HEIGHT = 80;
-
   const { handleDataRequest } = useRequestHandler();
 
   const [isLoading, setIsLoading] = useState(false);

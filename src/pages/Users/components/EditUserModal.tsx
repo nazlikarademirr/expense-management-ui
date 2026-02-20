@@ -30,14 +30,14 @@ interface EditUserProps {
   checkIfUserIsValid: (user: User) => boolean;
 }
 
+const MIN_INPUT_HEIGHT = 80;
+
 function EditUserModal({
   user,
   activeTeamSelectData,
   updateUser,
   checkIfUserIsValid,
 }: EditUserProps) {
-  const MIN_INPUT_HEIGHT = 80;
-
   const { handleDataRequest } = useRequestHandler();
 
   const [isLoading, setIsLoading] = useState(false);

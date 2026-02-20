@@ -45,10 +45,10 @@ import { SelectItem } from "../../types/select-item.ts";
 import { Team } from "../../types/team.ts";
 import { zod4Resolver } from "mantine-form-zod-resolver";
 
-function Users() {
-  const MIN_INPUT_HEIGHT = 80;
-  const MIN_INPUT_WIDTH = 250;
+const MIN_INPUT_HEIGHT = 80;
+const MIN_INPUT_WIDTH = 250;
 
+function Users() {
   const { users, addUser, updateUser, replaceUsers } = useUsers();
 
   const [searchQuery, setSearchQuery] = useState("");
