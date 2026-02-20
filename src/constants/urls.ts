@@ -5,6 +5,7 @@ interface Urls {
   expense: string;
   report: string;
   expenseExcel: string;
+  login: string;
 }
 
 const urls: Urls = {
@@ -14,6 +15,7 @@ const urls: Urls = {
   expense: "https://localhost:7165/api/expense",
   report: "https://localhost:7214/api/report",
   expenseExcel: "https://localhost:7214/api/expense-excel",
+  login: "https://localhost:7192/api/authenticate",
 } as const;
 
 export default urls;

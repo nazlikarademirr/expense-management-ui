@@ -6,51 +6,78 @@ import Teams from "./pages/Teams/Teams";
 import Projects from "./pages/Projects/Projects";
 import Expenses from "./pages/Expenses/Expenses";
 import Reports from "./pages/Reports/Reports";
+import Login from "./pages/Login/Login";
+import { useEffect } from "react";
+import { useAuthentication } from "./contexts/AuthenticationContext/AuthenticationProvider";
+import RequireAuthentication from "./contexts/AuthenticationContext/RequireAuthentication";
 
 function AppRouter() {
+  const auth = useAuthentication();
+
+  useEffect(() => {
+    const sessionUser = sessionStorage.getItem("current-user");
+    const sessionToken = sessionStorage.getItem("token");
+
+    if (!auth.currentUser && sessionUser && sessionToken) {
+      auth.login(sessionToken);
+    }
+  }, []);
+
   return (
     <BrowserRouter>
       <Routes>
         <Route
           path={routes.users}
           element={
-            <Main>
-              <Users />
-            </Main>
+            <RequireAuthentication>
+              <Main>
+                <Users />
+              </Main>
+            </RequireAuthentication>
           }
         />
         <Route
           path={routes.teams}
           element={
-            <Main>
-              <Teams />
-            </Main>
+            <RequireAuthentication>
+              <Main>
+                <Teams />
+              </Main>
+            </RequireAuthentication>
           }
         />
         <Route
           path={routes.projects}
           element={
-            <Main>
-              <Projects />
-            </Main>
+            <RequireAuthentication>
+              <Main>
+                <Projects />
+              </Main>
+            </RequireAuthentication>
           }
         />
         <Route
           path={routes.expenses}
           element={
-            <Main>
-              <Expenses />
-            </Main>
+            <RequireAuthentication>
+              <Main>
+                <Expenses />
+              </Main>
+            </RequireAuthentication>
           }
         />
         <Route
           path={routes.reports}
           element={
-            <Main>
-              <Reports />
-            </Main>
+            <RequireAuthentication>
+              <Main>
+                <Reports />
+              </Main>
+            </RequireAuthentication>
           }
         />
+
+        <Route path={routes.login} element={<Login />} />
       </Routes>
     </BrowserRouter>
   );

@@ -8,11 +8,12 @@ import {
   IconReportAnalytics,
   IconApps,
 } from "@tabler/icons-react";
-import { Tooltip, UnstyledButton } from "@mantine/core";
+import { Flex, Tooltip, UnstyledButton } from "@mantine/core";
 import classes from "./Navbar.module.css";
 import { useNavigate } from "react-router";
 import routes from "../../constants/routes";
 import { RiFileTextLine } from "react-icons/ri";
+import UserMenu from "./UserMenu";
 
 interface Link {
   icon: React.ForwardRefExoticComponent<IconProps & React.RefAttributes<Icon>>;
@@ -66,7 +67,12 @@ export function Navbar() {
           <div className={classes.logo}>
             <RiFileTextLine size={30} color="green" />
           </div>
-          {mainLinks}
+          <Flex justify={"center"} direction={"column"}>
+            {mainLinks}
+            <Flex style={{ bottom: 15, position: "absolute" }}>
+              <UserMenu />
+            </Flex>
+          </Flex>
         </div>
       </div>
     </nav>

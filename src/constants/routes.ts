@@ -4,6 +4,7 @@ interface Routes {
   projects: string;
   expenses: string;
   reports: string;
+  login: string;
 }
 
 const routes: Routes = {
@@ -12,6 +13,7 @@ const routes: Routes = {
   projects: "/projects",
   expenses: "/",
   reports: "/reports",
+  login: "/login",
 } as const;
 
 export default routes;
