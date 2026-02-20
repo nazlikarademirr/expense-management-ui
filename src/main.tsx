@@ -7,13 +7,16 @@ import "@mantine/dates/styles.css";
 import "@mantine/notifications/styles.css";
 import AppRouter from "./AppRouter.tsx";
 import { Toaster } from "react-hot-toast";
+import { AuthProvider } from "./AuthProvider.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <MantineProvider>
     <Notifications />
     <ModalsProvider>
-      <AppRouter />
-      <Toaster />
+      <AuthProvider>
+        <AppRouter />
+        <Toaster />
+      </AuthProvider>
     </ModalsProvider>
-  </MantineProvider>
+  </MantineProvider>,
 );
