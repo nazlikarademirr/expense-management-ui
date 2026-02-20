@@ -49,9 +49,9 @@ import { Project } from "../../types/project";
 import { Report } from "../../types/report";
 import { zod4Resolver } from "mantine-form-zod-resolver";
 
-function Expenses() {
-  const MIN_FLEX_HEIGHT = 110;
+const MIN_FLEX_HEIGHT = 110;
 
+function Expenses() {
   const {
     expenses,
     addExpense,

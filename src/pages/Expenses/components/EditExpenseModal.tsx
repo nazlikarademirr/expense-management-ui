@@ -44,6 +44,8 @@ interface EditExpenseProps {
   checkIfExpenseIsValid: (expense: Expense) => boolean;
 }
 
+const MIN_FLEX_HEIGHT = 90;
+
 function EditExpenseModal({
   expense,
   updateExpense,
@@ -52,8 +54,6 @@ function EditExpenseModal({
   unapprovedReportSelectData,
   checkIfExpenseIsValid,
 }: EditExpenseProps) {
-  const MIN_FLEX_HEIGHT = 90;
-
   const { handleDataRequest } = useRequestHandler();
 
   const [isLoading, setIsLoading] = useState(false);
