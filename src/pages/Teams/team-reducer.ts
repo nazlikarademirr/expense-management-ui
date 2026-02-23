@@ -10,16 +10,20 @@ type Action =
 function teamReducer(state: Team[], action: Action) {
   switch (action.type) {
     case ReducerActions.Add: {
-      return [action.payload, ...state];
+      return [action.payload, ...state].sort((a, b) =>
+        a.name.localeCompare(b.name),
+      );
     }
 
     case ReducerActions.Update: {
-      return state.map((x) => {
-        if (x.id === action.payload.id) {
-          return action.payload;
-        }
-        return x;
-      });
+      return state
+        .map((x) => {
+          if (x.id === action.payload.id) {
+            return action.payload;
+          }
+          return x;
+        })
+        .sort((a, b) => a.name.localeCompare(b.name));
     }
 
     case ReducerActions.Delete: {
@@ -27,7 +31,7 @@ function teamReducer(state: Team[], action: Action) {
     }
 
     case ReducerActions.Replace: {
-      return action.payload;
+      return [...action.payload].sort((a, b) => a.name.localeCompare(b.name));
     }
   }
 }

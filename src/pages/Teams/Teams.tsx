@@ -99,7 +99,9 @@ function Teams() {
   };
 
   const checkIfTeamIsValid = (team: Team) => {
-    if (teams.some((x) => x.name.trim() === team.name.trim())) {
+    if (
+      teams.some((x) => x.id !== team.id && x.name.trim() === team.name.trim())
+    ) {
       toast.error("There is a team with the same name!");
       return false;
     }

@@ -15,6 +15,7 @@ import {
   Title,
   Text,
   Tooltip,
+  ScrollArea,
 } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import expenseSchema, {
@@ -241,7 +242,7 @@ function Expenses() {
       currency: x.currency.toString(),
     }));
 
-    replaceExpenses(expenseList);
+    replaceExpenses([...expenseList]);
   };
 
   const checkIfExpenseIsValid = (expense: Expense) => {
@@ -343,6 +344,9 @@ function Expenses() {
     overtimeMemberForm.validate();
 
     if (!overtimeMemberForm.isValid()) return;
+
+    overtimeMemberForm.values.id = crypto.randomUUID();
+    overtimeMemberForm.values.createDate = new Date();
 
     if (
       form.values.overtimeMembers.some(
@@ -625,16 +629,18 @@ function Expenses() {
                 withTableBorder
                 withColumnBorders
               >
-                <Table.Thead>
-                  <Table.Tr>
-                    <Table.Th>User Name</Table.Th>
-                    <Table.Th>Price</Table.Th>
-                    <Table.Th>Create User</Table.Th>
-                    <Table.Th>Create Date</Table.Th>
-                    <Table.Th></Table.Th>
-                  </Table.Tr>
-                </Table.Thead>
-                <Table.Tbody>{memoizedOvertimeMembers}</Table.Tbody>
+                <ScrollArea h={250}>
+                  <Table.Thead>
+                    <Table.Tr>
+                      <Table.Th>User Name</Table.Th>
+                      <Table.Th>Price</Table.Th>
+                      <Table.Th>Create User</Table.Th>
+                      <Table.Th>Create Date</Table.Th>
+                      <Table.Th></Table.Th>
+                    </Table.Tr>
+                  </Table.Thead>
+                  <Table.Tbody>{memoizedOvertimeMembers}</Table.Tbody>
+                </ScrollArea>
               </Table>
             </Card>
           </Flex>

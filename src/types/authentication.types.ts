@@ -14,6 +14,7 @@ const TokenDataSchema = z.object({
   Name: z.string(),
   Surname: z.string(),
   Email: z.string(),
+  Role: z.string(),
 });
 
 type CurrentUser = {
@@ -21,6 +22,7 @@ type CurrentUser = {
   name: string;
   surname: string;
   email: string;
+  role: string;
 };
 
 export { TokenDataSchema };

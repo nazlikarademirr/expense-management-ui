@@ -177,7 +177,11 @@ function Reports() {
   };
 
   const checkIfReportIsValid = (report: Report) => {
-    if (reports.some((x) => x.name.trim() === report.name.trim())) {
+    if (
+      reports.some(
+        (x) => x.id !== report.id && x.name.trim() === report.name.trim(),
+      )
+    ) {
       toast.error("There is a report with the same name!");
       return false;
     }
