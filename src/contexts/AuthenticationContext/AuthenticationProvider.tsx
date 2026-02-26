@@ -38,6 +38,7 @@ export function AuthenticationProvider({
       name: tokenData.Name,
       surname: tokenData.Surname,
       email: tokenData.Email,
+      role: tokenData.Role,
     };
 
     sessionStorage.setItem("current-user", JSON.stringify(user));

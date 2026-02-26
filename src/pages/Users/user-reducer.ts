@@ -12,7 +12,7 @@ function userReducer(state: User[], action: Action) {
     case ReducerActions.Add: {
       return [action.payload, ...state].sort(
         (a: User, b: User) =>
-          a.name.localeCompare(b.name) || a.surname.localeCompare(b.surname)
+          a.name.localeCompare(b.name) || a.surname.localeCompare(b.surname),
       );
     }
 
@@ -26,7 +26,7 @@ function userReducer(state: User[], action: Action) {
         })
         .sort(
           (a: User, b: User) =>
-            a.name.localeCompare(b.name) || a.surname.localeCompare(b.surname)
+            a.name.localeCompare(b.name) || a.surname.localeCompare(b.surname),
         );
     }
 
@@ -37,7 +37,7 @@ function userReducer(state: User[], action: Action) {
     case ReducerActions.Replace: {
       return action.payload.sort(
         (a, b) =>
-          a.name.localeCompare(b.name) || a.surname.localeCompare(b.surname)
+          a.name.localeCompare(b.name) || a.surname.localeCompare(b.surname),
       );
     }
   }

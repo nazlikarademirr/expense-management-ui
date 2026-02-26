@@ -86,12 +86,20 @@ function Projects() {
   };
 
   const checkIfProjectIsValid = (project: Project) => {
-    if (projects.some((x) => x.name.trim() === project.name.trim())) {
+    if (
+      projects.some(
+        (x) => x.id !== project.id && x.name.trim() === project.name.trim(),
+      )
+    ) {
       toast.error("There is a project with the same name!");
       return false;
     }
 
-    if (projects.some((x) => x.code.trim() === project.code.trim())) {
+    if (
+      projects.some(
+        (x) => x.id !== project.id && x.code.trim() === project.code.trim(),
+      )
+    ) {
       toast.error("There is a project with the same code!");
       return false;
     }

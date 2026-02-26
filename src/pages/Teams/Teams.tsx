@@ -76,10 +76,12 @@ function Teams() {
     });
   };
 
-  const getUsers = async () => {
+  const getActiveUsers = async () => {
     const response = await handleDataRequest<never, User[]>(
       urls.user,
       RequestType.Get,
+      undefined,
+      { isActive: true },
     );
 
     if (!response.isSuccess) return;
@@ -99,7 +101,9 @@ function Teams() {
   };
 
   const checkIfTeamIsValid = (team: Team) => {
-    if (teams.some((x) => x.name.trim() === team.name.trim())) {
+    if (
+      teams.some((x) => x.id !== team.id && x.name.trim() === team.name.trim())
+    ) {
       toast.error("There is a team with the same name!");
       return false;
     }
@@ -147,11 +151,9 @@ function Teams() {
   const changeTeamActivity = async (team: Team) => {
     setIsLoading(true);
 
-    if (
-      users.find((x) => x.isActive && team.isActive && x.teamId === team.id)
-    ) {
+    if (users.find((x) => team.isActive && x.teamId === team.id)) {
       toast.error(
-        "This team already has users; to deactivate the team, first delete the users in that team.",
+        "This team already has active users; to deactivate the team, first deactivate the users in that team.",
       );
       setIsLoading(false);
       return;
@@ -243,8 +245,8 @@ function Teams() {
   );
 
   useEffect(() => {
+    getActiveUsers();
     getTeams();
-    getUsers();
   }, []);
 
   return (

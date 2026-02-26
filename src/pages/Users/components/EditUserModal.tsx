@@ -67,7 +67,7 @@ function EditUserModal({
       return;
     }
 
-    if (checkIfUserIsValid(userForm.values)) {
+    if (!checkIfUserIsValid(userForm.values)) {
       setIsLoading(false);
       return;
     }

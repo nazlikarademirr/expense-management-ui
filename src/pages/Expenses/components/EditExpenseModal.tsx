@@ -15,6 +15,7 @@ import {
   Group,
   NumberInput,
   Radio,
+  ScrollArea,
   Select,
   Table,
   TextInput,
@@ -363,16 +364,18 @@ function EditExpenseModal({
               withColumnBorders
               mt={15}
             >
-              <Table.Thead>
-                <Table.Tr>
-                  <Table.Th>User Name</Table.Th>
-                  <Table.Th>Price</Table.Th>
-                  <Table.Th>Create User</Table.Th>
-                  <Table.Th>Create Date</Table.Th>
-                  <Table.Th></Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>{memoizedOvertimeMembers}</Table.Tbody>
+              <ScrollArea h={250}>
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th>User Name</Table.Th>
+                    <Table.Th>Price</Table.Th>
+                    <Table.Th>Create User</Table.Th>
+                    <Table.Th>Create Date</Table.Th>
+                    <Table.Th></Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>{memoizedOvertimeMembers}</Table.Tbody>
+              </ScrollArea>
             </Table>
           </Card>
         </Flex>

@@ -78,7 +78,8 @@ const userSchema = z.object({
     .string()
     .trim()
     .min(8, "Password cannot be less than 8 characters.")
-    .max(32, "Password cannot exceed 32 characters."),
+    .max(32, "Password cannot exceed 32 characters.")
+    .optional(),
   role: z.enum(Role, "Role must be selected."),
 });
 

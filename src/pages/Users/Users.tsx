@@ -135,12 +135,21 @@ function Users() {
   };
 
   const checkIfUserIsValid = (user: User) => {
-    if (users.some((x) => x.cardNumber.trim() === user.cardNumber.trim())) {
+    if (
+      users.some(
+        (x) =>
+          x.id !== user.id && x.cardNumber.trim() === user.cardNumber.trim(),
+      )
+    ) {
       toast.error("There is a user with the same card number!");
       return false;
     }
 
-    if (users.some((x) => x.email.trim() === user.email.trim())) {
+    if (
+      users.some(
+        (x) => x.id !== user.id && x.email.trim() === user.email.trim(),
+      )
+    ) {
       toast.error("There is a user with the same email!");
       return false;
     }
