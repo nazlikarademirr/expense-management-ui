@@ -35,7 +35,7 @@ function userReducer(state: User[], action: Action) {
     }
 
     case ReducerActions.Replace: {
-      return [...action.payload].sort(
+      return action.payload.sort(
         (a, b) =>
           a.name.localeCompare(b.name) || a.surname.localeCompare(b.surname),
       );

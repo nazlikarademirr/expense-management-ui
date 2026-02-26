@@ -15,7 +15,6 @@ import {
   Title,
   Text,
   Tooltip,
-  ScrollArea,
 } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import expenseSchema, {
@@ -147,9 +146,9 @@ function Expenses() {
       title: <Title order={5}>Delete Expense</Title>,
       size: "md",
       children: (
-        <Flex direction={"column"} gap={20}>
+        <Flex direction="column" gap={20}>
           <Text>Are you sure you want to delete the expense?</Text>
-          <Flex direction={"row"} gap={10}>
+          <Flex direction="row" gap={10}>
             <Button
               style={{ flexGrow: 1 }}
               loading={isLoading}
@@ -157,16 +156,16 @@ function Expenses() {
                 handleDelete(id);
                 modals.closeAll();
               }}
-              variant={"light"}
-              color={"blue"}
+              variant="light"
+              color="blue"
             >
               Delete
             </Button>
             <Button
               onClick={() => modals.closeAll()}
               style={{ flexGrow: 1 }}
-              variant={"light"}
-              color={"red"}
+              variant="light"
+              color="red"
             >
               Cancel
             </Button>
@@ -242,7 +241,7 @@ function Expenses() {
       currency: x.currency.toString(),
     }));
 
-    replaceExpenses([...expenseList]);
+    replaceExpenses(expenseList);
   };
 
   const checkIfExpenseIsValid = (expense: Expense) => {
@@ -345,8 +344,8 @@ function Expenses() {
 
     if (!overtimeMemberForm.isValid()) return;
 
-    overtimeMemberForm.values.id = crypto.randomUUID();
-    overtimeMemberForm.values.createDate = new Date();
+    overtimeMemberForm.setFieldValue("id", crypto.randomUUID());
+    overtimeMemberForm.setFieldValue("createDate", new Date());
 
     if (
       form.values.overtimeMembers.some(
@@ -419,13 +418,13 @@ function Expenses() {
             <Table.Td> {x.userFullName} </Table.Td>
             <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
             <Table.Td>
-              <Flex justify={"center"} gap={5}>
+              <Flex justify="center" gap={5}>
                 <Tooltip label="Edit" withArrow>
                   <ActionIcon
                     disabled={x.isApproved}
                     onClick={() => openEditExpense(x)}
-                    variant={"light"}
-                    color={"blue"}
+                    variant="light"
+                    color="blue"
                   >
                     <IconEdit />
                   </ActionIcon>
@@ -434,8 +433,8 @@ function Expenses() {
                   <ActionIcon
                     disabled={x.isApproved}
                     onClick={() => openDeleteExpenseModal(x.id)}
-                    variant={"light"}
-                    color={"red"}
+                    variant="light"
+                    color="red"
                   >
                     <IconTrash />
                   </ActionIcon>
@@ -462,11 +461,11 @@ function Expenses() {
           <Table.Td>{x.userFullName}</Table.Td>
           <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
           <Table.Td>
-            <Flex justify={"center"} gap={5}>
-              <ActionIcon variant={"light"} color={"red"}>
+            <Flex justify="center" gap={5}>
+              <ActionIcon variant="light" color="red">
                 <IconTrash
                   onClick={() => deleteOvertimeMember(x.id)}
-                  color={"red"}
+                  color="red"
                 />
               </ActionIcon>
             </Flex>
@@ -484,73 +483,67 @@ function Expenses() {
   }, []);
 
   return (
-    <div>
+    <>
       <Title order={3}>Expenses</Title>
       <Divider my={TITLE_DIVIDER_MY} />
-      <Card shadow={"xs"} radius={"xs"} withBorder padding={10}>
-        <Flex gap={"md"} justify={"center"}>
-          <Flex direction={"column"} w={"60%"} justify={"center"}>
-            <Flex
-              gap={"sm"}
-              style={{ flexGrow: 1, minHeight: MIN_FLEX_HEIGHT }}
-            >
+      <Card shadow="xs" radius="xs" withBorder padding={10}>
+        <Flex gap="md" justify="center">
+          <Flex direction="column" w="60%" justify="center">
+            <Flex gap="sm" style={{ flexGrow: 1, minHeight: MIN_FLEX_HEIGHT }}>
               <Select
-                w={"20%"}
+                w="20%"
                 {...form.getInputProps("userId")}
                 withAsterisk
                 data={activeUserSelectData}
                 searchable
-                label={"User Name"}
+                label="User Name"
                 style={{ flexGrow: 1 }}
               />
 
               <Select
-                w={"20%"}
+                w="20%"
                 {...form.getInputProps("projectId")}
                 withAsterisk
                 data={activeProjectSelectData}
-                label={"Project Name"}
+                label="Project Name"
                 style={{ flexGrow: 1 }}
               />
 
               <Select
-                w={"20%"}
+                w="20%"
                 {...form.getInputProps("reportId")}
                 data={unapprovedReportSelectData}
                 searchable
-                label={"Report Name"}
+                label="Report Name"
                 clearable
                 style={{ flexGrow: 1 }}
               />
             </Flex>
-            <Flex
-              gap={"sm"}
-              style={{ flexGrow: 1, minHeight: MIN_FLEX_HEIGHT }}
-            >
+            <Flex gap="sm" style={{ flexGrow: 1, minHeight: MIN_FLEX_HEIGHT }}>
               <DateInput
-                w={"20%"}
+                w="20%"
                 {...form.getInputProps("expenseDate")}
                 withAsterisk
                 valueFormat="DD MMMM YYYY"
-                label={"Expense Date"}
+                label="Expense Date"
                 style={{ flexGrow: 1 }}
               />
 
               <NumberInput
-                w={"20%"}
+                w="20%"
                 {...form.getInputProps("totalPrice")}
                 withAsterisk
-                label={"Total Price"}
+                label="Total Price"
                 hideControls
                 style={{ flexGrow: 1 }}
               />
 
               <Radio.Group
-                w={"20%"}
+                w="20%"
                 label="Expense Type"
                 withAsterisk
                 {...form.getInputProps("expenseType")}
-                display={"center"}
+                display="center"
                 style={{ flexGrow: 1 }}
               >
                 <Group mt="xs">
@@ -560,14 +553,11 @@ function Expenses() {
                 </Group>
               </Radio.Group>
             </Flex>
-            <Flex
-              gap={"sm"}
-              style={{ flexGrow: 1, minHeight: MIN_FLEX_HEIGHT }}
-            >
+            <Flex gap="sm" style={{ flexGrow: 1, minHeight: MIN_FLEX_HEIGHT }}>
               <TextInput
-                w={"20%"}
+                w="20%"
                 {...form.getInputProps("tripDescription")}
-                label={"Trip Description"}
+                label="Trip Description"
                 withAsterisk={
                   form.values.expenseType === ExpenseType.Transportation
                 }
@@ -575,16 +565,16 @@ function Expenses() {
                 style={{ flexGrow: 1 }}
               />
               <Select
-                w={"20%"}
+                w="20%"
                 {...form.getInputProps("currency")}
                 withAsterisk
                 data={currencyTypes}
-                label={"Currency"}
+                label="Currency"
                 style={{ flexGrow: 1 }}
               />
 
               <Checkbox
-                w={"20%"}
+                w="20%"
                 mt={32}
                 label="Out Of Office"
                 {...form.getInputProps("outOfOffice", { type: "checkbox" })}
@@ -592,21 +582,15 @@ function Expenses() {
               />
             </Flex>
           </Flex>
-          <Flex w={"40%"} justify={"center"}>
-            <Card
-              shadow={"xs"}
-              radius={"md"}
-              withBorder
-              padding={10}
-              w={"100%"}
-            >
+          <Flex w="40%" justify="center">
+            <Card shadow="xs" radius="md" withBorder padding={10} w="100%">
               <Flex gap="sm" style={{ minHeight: 90 }}>
                 <Select
                   {...overtimeMemberForm.getInputProps("userId")}
                   withAsterisk
                   data={activeUserSelectData}
                   searchable
-                  label={"User Name"}
+                  label="User Name"
                   style={{ flexGrow: 1 }}
                 />
 
@@ -618,7 +602,7 @@ function Expenses() {
                   style={{ flexGrow: 1 }}
                 />
 
-                <Button onClick={saveOvertimeMember} variant={"light"} mt={25}>
+                <Button onClick={saveOvertimeMember} variant="light" mt={25}>
                   Add Overtime Member
                 </Button>
               </Flex>
@@ -629,33 +613,31 @@ function Expenses() {
                 withTableBorder
                 withColumnBorders
               >
-                <ScrollArea h={250}>
-                  <Table.Thead>
-                    <Table.Tr>
-                      <Table.Th>User Name</Table.Th>
-                      <Table.Th>Price</Table.Th>
-                      <Table.Th>Create User</Table.Th>
-                      <Table.Th>Create Date</Table.Th>
-                      <Table.Th></Table.Th>
-                    </Table.Tr>
-                  </Table.Thead>
-                  <Table.Tbody>{memoizedOvertimeMembers}</Table.Tbody>
-                </ScrollArea>
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th>User Name</Table.Th>
+                    <Table.Th>Price</Table.Th>
+                    <Table.Th>Create User</Table.Th>
+                    <Table.Th>Create Date</Table.Th>
+                    <Table.Th></Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>{memoizedOvertimeMembers}</Table.Tbody>
               </Table>
             </Card>
           </Flex>
         </Flex>
         <Button
           onClick={handleSave}
-          variant={"light"}
+          variant="light"
           mt={10}
           loading={isLoading}
         >
           Add New Expense
         </Button>
       </Card>
-      <Card mt={"sm"} withBorder padding={"sm"}>
-        <Flex gap={"xs"} align={"center"}>
+      <Card mt="sm" withBorder padding="sm">
+        <Flex gap="xs" align="center">
           <TextInput
             size="xs"
             radius="xl"
@@ -682,7 +664,7 @@ function Expenses() {
           />
           <Checkbox
             labelPosition="left"
-            label={"Show Unapproved Expenses"}
+            label="Show Unapproved Expenses"
             style={{ marginLeft: "10px" }}
             checked={showUnapprovedExpenses}
             onChange={() => setShowUnapprovedExpenses(!showUnapprovedExpenses)}
@@ -716,7 +698,7 @@ function Expenses() {
           <Table.Tbody>{memoizedExpenses}</Table.Tbody>
         </Table>
       </Card>
-    </div>
+    </>
   );
 }
 

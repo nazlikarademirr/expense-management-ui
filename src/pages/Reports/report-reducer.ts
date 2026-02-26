@@ -31,7 +31,7 @@ function reportReducer(state: Report[], action: Action) {
     }
 
     case ReducerActions.Replace: {
-      return [...action.payload].sort((a, b) => a.name.localeCompare(b.name));
+      return action.payload.sort((a, b) => a.name.localeCompare(b.name));
     }
   }
 }

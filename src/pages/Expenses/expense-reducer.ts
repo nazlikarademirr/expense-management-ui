@@ -27,7 +27,7 @@ function expenseReducer(state: Expense[], action: Action) {
     }
 
     case ReducerActions.Replace: {
-      return [...action.payload];
+      return action.payload;
     }
   }
 }
