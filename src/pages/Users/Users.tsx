@@ -2,10 +2,11 @@ import userSchema, {
   User,
   UserRequest,
   UserResponse,
-} from "../../types/user.ts";
+} from "../../types/user.types.ts";
 import EditUserModal from "./components/EditUserModal.tsx";
 import {
   ActionIcon,
+  Badge,
   Button,
   Card,
   Checkbox,
@@ -41,9 +42,10 @@ import {
   SEARCH_ICON_SIZE,
   TITLE_DIVIDER_MY,
 } from "../../constants/constants.ts";
-import { SelectItem } from "../../types/select-item.ts";
-import { Team } from "../../types/team.ts";
+import { SelectItem } from "../../types/select-item.types.ts";
+import { Team } from "../../types/team.types.ts";
 import { zod4Resolver } from "mantine-form-zod-resolver";
+import { RiLockPasswordLine } from "react-icons/ri";
 
 const MIN_INPUT_HEIGHT = 80;
 const MIN_INPUT_WIDTH = 250;
@@ -79,8 +81,10 @@ function Users() {
       email: "",
       password: "",
       role: "",
-      searchText: "",
+      temporaryPassword: "",
+      hasTemporaryPassword: false,
       isActive: false,
+      searchText: "",
       createUser: "",
       createDate: new Date(),
     },
@@ -186,6 +190,8 @@ function Users() {
       email: form.values.email,
       password: form.values.password,
       role: Number(form.values.role),
+      temporaryPassword: "",
+      hasTemporaryPassword: false,
       isActive: true,
     };
 
@@ -243,6 +249,30 @@ function Users() {
     setIsLoading(false);
   };
 
+  const openTemporaryPasswordModal = (user: User) => {
+    modals.open({
+      title: <Title order={5}>Temporary Password</Title>,
+      size: "md",
+      children: (
+        <Flex direction="column" gap={20}>
+          <Badge size="xl" color="cyan" variant="dot">
+            {user.temporaryPassword}
+          </Badge>
+          <Flex direction="row">
+            <Button
+              onClick={() => modals.closeAll()}
+              variant="light"
+              color="cyan"
+              fullWidth
+            >
+              Close
+            </Button>
+          </Flex>
+        </Flex>
+      ),
+    });
+  };
+
   const memoizedUsers = useMemo(
     () =>
       users
@@ -270,13 +300,13 @@ function Users() {
             </Table.Td>
             <Table.Td> {`${x.name} ${x.surname}`} </Table.Td>
             <Table.Td>
-              <Flex justify={"center"} gap={5}>
+              <Flex justify="center" gap={5}>
                 {x.isActive && (
                   <Tooltip label="Edit" withArrow>
                     <ActionIcon
                       onClick={() => openEditUser(x)}
-                      variant={"light"}
-                      color={"blue"}
+                      variant="light"
+                      color="blue"
                     >
                       <IconEdit />
                     </ActionIcon>
@@ -288,7 +318,7 @@ function Users() {
                 >
                   <ActionIcon
                     onClick={() => changeUserActivity(x)}
-                    variant={"light"}
+                    variant="light"
                     color={x.isActive ? "red" : "green"}
                     loading={isLoading}
                   >
@@ -299,6 +329,18 @@ function Users() {
                     )}
                   </ActionIcon>
                 </Tooltip>
+                {x.hasTemporaryPassword && (
+                  <Tooltip label="Temporary Password" withArrow>
+                    <ActionIcon
+                      onClick={() => openTemporaryPasswordModal(x)}
+                      variant="light"
+                      color="grape"
+                      loading={isLoading}
+                    >
+                      <RiLockPasswordLine size={22} />
+                    </ActionIcon>
+                  </Tooltip>
+                )}
               </Flex>
             </Table.Td>
           </Table.Tr>
@@ -322,9 +364,9 @@ function Users() {
     <>
       <Title order={3}>Users</Title>
       <Divider my={TITLE_DIVIDER_MY} />
-      <Card shadow={"xs"} radius={"md"} withBorder>
-        <Flex gap={"xl"} direction={"row"} justify={"center"}>
-          <Flex gap={"xl"} direction={"column"} style={{ flexGrow: 1 }}>
+      <Card shadow="xs" radius="md" withBorder>
+        <Flex gap="xl" direction="row" justify="center">
+          <Flex gap="xl" direction="column" style={{ flexGrow: 1 }}>
             <TextInput
               {...form.getInputProps("name")}
               withAsterisk
@@ -333,7 +375,7 @@ function Users() {
                 minHeight: MIN_INPUT_HEIGHT,
                 minWidth: MIN_INPUT_WIDTH,
               }}
-              label={"Name"}
+              label="Name"
             />
 
             <TextInput
@@ -344,10 +386,10 @@ function Users() {
                 minHeight: MIN_INPUT_HEIGHT,
                 minWidth: MIN_INPUT_WIDTH,
               }}
-              label={"Card Number"}
+              label="Card Number"
             />
           </Flex>
-          <Flex gap={"xl"} direction={"column"} style={{ flexGrow: 1 }}>
+          <Flex gap="xl" direction="column" style={{ flexGrow: 1 }}>
             <TextInput
               {...form.getInputProps("surname")}
               withAsterisk
@@ -356,7 +398,7 @@ function Users() {
                 minHeight: MIN_INPUT_HEIGHT,
                 minWidth: MIN_INPUT_WIDTH,
               }}
-              label={"Surname"}
+              label="Surname"
             />
 
             <TextInput
@@ -367,10 +409,10 @@ function Users() {
                 minHeight: MIN_INPUT_HEIGHT,
                 minWidth: MIN_INPUT_WIDTH,
               }}
-              label={"Email"}
+              label="Email"
             />
           </Flex>
-          <Flex gap={"xl"} direction={"column"} style={{ flexGrow: 1 }}>
+          <Flex gap="xl" direction="column" style={{ flexGrow: 1 }}>
             <Select
               {...form.getInputProps("teamId")}
               withAsterisk
@@ -381,7 +423,7 @@ function Users() {
                 minHeight: MIN_INPUT_HEIGHT,
                 minWidth: MIN_INPUT_WIDTH,
               }}
-              label={"Team Name"}
+              label="Team Name"
             />
 
             <PasswordInput
@@ -392,10 +434,10 @@ function Users() {
                 minHeight: MIN_INPUT_HEIGHT,
                 minWidth: MIN_INPUT_WIDTH,
               }}
-              label={"Password"}
+              label="Password"
             />
           </Flex>
-          <Flex gap={"xl"} direction={"column"} style={{ flexGrow: 1 }}>
+          <Flex gap="xl" direction="column" style={{ flexGrow: 1 }}>
             <Radio.Group
               label="Gender"
               withAsterisk
@@ -433,19 +475,19 @@ function Users() {
         </Flex>
         <Button
           onClick={handleSave}
-          variant={"light"}
+          variant="light"
           style={{ flexGrow: 1, marginTop: 15 }}
           loading={isLoading}
         >
           Add New User
         </Button>
       </Card>
-      <Card mt={"xs"} withBorder radius={"md"} padding="sm">
-        <Flex gap={"xs"} align={"center"}>
+      <Card mt="xs" withBorder radius="md" padding="sm">
+        <Flex gap="xs" align="center">
           <TextInput
             size="xs"
             radius="xl"
-            rightSection={<IconSearch size={SEARCH_ICON_SIZE}></IconSearch>}
+            rightSection={<IconSearch size={SEARCH_ICON_SIZE} />}
             style={{ flexGrow: 120 }}
             {...form.getInputProps("searchText")}
             value={searchQuery}
@@ -469,7 +511,7 @@ function Users() {
           />
           <Checkbox
             labelPosition="left"
-            label={"Show Active Users"}
+            label="Show Active Users"
             style={{ marginLeft: "10px" }}
             checked={showActiveUsers}
             onChange={() => setShowActiveUsers(!showActiveUsers)}

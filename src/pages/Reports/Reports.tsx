@@ -1,5 +1,5 @@
 import { useForm } from "@mantine/form";
-import reportSchema, { Report, ReportRequest } from "../../types/report";
+import reportSchema, { Report, ReportRequest } from "../../types/report.types";
 import { useEffect, useMemo, useState } from "react";
 import {
   ActionIcon,

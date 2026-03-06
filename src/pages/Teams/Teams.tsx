@@ -1,5 +1,5 @@
 import { useForm } from "@mantine/form";
-import teamSchema, { Team, TeamRequest } from "../../types/team";
+import teamSchema, { Team, TeamRequest } from "../../types/team.types";
 import { modals } from "@mantine/modals";
 import useTeams from "../../hooks/useTeams";
 import {
@@ -34,7 +34,7 @@ import {
 } from "../../constants/constants";
 import useUsers from "../../hooks/useUsers";
 import { IoMdAddCircleOutline, IoMdRemoveCircleOutline } from "react-icons/io";
-import { User } from "../../types/user";
+import { User } from "../../types/user.types";
 import { zod4Resolver } from "mantine-form-zod-resolver";
 
 function Teams() {

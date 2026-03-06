@@ -1,5 +1,5 @@
 import z from "zod/v4";
-import { OvertimeMember } from "./overtime-member";
+import { OvertimeMember } from "./overtime-member.types";
 import ExpenseType from "../enums/expense-type";
 import CurrencyType from "../enums/currency-type";
 

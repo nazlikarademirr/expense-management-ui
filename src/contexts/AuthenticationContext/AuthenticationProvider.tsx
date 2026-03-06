@@ -4,7 +4,7 @@ import { jwtDecode } from "jwt-decode";
 
 interface AuthenticationState {
   currentUser: CurrentUser | null;
-  login: (token: string) => void;
+  login: (token: string) => CurrentUser;
   logout(): void;
 }
 
@@ -33,17 +33,20 @@ export function AuthenticationProvider({
 
     const tokenData = TokenDataSchema.parse(jwtDecode(token));
 
-    const user = {
+    const user: CurrentUser = {
       id: tokenData.UserId,
       name: tokenData.Name,
       surname: tokenData.Surname,
       email: tokenData.Email,
       role: tokenData.Role,
+      hasTemporaryPassword: tokenData.HasTemporaryPassword,
     };
 
     sessionStorage.setItem("current-user", JSON.stringify(user));
 
     setCurrentUser(user);
+
+    return user;
   };
 
   const logout = () => {

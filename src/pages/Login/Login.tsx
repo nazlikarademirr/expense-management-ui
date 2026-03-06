@@ -1,4 +1,5 @@
 import {
+  Anchor,
   Button,
   Card,
   Flex,
@@ -15,10 +16,15 @@ import { useNavigate } from "react-router";
 import routes from "../../constants/routes";
 import {
   AuthenticationRequest,
+  authenticationRequestSchema,
   AuthenticationResponse,
 } from "../../types/authentication.types";
 import { useState } from "react";
 import { useAuthentication } from "../../contexts/AuthenticationContext/AuthenticationProvider";
+import { modals } from "@mantine/modals";
+import { zod4Resolver } from "mantine-form-zod-resolver";
+import ResetPasswordModal from "./components/ResetPasswordModal";
+import ChangePasswordModal from "../Users/components/ChangePasswordModal";
 
 function Login() {
   const auth = useAuthentication();
@@ -31,10 +37,26 @@ function Login() {
 
   const form = useForm<AuthenticationRequest>({
     initialValues: { email: "", password: "" },
+    validate: zod4Resolver(authenticationRequestSchema),
   });
+
+  const openPasswordResetModal = () => {
+    modals.open({
+      title: <Title order={5}>Change Password</Title>,
+      size: "md",
+      children: <ResetPasswordModal email={form.values.email} />,
+    });
+  };
 
   const handleLogin = async () => {
     setIsLoading(true);
+
+    form.validate();
+
+    if (!form.isValid()) {
+      setIsLoading(false);
+      return;
+    }
 
     const request = {
       email: form.values.email,
@@ -52,15 +74,34 @@ function Login() {
       return;
     }
 
-    auth.login(response.value.accessToken);
+    const currentUser = auth.login(response.value.accessToken);
 
     navigation(routes.expenses);
+
+    const hasTemporaryPassword =
+      currentUser.hasTemporaryPassword === "true" ? true : false;
+
+    if (hasTemporaryPassword) {
+      changePasswordModal(currentUser.id);
+      return;
+    }
 
     setIsLoading(false);
   };
 
+  const changePasswordModal = async (currentUserId: string) => {
+    modals.open({
+      title: <Title order={5}>Reset Password</Title>,
+      size: "md",
+      children: <ChangePasswordModal currentUserId={currentUserId} />,
+      closeOnClickOutside: false,
+      closeOnEscape: false,
+      withCloseButton: false,
+    });
+  };
+
   return (
-    <Flex direction={"column"} align={"center"} p={300}>
+    <Flex direction="column" align="center" p={300}>
       <Title order={1} mb={10}>
         Expense Management
       </Title>
@@ -71,19 +112,27 @@ function Login() {
         w={600}
         style={{ alignItems: "center", padding: 50 }}
       >
-        <Flex direction="column" gap={20}>
+        <Flex direction="column" gap={20} style={{ alignItems: "flex-end" }}>
           <TextInput
             w={500}
             label="Email"
             withAsterisk
             {...form.getInputProps("email")}
-          ></TextInput>
+            style={{ minHeight: 80 }}
+          />
           <PasswordInput
             w={500}
             label="Password"
             withAsterisk
             {...form.getInputProps("password")}
-          ></PasswordInput>
+            style={{ minHeight: 80 }}
+          />
+          <Anchor
+            style={{ fontSize: 15 }}
+            onClick={() => openPasswordResetModal()}
+          >
+            Forgot My Password
+          </Anchor>
           <Button
             w={500}
             variant="light"

@@ -1,5 +1,8 @@
 import { useForm } from "@mantine/form";
-import projectSchema, { Project, ProjectRequest } from "../../types/project";
+import projectSchema, {
+  Project,
+  ProjectRequest,
+} from "../../types/project.types";
 import { modals } from "@mantine/modals";
 import useProjects from "../../hooks/useProjects";
 import { useEffect, useMemo, useState } from "react";

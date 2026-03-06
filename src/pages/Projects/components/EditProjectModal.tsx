@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import projectSchema, { Project } from "../../../types/project";
+import projectSchema, { Project } from "../../../types/project.types";
 import { modals } from "@mantine/modals";
 import { Button, Flex, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";

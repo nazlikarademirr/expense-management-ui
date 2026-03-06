@@ -13,8 +13,10 @@ type User = {
   email: string;
   password: string;
   role: string;
-  searchText: string;
+  temporaryPassword: string | null;
+  hasTemporaryPassword: boolean;
   isActive: boolean;
+  searchText: string;
   createUser: string;
   createDate: Date;
 };
@@ -28,6 +30,8 @@ type UserRequest = {
   email: string;
   password: string;
   role: number;
+  temporaryPassword: string | null;
+  hasTemporaryPassword: boolean;
   isActive: boolean;
 };
 
@@ -42,8 +46,10 @@ type UserResponse = {
   email: string;
   password: string;
   role: number;
-  searchText: string;
+  temporaryPassword: string | null;
+  hasTemporaryPassword: boolean;
   isActive: boolean;
+  searchText: string;
   createUser: string;
   createDate: Date;
 };

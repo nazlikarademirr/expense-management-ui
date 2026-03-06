@@ -1,5 +1,5 @@
 import ReducerActions from "../../enums/reducer-action";
-import { Report } from "../../types/report";
+import { Report } from "../../types/report.types";
 
 type Action =
   | { type: ReducerActions.Add; payload: Report }

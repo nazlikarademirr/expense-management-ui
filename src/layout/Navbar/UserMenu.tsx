@@ -1,7 +1,9 @@
-import { Avatar, Divider, Menu } from "@mantine/core";
+import { Anchor, Avatar, Divider, Menu, Title } from "@mantine/core";
 import { useAuthentication } from "../../contexts/AuthenticationContext/AuthenticationProvider";
 import { useNavigate } from "react-router";
 import routes from "../../constants/routes";
+import { modals } from "@mantine/modals";
+import ChangePasswordModal from "../../pages/Users/components/ChangePasswordModal";
 
 function UserMenu() {
   const auth = useAuthentication();
@@ -12,10 +14,22 @@ function UserMenu() {
   const currentUserName = auth.currentUser.name.toUpperCase();
   const currentUserSurname = auth.currentUser.surname.toUpperCase();
 
+  const openChangePasswordModal = () => {
+    modals.open({
+      title: <Title order={5}>Change Password</Title>,
+      size: "md",
+      children: (
+        <ChangePasswordModal
+          currentUserId={auth.currentUser ? auth.currentUser.id : ""}
+        />
+      ),
+    });
+  };
+
   return (
     <Menu shadow="md">
       <Menu.Target>
-        <Avatar ml={3} radius={"xl"} color="cyan">
+        <Avatar ml={3} radius="xl" color="cyan">
           {currentUserName[0]}
           {currentUserSurname[0]}
         </Avatar>
@@ -27,6 +41,14 @@ function UserMenu() {
         <Menu.Label style={{ fontSize: 13 }}>
           {auth.currentUser.email}
         </Menu.Label>
+        <Anchor
+          px={12}
+          py={5}
+          style={{ fontSize: 13 }}
+          onClick={() => openChangePasswordModal()}
+        >
+          Change Password
+        </Anchor>
         <Divider mt={5} />
         <Menu.Item
           onClick={() => {

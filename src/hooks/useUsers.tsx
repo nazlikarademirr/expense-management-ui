@@ -1,4 +1,4 @@
-import { User } from "../types/user";
+import { User } from "../types/user.types";
 import ReducerActions from "../enums/reducer-action";
 import userReducer from "../pages/Users/user-reducer";
 import { useReducer } from "react";
