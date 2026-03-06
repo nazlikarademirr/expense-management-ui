@@ -1,6 +1,6 @@
 import { useForm } from "@mantine/form";
 import useRequestHandler from "../../../hooks/useRequestHandler";
-import reportSchema, { Report } from "../../../types/report";
+import reportSchema, { Report } from "../../../types/report.types";
 import { useEffect, useRef, useState } from "react";
 import { Button, Flex, TextInput } from "@mantine/core";
 import { modals } from "@mantine/modals";

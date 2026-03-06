@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import teamSchema, { Team } from "../../../types/team";
+import teamSchema, { Team } from "../../../types/team.types";
 import { Button, Flex, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import {

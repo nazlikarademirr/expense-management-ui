@@ -13,14 +13,14 @@ import userSchema, {
   User,
   UserRequest,
   UserResponse,
-} from "../../../types/user";
+} from "../../../types/user.types";
 import { useForm } from "@mantine/form";
 import useRequestHandler from "../../../hooks/useRequestHandler";
 import urls from "../../../constants/urls";
 import RequestType from "../../../request-handler/request-type";
 import toast from "react-hot-toast";
 import { genders, roles } from "../../../constants/static-data";
-import { SelectItem } from "../../../types/select-item";
+import { SelectItem } from "../../../types/select-item.types";
 import { zod4Resolver } from "mantine-form-zod-resolver";
 
 interface EditUserProps {
@@ -81,6 +81,8 @@ function EditUserModal({
       email: userForm.values.email,
       password: initialValues.current.password,
       role: Number(userForm.values.role),
+      temporaryPassword: null,
+      hasTemporaryPassword: false,
       isActive: userForm.values.isActive,
     };
 

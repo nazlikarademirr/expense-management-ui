@@ -1,5 +1,5 @@
 import { useReducer } from "react";
-import { Expense } from "../../../types/expense";
+import { Expense } from "../../../types/expense.types";
 import ReducerActions from "../../../enums/reducer-action";
 import expenseReducer from "../expense-reducer";
 

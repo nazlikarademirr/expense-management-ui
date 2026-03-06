@@ -21,7 +21,7 @@ import expenseSchema, {
   Expense,
   ExpenseRequest,
   ExpenseResponse,
-} from "../../types/expense";
+} from "../../types/expense.types";
 import useExpenses from "./hooks/useExpenses";
 import { IconEdit, IconSearch, IconTrash } from "@tabler/icons-react";
 import { format } from "date-fns";
@@ -29,7 +29,7 @@ import toast from "react-hot-toast";
 import { DateInput } from "@mantine/dates";
 import overtimeMemberSchema, {
   OvertimeMember,
-} from "../../types/overtime-member";
+} from "../../types/overtime-member.types";
 import EditExpenseModal from "./components/EditExpenseModal";
 import { useEffect, useMemo, useState } from "react";
 import { currencyTypes, expenseTypes } from "../../constants/static-data";
@@ -43,10 +43,10 @@ import {
 import urls from "../../constants/urls";
 import RequestType from "../../request-handler/request-type";
 import useRequestHandler from "../../hooks/useRequestHandler";
-import { SelectItem } from "../../types/select-item";
-import { User } from "../../types/user";
-import { Project } from "../../types/project";
-import { Report } from "../../types/report";
+import { SelectItem } from "../../types/select-item.types";
+import { User } from "../../types/user.types";
+import { Project } from "../../types/project.types";
+import { Report } from "../../types/report.types";
 import { zod4Resolver } from "mantine-form-zod-resolver";
 
 const MIN_FLEX_HEIGHT = 110;

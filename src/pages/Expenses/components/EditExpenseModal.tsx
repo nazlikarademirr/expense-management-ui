@@ -3,7 +3,7 @@ import expenseSchema, {
   Expense,
   ExpenseRequest,
   ExpenseResponse,
-} from "../../../types/expense";
+} from "../../../types/expense.types";
 import { modals } from "@mantine/modals";
 import {
   ActionIcon,
@@ -29,11 +29,11 @@ import { DateInput } from "@mantine/dates";
 import { currencyTypes, expenseTypes } from "../../../constants/static-data";
 import overtimeMemberSchema, {
   OvertimeMember,
-} from "../../../types/overtime-member";
+} from "../../../types/overtime-member.types";
 import { format } from "date-fns";
 import { IconTrash } from "@tabler/icons-react";
 import ExpenseType from "../../../enums/expense-type";
-import { SelectItem } from "../../../types/select-item";
+import { SelectItem } from "../../../types/select-item.types";
 import { zod4Resolver } from "mantine-form-zod-resolver";
 
 interface EditExpenseProps {

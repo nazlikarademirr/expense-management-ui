@@ -1,5 +1,5 @@
 import { useReducer } from "react";
-import { Project } from "../types/project";
+import { Project } from "../types/project.types";
 import ReducerActions from "../enums/reducer-action";
 import projectReducer from "../pages/Projects/project-reducer";
 

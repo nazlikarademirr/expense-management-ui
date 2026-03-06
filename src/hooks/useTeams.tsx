@@ -1,5 +1,5 @@
 import { useReducer } from "react";
-import { Team } from "../types/team";
+import { Team } from "../types/team.types";
 import ReducerActions from "../enums/reducer-action";
 import teamReducer from "../pages/Teams/team-reducer";
 

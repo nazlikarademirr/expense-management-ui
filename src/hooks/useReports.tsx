@@ -1,5 +1,5 @@
 import { useReducer } from "react";
-import { Report } from "../types/report";
+import { Report } from "../types/report.types";
 import ReducerActions from "../enums/reducer-action";
 import reportReducer from "../pages/Reports/report-reducer";
 
