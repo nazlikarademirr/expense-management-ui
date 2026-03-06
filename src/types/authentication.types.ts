@@ -19,7 +19,7 @@ const TokenDataSchema = z.object({
 });
 
 type CurrentUser = {
-  id: string;
+  id: string | undefined;
   name: string;
   surname: string;
   email: string;

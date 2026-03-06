@@ -4,12 +4,17 @@ import { useNavigate } from "react-router";
 import routes from "../../constants/routes";
 import { modals } from "@mantine/modals";
 import ChangePasswordModal from "../../pages/Users/components/ChangePasswordModal";
+import toast from "react-hot-toast";
 
 function UserMenu() {
   const auth = useAuthentication();
   const navigate = useNavigate();
 
-  if (!auth.currentUser) return null;
+  if (!auth.currentUser) {
+    auth.logout();
+    toast.error("A problem occurred with the user.");
+    return null;
+  }
 
   const currentUserName = auth.currentUser.name.toUpperCase();
   const currentUserSurname = auth.currentUser.surname.toUpperCase();
@@ -18,11 +23,7 @@ function UserMenu() {
     modals.open({
       title: <Title order={5}>Change Password</Title>,
       size: "md",
-      children: (
-        <ChangePasswordModal
-          currentUserId={auth.currentUser ? auth.currentUser.id : ""}
-        />
-      ),
+      children: <ChangePasswordModal currentUserId={auth.currentUser?.id} />,
     });
   };
 

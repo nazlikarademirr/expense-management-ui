@@ -10,7 +10,7 @@ import z from "zod/v4";
 import { zod4Resolver } from "mantine-form-zod-resolver";
 
 interface ChangePasswordModalProps {
-  currentUserId: string;
+  currentUserId: string | undefined;
 }
 
 type ChangeUserPassword = {
@@ -45,6 +45,11 @@ function ChangePasswordModal({ currentUserId }: ChangePasswordModalProps) {
   });
 
   const handleSave = async () => {
+    if (!currentUserId) {
+      toast.error("A problem occurred with the user.");
+      return;
+    }
+
     setIsLoading(true);
 
     form.validate();
@@ -62,7 +67,9 @@ function ChangePasswordModal({ currentUserId }: ChangePasswordModalProps) {
     };
 
     if (form.values.newPassword !== form.values.newPasswordAgain) {
-      toast.error("Yeni parola ve yeni parola tekrarı eşleşmiyor.");
+      toast.error(
+        "The new password and the password confirmation do not match.",
+      );
       setIsLoading(false);
       return;
     }
