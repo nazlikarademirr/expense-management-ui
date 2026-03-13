@@ -19,18 +19,17 @@ import Role from "../../enums/role";
 import { useAuthentication } from "../../contexts/AuthenticationContext/AuthenticationProvider";
 
 interface Link {
-  id: number;
   icon: React.ForwardRefExoticComponent<IconProps & React.RefAttributes<Icon>>;
   label: string;
   route: string;
 }
 
 const mainLinksMockdata: Link[] = [
-  { id: 1, icon: IconUser, label: "Users", route: routes.users },
-  { id: 2, icon: IconUsersGroup, label: "Teams", route: routes.teams },
-  { id: 3, icon: IconApps, label: "Projects", route: routes.projects },
-  { id: 4, icon: IconMenuDeep, label: "Expenses", route: routes.expenses },
-  { id: 5, icon: IconReportAnalytics, label: "Reports", route: routes.reports },
+  { icon: IconUser, label: "Users", route: routes.users },
+  { icon: IconUsersGroup, label: "Teams", route: routes.teams },
+  { icon: IconApps, label: "Projects", route: routes.projects },
+  { icon: IconMenuDeep, label: "Expenses", route: routes.expenses },
+  { icon: IconReportAnalytics, label: "Reports", route: routes.reports },
 ];
 
 export function Navbar() {
