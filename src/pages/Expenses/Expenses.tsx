@@ -48,6 +48,9 @@ import { User } from "../../types/user.types";
 import { Project } from "../../types/project.types";
 import { Report } from "../../types/report.types";
 import { zod4Resolver } from "mantine-form-zod-resolver";
+import { useAuthentication } from "../../contexts/AuthenticationContext/AuthenticationProvider";
+import { useNavigate } from "react-router";
+import routes from "../../constants/routes";
 
 const MIN_FLEX_HEIGHT = 110;
 
@@ -86,6 +89,16 @@ function Expenses() {
 
   const [showUnapprovedExpenses, setShowUnapprovedExpenses] = useState(false);
 
+  const auth = useAuthentication();
+
+  const navigate = useNavigate();
+
+  if (!auth.currentUser) {
+    auth.logout();
+    navigate(routes.login);
+    toast.error("A problem occurred with the user.");
+  }
+
   const form = useForm<Expense>({
     initialValues: {
       id: crypto.randomUUID(),
@@ -105,7 +118,8 @@ function Expenses() {
       overtimeMembers: [],
       isActive: false,
       searchText: "",
-      createUser: crypto.randomUUID(),
+      createUser: "",
+      createUserFullName: "",
       createDate: new Date(),
     },
     validate: zod4Resolver(expenseSchema),
@@ -118,7 +132,8 @@ function Expenses() {
       userFullName: "",
       expenseId: form.values.id,
       price: 0,
-      createUser: crypto.randomUUID(),
+      createUser: "",
+      createUserFullName: "",
       createDate: new Date(),
     },
     validate: zod4Resolver(overtimeMemberSchema),
@@ -355,6 +370,12 @@ function Expenses() {
       return toast.error("There is a entry for this user.");
     }
 
+    if (form.values.userId === overtimeMemberForm.values.userId) {
+      return toast.error(
+        "You can not add yourself to your expense as overtime member.",
+      );
+    }
+
     const overtimeMemberFullName = activeUserSelectData.find(
       (x) => x.value === overtimeMemberForm.values.userId,
     )?.label;
@@ -415,7 +436,7 @@ function Expenses() {
               )}
             </Table.Td>
             <Table.Td>{x.reportId !== null ? x.reportName : "-"}</Table.Td>
-            <Table.Td> {x.userFullName} </Table.Td>
+            <Table.Td> {x.createUser} </Table.Td>
             <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
             <Table.Td>
               <Flex justify="center" gap={5}>

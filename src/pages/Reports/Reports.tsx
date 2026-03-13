@@ -29,7 +29,6 @@ import { TiTick, TiTimes } from "react-icons/ti";
 import { HiCheck } from "react-icons/hi";
 import {
   BOOLEAN_ICON_SIZE,
-  CREATE_USER,
   SEARCH_ICON_SIZE,
   TITLE_DIVIDER_MY,
 } from "../../constants/constants";
@@ -54,13 +53,14 @@ function Reports() {
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const form = useForm({
+  const form = useForm<Report>({
     initialValues: {
       id: crypto.randomUUID(),
       name: "",
       isApproved: false,
       searchText: "",
       createUser: "",
+      createUserFullName: "",
       createDate: new Date(),
     },
     validate: zod4Resolver(reportSchema),
@@ -287,7 +287,7 @@ function Reports() {
                 <TiTimes size={BOOLEAN_ICON_SIZE} color="#BA1A1A" />
               )}
             </Table.Td>
-            <Table.Td> {CREATE_USER} </Table.Td>
+            <Table.Td> {x.createUser} </Table.Td>
             <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
             <Table.Td>
               <Flex justify={"center"} gap={5}>

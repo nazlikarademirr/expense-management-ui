@@ -31,7 +31,6 @@ import useRequestHandler from "../../hooks/useRequestHandler";
 import { TiTick, TiTimes } from "react-icons/ti";
 import {
   BOOLEAN_ICON_SIZE,
-  CREATE_USER,
   SEARCH_ICON_SIZE,
   TITLE_DIVIDER_MY,
 } from "../../constants/constants";
@@ -58,6 +57,7 @@ function Projects() {
       searchText: "",
       isActive: false,
       createUser: crypto.randomUUID(),
+      createUserFullName: "",
       createDate: new Date(),
     },
     validate: zod4Resolver(projectSchema),
@@ -199,7 +199,7 @@ function Projects() {
                 <TiTimes size={BOOLEAN_ICON_SIZE} color="#BA1A1A" />
               )}
             </Table.Td>
-            <Table.Td> {CREATE_USER} </Table.Td>
+            <Table.Td> {x.createUser} </Table.Td>
             <Table.Td>
               <Flex justify={"center"} gap={5}>
                 {x.isActive ? (

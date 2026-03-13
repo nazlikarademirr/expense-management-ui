@@ -46,6 +46,9 @@ import { SelectItem } from "../../types/select-item.types.ts";
 import { Team } from "../../types/team.types.ts";
 import { zod4Resolver } from "mantine-form-zod-resolver";
 import { RiLockPasswordLine } from "react-icons/ri";
+import { useAuthentication } from "../../contexts/AuthenticationContext/AuthenticationProvider.tsx";
+import { useNavigate } from "react-router";
+import routes from "../../constants/routes.ts";
 
 const MIN_INPUT_HEIGHT = 80;
 const MIN_INPUT_WIDTH = 250;
@@ -67,14 +70,24 @@ function Users() {
 
   const [isLoading, setIsLoading] = useState(false);
 
+  const auth = useAuthentication();
+
+  const navigate = useNavigate();
+
   const { handleDataRequest } = useRequestHandler();
 
-  const form = useForm({
+  if (!auth.currentUser) {
+    auth.logout();
+    navigate(routes.login);
+    toast.error("A problem occurred with the user.");
+  }
+
+  const form = useForm<User>({
     initialValues: {
       id: crypto.randomUUID(),
       name: "",
       surname: "",
-      teamId: null,
+      teamId: "",
       teamName: "",
       gender: "",
       cardNumber: "",
@@ -86,6 +99,7 @@ function Users() {
       isActive: false,
       searchText: "",
       createUser: "",
+      createUserFullName: "",
       createDate: new Date(),
     },
     validate: zod4Resolver(userSchema),
@@ -298,7 +312,7 @@ function Users() {
                 <TiTimes size={BOOLEAN_ICON_SIZE} color="#BA1A1A" />
               )}
             </Table.Td>
-            <Table.Td> {`${x.name} ${x.surname}`} </Table.Td>
+            <Table.Td>{x.createUser}</Table.Td>
             <Table.Td>
               <Flex justify="center" gap={5}>
                 {x.isActive && (

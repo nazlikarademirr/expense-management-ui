@@ -12,6 +12,7 @@ function UserMenu() {
 
   if (!auth.currentUser) {
     auth.logout();
+    navigate(routes.login);
     toast.error("A problem occurred with the user.");
     return null;
   }

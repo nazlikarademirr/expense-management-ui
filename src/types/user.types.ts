@@ -18,6 +18,7 @@ type User = {
   isActive: boolean;
   searchText: string;
   createUser: string;
+  createUserFullName: string;
   createDate: Date;
 };
 
@@ -51,6 +52,7 @@ type UserResponse = {
   isActive: boolean;
   searchText: string;
   createUser: string;
+  createUserFullName: string;
   createDate: Date;
 };
 

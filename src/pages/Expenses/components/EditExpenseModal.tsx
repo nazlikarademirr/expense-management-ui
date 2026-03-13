@@ -103,6 +103,12 @@ function EditExpenseModal({
       return;
     }
 
+    if (expenseForm.values.userId === overtimeMemberForm.values.userId) {
+      return toast.error(
+        "You can not add yourself to your expense as overtime member.",
+      );
+    }
+
     const expenseRequest: ExpenseRequest = {
       userId: expenseForm.values.userId ?? "",
       projectId: expenseForm.values.projectId ?? "",
