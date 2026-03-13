@@ -28,7 +28,6 @@ import useRequestHandler from "../../hooks/useRequestHandler";
 import { TiTick, TiTimes } from "react-icons/ti";
 import {
   BOOLEAN_ICON_SIZE,
-  CREATE_USER,
   SEARCH_ICON_SIZE,
   TITLE_DIVIDER_MY,
 } from "../../constants/constants";
@@ -50,13 +49,14 @@ function Teams() {
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const form = useForm({
+  const form = useForm<Team>({
     initialValues: {
       id: crypto.randomUUID(),
       name: "",
       searchText: "",
       isActive: false,
       createUser: "",
+      createUserFullName: "",
       createDate: new Date(),
     },
     validate: zod4Resolver(teamSchema),
@@ -126,7 +126,9 @@ function Teams() {
       return;
     }
 
-    const request: TeamRequest = { name: form.values.name };
+    const request: TeamRequest = {
+      name: form.values.name,
+    };
 
     const response = await handleDataRequest<TeamRequest, Team>(
       urls.team,
@@ -204,7 +206,7 @@ function Teams() {
                 <TiTimes size={BOOLEAN_ICON_SIZE} color="#BA1A1A" />
               )}
             </Table.Td>
-            <Table.Td> {CREATE_USER} </Table.Td>
+            <Table.Td> {x.createUser} </Table.Td>
             <Table.Td>
               <Flex justify={"center"} gap={5}>
                 {x.isActive ? (

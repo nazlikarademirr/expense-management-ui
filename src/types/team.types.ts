@@ -6,6 +6,7 @@ type Team = {
   searchText: string;
   isActive: boolean;
   createUser: string;
+  createUserFullName: string;
   createDate: Date;
 };
 

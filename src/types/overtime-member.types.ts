@@ -7,6 +7,7 @@ type OvertimeMember = {
   expenseId: string;
   price: number;
   createUser: string;
+  createUserFullName: string;
   createDate: Date;
 };
 
@@ -23,6 +24,7 @@ type OvertimeMemberResponse = {
   expenseId: string;
   price: number;
   createUser: string;
+  createUserFullName: string;
   createDate: Date;
 };
 

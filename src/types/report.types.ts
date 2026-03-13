@@ -6,6 +6,7 @@ type Report = {
   isApproved: boolean;
   searchText: string;
   createUser: string;
+  createUserFullName: string;
   createDate: Date;
 };
 

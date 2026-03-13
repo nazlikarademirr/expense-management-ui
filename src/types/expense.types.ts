@@ -22,6 +22,7 @@ type Expense = {
   isActive: boolean;
   searchText: string;
   createUser: string;
+  createUserFullName: string;
   createDate: Date;
 };
 
@@ -57,6 +58,7 @@ type ExpenseResponse = {
   isActive: boolean;
   searchText: string;
   createUser: string;
+  createUserFullName: string;
   createDate: Date;
 };
 
