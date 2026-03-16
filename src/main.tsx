@@ -5,6 +5,7 @@ import { createRoot } from "react-dom/client";
 import "@mantine/core/styles.css";
 import "@mantine/dates/styles.css";
 import "@mantine/notifications/styles.css";
+import "./global.css";
 import AppRouter from "./AppRouter.tsx";
 import { Toaster } from "react-hot-toast";
 import { AuthenticationProvider } from "./contexts/AuthenticationContext/AuthenticationProvider.tsx";

@@ -6,7 +6,7 @@ type Project = {
   code: string;
   searchText: string;
   isActive: boolean;
-  createUser: string;
+  createUserId: string;
   createUserFullName: string;
   createDate: Date;
 };

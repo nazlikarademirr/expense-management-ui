@@ -5,7 +5,7 @@ type Report = {
   name: string;
   isApproved: boolean;
   searchText: string;
-  createUser: string;
+  createUserId: string;
   createUserFullName: string;
   createDate: Date;
 };

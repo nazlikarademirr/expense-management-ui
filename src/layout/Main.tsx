@@ -10,7 +10,7 @@ function Main({ children }: MainProps) {
     <AppShell
       layout="default"
       navbar={{
-        width: 50,
+        width: 60,
         breakpoint: "sm",
       }}
       padding="md"

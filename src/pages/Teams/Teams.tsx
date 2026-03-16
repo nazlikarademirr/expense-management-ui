@@ -9,6 +9,7 @@ import {
   Checkbox,
   Divider,
   Flex,
+  ScrollArea,
   Table,
   TextInput,
   Title,
@@ -28,6 +29,7 @@ import useRequestHandler from "../../hooks/useRequestHandler";
 import { TiTick, TiTimes } from "react-icons/ti";
 import {
   BOOLEAN_ICON_SIZE,
+  PAGE_FLEX_HEIGHT,
   SEARCH_ICON_SIZE,
   TITLE_DIVIDER_MY,
 } from "../../constants/constants";
@@ -35,6 +37,7 @@ import useUsers from "../../hooks/useUsers";
 import { IoMdAddCircleOutline, IoMdRemoveCircleOutline } from "react-icons/io";
 import { User } from "../../types/user.types";
 import { zod4Resolver } from "mantine-form-zod-resolver";
+import { useAuthentication } from "../../contexts/AuthenticationContext/AuthenticationProvider";
 
 function Teams() {
   const { teams, addTeam, updateTeam, replaceTeams } = useTeams();
@@ -49,13 +52,15 @@ function Teams() {
 
   const [isLoading, setIsLoading] = useState(false);
 
+  const auth = useAuthentication();
+
   const form = useForm<Team>({
     initialValues: {
       id: crypto.randomUUID(),
       name: "",
       searchText: "",
       isActive: false,
-      createUser: "",
+      createUserId: "",
       createUserFullName: "",
       createDate: new Date(),
     },
@@ -127,7 +132,7 @@ function Teams() {
     }
 
     const request: TeamRequest = {
-      name: form.values.name,
+      name: form.values.name.trim(),
     };
 
     const response = await handleDataRequest<TeamRequest, Team>(
@@ -141,7 +146,12 @@ function Teams() {
       return;
     }
 
-    addTeam(response.value);
+    addTeam({
+      ...response.value,
+      createUserFullName: auth.currentUser
+        ? `${auth.currentUser.name} ${auth.currentUser.surname}`
+        : "",
+    });
 
     form.reset();
 
@@ -206,7 +216,7 @@ function Teams() {
                 <TiTimes size={BOOLEAN_ICON_SIZE} color="#BA1A1A" />
               )}
             </Table.Td>
-            <Table.Td> {x.createUser} </Table.Td>
+            <Table.Td> {x.createUserFullName} </Table.Td>
             <Table.Td>
               <Flex justify={"center"} gap={5}>
                 {x.isActive ? (
@@ -214,7 +224,7 @@ function Teams() {
                     <ActionIcon
                       onClick={() => openEditTeam(x)}
                       variant={"light"}
-                      color={"blue"}
+                      color="blue"
                     >
                       <IconEdit />
                     </ActionIcon>
@@ -252,7 +262,7 @@ function Teams() {
   }, []);
 
   return (
-    <div>
+    <Flex direction="column" h={PAGE_FLEX_HEIGHT}>
       <Title order={3}>Teams</Title>
       <Divider my={TITLE_DIVIDER_MY} />
       <Card shadow={"xs"} radius={"md"} withBorder>
@@ -268,13 +278,24 @@ function Teams() {
           </Button>
         </Flex>
       </Card>
-      <Card mt={"xs"} withBorder radius={"md"} padding={"sm"}>
-        <Flex gap={"xs"}>
+      <Card
+        mt={"xs"}
+        withBorder
+        radius={"md"}
+        padding={"sm"}
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          minHeight: 0,
+        }}
+      >
+        <Flex gap={"xs"} mb="md" align="center">
           <TextInput
             size="xs"
             radius="xl"
             rightSection={<IconSearch size={SEARCH_ICON_SIZE}></IconSearch>}
-            style={{ flexGrow: 120 }}
+            style={{ flex: 1 }}
             {...form.getInputProps("searchText")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.currentTarget.value)}
@@ -282,37 +303,38 @@ function Teams() {
           <Checkbox
             labelPosition="left"
             label={"Show Active Teams"}
-            style={{ marginTop: "5px", marginLeft: "10px" }}
+            style={{ marginLeft: "10px" }}
             checked={showActiveTeams}
             onChange={() => setShowActiveTeams(!showActiveTeams)}
             type="checkbox"
           />
         </Flex>
         {memoizedTeams.length > 0 ? (
-          <Table
-            striped
-            stickyHeader
-            highlightOnHover
-            withTableBorder
-            withColumnBorders
-            mt={15}
-            style={{ tableLayout: "fixed" }}
-          >
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>Name</Table.Th>
-                <Table.Th>Status</Table.Th>
-                <Table.Th>Create User</Table.Th>
-                <Table.Th></Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>{memoizedTeams}</Table.Tbody>
-          </Table>
+          <ScrollArea style={{ flex: 1 }}>
+            <Table
+              striped
+              stickyHeader
+              highlightOnHover
+              withTableBorder
+              withColumnBorders
+              style={{ tableLayout: "fixed" }}
+            >
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>Name</Table.Th>
+                  <Table.Th>Status</Table.Th>
+                  <Table.Th>Create User</Table.Th>
+                  <Table.Th></Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>{memoizedTeams}</Table.Tbody>
+            </Table>
+          </ScrollArea>
         ) : (
           <div></div>
         )}
       </Card>
-    </div>
+    </Flex>
   );
 }
 

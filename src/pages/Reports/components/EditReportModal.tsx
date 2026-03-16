@@ -95,6 +95,7 @@ function EditReportModal({
         ref={nameInputRef}
         label={"Name"}
         style={{ minHeight: 80 }}
+        withAsterisk
         {...reportForm.getInputProps("name")}
       />
       <Button

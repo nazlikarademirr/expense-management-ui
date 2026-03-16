@@ -17,7 +17,7 @@ type User = {
   hasTemporaryPassword: boolean;
   isActive: boolean;
   searchText: string;
-  createUser: string;
+  createUserId: string;
   createUserFullName: string;
   createDate: Date;
 };
@@ -51,7 +51,7 @@ type UserResponse = {
   hasTemporaryPassword: boolean;
   isActive: boolean;
   searchText: string;
-  createUser: string;
+  createUserId: string;
   createUserFullName: string;
   createDate: Date;
 };
@@ -67,7 +67,7 @@ const userSchema = z.object({
     .trim()
     .min(2, "Surname must have at least 2 letters.")
     .max(128, "Surname cannot exceed 128 characters."),
-  teamId: z.string("Team must be selected."),
+  teamId: z.string().trim().min(1, "Team must be selected."),
   gender: z.enum(Gender, "Gender must be selected."),
   cardNumber: z
     .string()
