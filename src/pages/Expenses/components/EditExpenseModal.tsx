@@ -35,8 +35,10 @@ import { IconTrash } from "@tabler/icons-react";
 import ExpenseType from "../../../enums/expense-type";
 import { SelectItem } from "../../../types/select-item.types";
 import { zod4Resolver } from "mantine-form-zod-resolver";
+import { CurrentUser } from "../../../types/authentication.types";
 
 interface EditExpenseProps {
+  currentUser: CurrentUser | null;
   expense: Expense;
   updateExpense: (expenseForm: Expense) => void;
   activeUserSelectData: SelectItem[];
@@ -48,6 +50,7 @@ interface EditExpenseProps {
 const MIN_FLEX_HEIGHT = 90;
 
 function EditExpenseModal({
+  currentUser,
   expense,
   updateExpense,
   activeUserSelectData,
@@ -58,6 +61,9 @@ function EditExpenseModal({
   const { handleDataRequest } = useRequestHandler();
 
   const [isLoading, setIsLoading] = useState(false);
+
+  // eslint-disable-next-line no-debugger
+  debugger;
 
   const expenseForm = useForm<Expense>({
     initialValues: {
@@ -153,12 +159,11 @@ function EditExpenseModal({
   };
 
   const saveOvertimeMember = async () => {
+    if (!currentUser) return;
+
     overtimeMemberForm.validate();
 
     if (!overtimeMemberForm.isValid()) return;
-
-    overtimeMemberForm.values.id = crypto.randomUUID();
-    overtimeMemberForm.values.createDate = new Date();
 
     if (
       expenseForm.values.overtimeMembers.some(
@@ -170,10 +175,17 @@ function EditExpenseModal({
 
     expenseForm.setFieldValue("overtimeMembers", [
       ...expenseForm.values.overtimeMembers,
-      overtimeMemberForm.values,
+      {
+        ...overtimeMemberForm.values,
+        createUserFullName: `${currentUser.name} ${currentUser.surname}`,
+      },
     ]);
 
-    overtimeMemberForm.reset();
+    overtimeMemberForm.setFieldValue("id", crypto.randomUUID());
+    overtimeMemberForm.setFieldValue("createDate", new Date());
+
+    overtimeMemberForm.resetDirty();
+    overtimeMemberForm.clearErrors();
   };
 
   const deleteOvertimeMember = (id: string) => {
@@ -210,7 +222,7 @@ function EditExpenseModal({
         <Table.Tr key={x.id}>
           <Table.Td>{x.userFullName}</Table.Td>
           <Table.Td>{x.price}</Table.Td>
-          <Table.Td>{x.userFullName}</Table.Td>
+          <Table.Td>{x.createUserFullName}</Table.Td>
           <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
           <Table.Td>
             <Flex justify={"center"} gap={5}>

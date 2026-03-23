@@ -50,6 +50,7 @@ import { User } from "../../types/user.types";
 import { Project } from "../../types/project.types";
 import { Report } from "../../types/report.types";
 import { zod4Resolver } from "mantine-form-zod-resolver";
+import { useAuthentication } from "../../contexts/AuthenticationContext/AuthenticationProvider";
 const MIN_FLEX_HEIGHT = 90;
 
 function Expenses() {
@@ -86,6 +87,8 @@ function Expenses() {
   const [selectedReport, setSelectedReport] = useState<string | null>(null);
 
   const [showUnapprovedExpenses, setShowUnapprovedExpenses] = useState(false);
+
+  const auth = useAuthentication();
 
   const form = useForm<Expense>({
     initialValues: {
@@ -133,6 +136,7 @@ function Expenses() {
       size: 2000,
       children: (
         <EditExpenseModal
+          currentUser={auth.currentUser ? auth.currentUser : null}
           expense={expense}
           updateExpense={updateExpense}
           activeUserSelectData={activeUserSelectData}
@@ -357,8 +361,8 @@ function Expenses() {
 
     if (!overtimeMemberForm.isValid()) return;
 
-    overtimeMemberForm.setFieldValue("id", crypto.randomUUID());
-    overtimeMemberForm.setFieldValue("createDate", new Date());
+    // eslint-disable-next-line no-debugger
+    debugger;
 
     if (
       form.values.overtimeMembers.some(
@@ -378,15 +382,24 @@ function Expenses() {
       (x) => x.value === overtimeMemberForm.values.userId,
     )?.label;
 
+    const overtimeMember: OvertimeMember = {
+      ...overtimeMemberForm.values,
+      userFullName: overtimeMemberFullName ?? "",
+      createUserFullName: auth.currentUser
+        ? `${auth.currentUser.name} ${auth.currentUser.surname}`
+        : "",
+    };
+
     form.setFieldValue("overtimeMembers", [
       ...form.values.overtimeMembers,
-      {
-        ...overtimeMemberForm.values,
-        userFullName: overtimeMemberFullName ?? "",
-      },
+      overtimeMember,
     ]);
 
-    overtimeMemberForm.reset();
+    overtimeMemberForm.setFieldValue("id", crypto.randomUUID());
+    overtimeMemberForm.setFieldValue("createDate", new Date());
+
+    overtimeMemberForm.resetDirty();
+    overtimeMemberForm.clearErrors();
   };
 
   const deleteOvertimeMember = (id: string) => {
@@ -477,7 +490,7 @@ function Expenses() {
         <Table.Tr key={x.id}>
           <Table.Td>{x.userFullName}</Table.Td>
           <Table.Td>{x.price}</Table.Td>
-          <Table.Td>{x.userFullName}</Table.Td>
+          <Table.Td>{x.createUserFullName}</Table.Td>
           <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
           <Table.Td>
             <Flex justify="center" gap={5}>

@@ -79,7 +79,7 @@ function Users() {
       id: crypto.randomUUID(),
       name: "",
       surname: "",
-      teamId: "",
+      teamId: null,
       teamName: "",
       gender: "",
       cardNumber: "",
@@ -190,7 +190,7 @@ function Users() {
     const userRequest: UserRequest = {
       name: form.values.name.trim(),
       surname: form.values.surname.trim(),
-      teamId: form.values.teamId,
+      teamId: form.values.teamId ?? "",
       gender: Number(form.values.gender),
       cardNumber: form.values.cardNumber,
       email: form.values.email.trim(),

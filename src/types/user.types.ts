@@ -6,7 +6,7 @@ type User = {
   id: string;
   name: string;
   surname: string;
-  teamId: string;
+  teamId: string | null;
   teamName: string;
   gender: string;
   cardNumber: string;

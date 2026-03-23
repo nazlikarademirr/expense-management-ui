@@ -27,7 +27,7 @@ function UserMenu() {
   return (
     <Menu shadow="md">
       <Menu.Target>
-        <Avatar ml={3} radius="xl" color="indigo">
+        <Avatar ml={3} radius="xl" color="#3f38c8">
           {currentUserName[0]}
           {currentUserSurname[0]}
         </Avatar>
