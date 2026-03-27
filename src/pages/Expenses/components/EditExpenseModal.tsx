@@ -62,9 +62,6 @@ function EditExpenseModal({
 
   const [isLoading, setIsLoading] = useState(false);
 
-  // eslint-disable-next-line no-debugger
-  debugger;
-
   const expenseForm = useForm<Expense>({
     initialValues: {
       ...expense,
@@ -110,10 +107,16 @@ function EditExpenseModal({
       return;
     }
 
-    if (expenseForm.values.userId === overtimeMemberForm.values.userId) {
-      return toast.error(
+    if (
+      expenseForm.values.overtimeMembers.find(
+        (x) => x.userId === expenseForm.values.userId,
+      )
+    ) {
+      setIsLoading(false);
+      toast.error(
         "You can not add yourself to your expense as overtime member.",
       );
+      return;
     }
 
     const expenseRequest: ExpenseRequest = {
@@ -146,6 +149,9 @@ function EditExpenseModal({
 
     updateExpense({
       ...expenseForm.values,
+      createUserFullName: currentUser
+        ? `${currentUser.name} ${currentUser.surname}`
+        : "",
     });
 
     expenseForm.reset();
@@ -173,6 +179,12 @@ function EditExpenseModal({
       return toast.error("There is a entry for this user.");
     }
 
+    if (expenseForm.values.userId === overtimeMemberForm.values.userId) {
+      return toast.error(
+        "You can not add yourself to your expense as overtime member.",
+      );
+    }
+
     expenseForm.setFieldValue("overtimeMembers", [
       ...expenseForm.values.overtimeMembers,
       {
@@ -183,9 +195,8 @@ function EditExpenseModal({
 
     overtimeMemberForm.setFieldValue("id", crypto.randomUUID());
     overtimeMemberForm.setFieldValue("createDate", new Date());
-
-    overtimeMemberForm.resetDirty();
-    overtimeMemberForm.clearErrors();
+    overtimeMemberForm.setFieldValue("userId", null);
+    overtimeMemberForm.setFieldValue("price", 0);
   };
 
   const deleteOvertimeMember = (id: string) => {

@@ -51,7 +51,7 @@ import { Project } from "../../types/project.types";
 import { Report } from "../../types/report.types";
 import { zod4Resolver } from "mantine-form-zod-resolver";
 import { useAuthentication } from "../../contexts/AuthenticationContext/AuthenticationProvider";
-const MIN_FLEX_HEIGHT = 90;
+const MIN_FLEX_HEIGHT = 110;
 
 function Expenses() {
   const {
@@ -324,6 +324,9 @@ function Expenses() {
       ...response.value,
       expenseType: expenseTypes[response.value.expenseType].value,
       currency: currencyTypes[response.value.currency].value,
+      createUserFullName: auth.currentUser
+        ? `${auth.currentUser.name} ${auth.currentUser.surname}`
+        : "",
     });
 
     form.reset();
@@ -361,9 +364,6 @@ function Expenses() {
 
     if (!overtimeMemberForm.isValid()) return;
 
-    // eslint-disable-next-line no-debugger
-    debugger;
-
     if (
       form.values.overtimeMembers.some(
         (x) => x.userId === overtimeMemberForm.values.userId,
@@ -397,9 +397,8 @@ function Expenses() {
 
     overtimeMemberForm.setFieldValue("id", crypto.randomUUID());
     overtimeMemberForm.setFieldValue("createDate", new Date());
-
-    overtimeMemberForm.resetDirty();
-    overtimeMemberForm.clearErrors();
+    overtimeMemberForm.setFieldValue("userId", null);
+    overtimeMemberForm.setFieldValue("price", 0);
   };
 
   const deleteOvertimeMember = (id: string) => {
@@ -614,7 +613,7 @@ function Expenses() {
               />
             </Flex>
           </Flex>
-          <Flex w="40%" justify="center">
+          <Flex w="40%" justify="center" h="320px">
             <Card shadow="xs" radius="md" withBorder padding={10} w="100%">
               <Flex gap="sm" style={{ minHeight: 90 }}>
                 <Select
@@ -638,24 +637,26 @@ function Expenses() {
                   Add Overtime Member
                 </Button>
               </Flex>
-              <Table
-                striped
-                stickyHeader
-                highlightOnHover
-                withTableBorder
-                withColumnBorders
-              >
-                <Table.Thead>
-                  <Table.Tr>
-                    <Table.Th>User Name</Table.Th>
-                    <Table.Th>Price</Table.Th>
-                    <Table.Th>Create User</Table.Th>
-                    <Table.Th>Create Date</Table.Th>
-                    <Table.Th></Table.Th>
-                  </Table.Tr>
-                </Table.Thead>
-                <Table.Tbody>{memoizedOvertimeMembers}</Table.Tbody>
-              </Table>
+              <ScrollArea style={{ flex: 1 }}>
+                <Table
+                  striped
+                  stickyHeader
+                  highlightOnHover
+                  withTableBorder
+                  withColumnBorders
+                >
+                  <Table.Thead>
+                    <Table.Tr>
+                      <Table.Th>User Name</Table.Th>
+                      <Table.Th>Price</Table.Th>
+                      <Table.Th>Create User</Table.Th>
+                      <Table.Th>Create Date</Table.Th>
+                      <Table.Th></Table.Th>
+                    </Table.Tr>
+                  </Table.Thead>
+                  <Table.Tbody>{memoizedOvertimeMembers}</Table.Tbody>
+                </Table>
+              </ScrollArea>
             </Card>
           </Flex>
         </Flex>
