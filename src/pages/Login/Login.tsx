@@ -59,8 +59,8 @@ function Login() {
     }
 
     const request = {
-      email: form.values.email,
-      password: form.values.password,
+      email: form.values.email.trim(),
+      password: form.values.password.trim(),
     };
 
     const response = await handleDataRequest<
@@ -101,40 +101,41 @@ function Login() {
   };
 
   return (
-    <Flex direction="column" align="center" p={300}>
-      <Title order={1} mb={10}>
+    <Flex direction="column" align="center" px="md" mt={220}>
+      <Title order={1} mb={30} ta="center">
         Expense Management
       </Title>
       <Card
         withBorder
         shadow="xs"
         radius="md"
-        w={600}
-        style={{ alignItems: "center", padding: 50 }}
+        w="100%"
+        maw={500}
+        style={{ padding: 40 }}
       >
-        <Flex direction="column" gap={20} style={{ alignItems: "flex-end" }}>
+        <Flex direction="column" gap={20} w="100%">
           <TextInput
-            w={500}
+            w="100%"
             label="Email"
             withAsterisk
             {...form.getInputProps("email")}
             style={{ minHeight: 80 }}
           />
           <PasswordInput
-            w={500}
+            w="100%"
             label="Password"
             withAsterisk
             {...form.getInputProps("password")}
             style={{ minHeight: 80 }}
           />
           <Anchor
-            style={{ fontSize: 15 }}
+            style={{ fontSize: 15, alignSelf: "flex-end" }}
             onClick={() => openPasswordResetModal()}
           >
             Forgot My Password
           </Anchor>
           <Button
-            w={500}
+            w="100%"
             variant="light"
             loading={isLoading}
             onClick={() => handleLogin()}

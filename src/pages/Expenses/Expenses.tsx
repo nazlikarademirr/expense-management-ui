@@ -9,6 +9,7 @@ import {
   Group,
   NumberInput,
   Radio,
+  ScrollArea,
   Select,
   Table,
   TextInput,
@@ -37,6 +38,7 @@ import ExpenseType from "../../enums/expense-type";
 import { TiTick, TiTimes } from "react-icons/ti";
 import {
   BOOLEAN_ICON_SIZE,
+  PAGE_FLEX_HEIGHT,
   SEARCH_ICON_SIZE,
   TITLE_DIVIDER_MY,
 } from "../../constants/constants";
@@ -49,9 +51,6 @@ import { Project } from "../../types/project.types";
 import { Report } from "../../types/report.types";
 import { zod4Resolver } from "mantine-form-zod-resolver";
 import { useAuthentication } from "../../contexts/AuthenticationContext/AuthenticationProvider";
-import { useNavigate } from "react-router";
-import routes from "../../constants/routes";
-
 const MIN_FLEX_HEIGHT = 110;
 
 function Expenses() {
@@ -91,14 +90,6 @@ function Expenses() {
 
   const auth = useAuthentication();
 
-  const navigate = useNavigate();
-
-  if (!auth.currentUser) {
-    auth.logout();
-    navigate(routes.login);
-    toast.error("A problem occurred with the user.");
-  }
-
   const form = useForm<Expense>({
     initialValues: {
       id: crypto.randomUUID(),
@@ -118,7 +109,7 @@ function Expenses() {
       overtimeMembers: [],
       isActive: false,
       searchText: "",
-      createUser: "",
+      createUserId: "",
       createUserFullName: "",
       createDate: new Date(),
     },
@@ -132,7 +123,7 @@ function Expenses() {
       userFullName: "",
       expenseId: form.values.id,
       price: 0,
-      createUser: "",
+      createUserId: "",
       createUserFullName: "",
       createDate: new Date(),
     },
@@ -145,6 +136,7 @@ function Expenses() {
       size: 2000,
       children: (
         <EditExpenseModal
+          currentUser={auth.currentUser ? auth.currentUser : null}
           expense={expense}
           updateExpense={updateExpense}
           activeUserSelectData={activeUserSelectData}
@@ -294,6 +286,16 @@ function Expenses() {
       return;
     }
 
+    if (
+      form.values.overtimeMembers.some((x) => x.userId === form.values.userId)
+    ) {
+      toast.error(
+        "You can not add yourself to your expense as overtime member.",
+      );
+      setIsLoading(false);
+      return;
+    }
+
     const expenseRequest: ExpenseRequest = {
       userId: form.values.userId ?? "",
       projectId: form.values.projectId ?? "",
@@ -322,6 +324,9 @@ function Expenses() {
       ...response.value,
       expenseType: expenseTypes[response.value.expenseType].value,
       currency: currencyTypes[response.value.currency].value,
+      createUserFullName: auth.currentUser
+        ? `${auth.currentUser.name} ${auth.currentUser.surname}`
+        : "",
     });
 
     form.reset();
@@ -359,9 +364,6 @@ function Expenses() {
 
     if (!overtimeMemberForm.isValid()) return;
 
-    overtimeMemberForm.setFieldValue("id", crypto.randomUUID());
-    overtimeMemberForm.setFieldValue("createDate", new Date());
-
     if (
       form.values.overtimeMembers.some(
         (x) => x.userId === overtimeMemberForm.values.userId,
@@ -380,15 +382,23 @@ function Expenses() {
       (x) => x.value === overtimeMemberForm.values.userId,
     )?.label;
 
+    const overtimeMember: OvertimeMember = {
+      ...overtimeMemberForm.values,
+      userFullName: overtimeMemberFullName ?? "",
+      createUserFullName: auth.currentUser
+        ? `${auth.currentUser.name} ${auth.currentUser.surname}`
+        : "",
+    };
+
     form.setFieldValue("overtimeMembers", [
       ...form.values.overtimeMembers,
-      {
-        ...overtimeMemberForm.values,
-        userFullName: overtimeMemberFullName ?? "",
-      },
+      overtimeMember,
     ]);
 
-    overtimeMemberForm.reset();
+    overtimeMemberForm.setFieldValue("id", crypto.randomUUID());
+    overtimeMemberForm.setFieldValue("createDate", new Date());
+    overtimeMemberForm.setFieldValue("userId", null);
+    overtimeMemberForm.setFieldValue("price", 0);
   };
 
   const deleteOvertimeMember = (id: string) => {
@@ -436,7 +446,7 @@ function Expenses() {
               )}
             </Table.Td>
             <Table.Td>{x.reportId !== null ? x.reportName : "-"}</Table.Td>
-            <Table.Td> {x.createUser} </Table.Td>
+            <Table.Td> {x.createUserFullName} </Table.Td>
             <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
             <Table.Td>
               <Flex justify="center" gap={5}>
@@ -479,7 +489,7 @@ function Expenses() {
         <Table.Tr key={x.id}>
           <Table.Td>{x.userFullName}</Table.Td>
           <Table.Td>{x.price}</Table.Td>
-          <Table.Td>{x.userFullName}</Table.Td>
+          <Table.Td>{x.createUserFullName}</Table.Td>
           <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
           <Table.Td>
             <Flex justify="center" gap={5}>
@@ -504,7 +514,7 @@ function Expenses() {
   }, []);
 
   return (
-    <>
+    <Flex direction="column" h={PAGE_FLEX_HEIGHT}>
       <Title order={3}>Expenses</Title>
       <Divider my={TITLE_DIVIDER_MY} />
       <Card shadow="xs" radius="xs" withBorder padding={10}>
@@ -596,14 +606,14 @@ function Expenses() {
 
               <Checkbox
                 w="20%"
-                mt={32}
+                mt={30}
                 label="Out Of Office"
                 {...form.getInputProps("outOfOffice", { type: "checkbox" })}
                 style={{ flexGrow: 1 }}
               />
             </Flex>
           </Flex>
-          <Flex w="40%" justify="center">
+          <Flex w="40%" justify="center" h="320px">
             <Card shadow="xs" radius="md" withBorder padding={10} w="100%">
               <Flex gap="sm" style={{ minHeight: 90 }}>
                 <Select
@@ -627,24 +637,26 @@ function Expenses() {
                   Add Overtime Member
                 </Button>
               </Flex>
-              <Table
-                striped
-                stickyHeader
-                highlightOnHover
-                withTableBorder
-                withColumnBorders
-              >
-                <Table.Thead>
-                  <Table.Tr>
-                    <Table.Th>User Name</Table.Th>
-                    <Table.Th>Price</Table.Th>
-                    <Table.Th>Create User</Table.Th>
-                    <Table.Th>Create Date</Table.Th>
-                    <Table.Th></Table.Th>
-                  </Table.Tr>
-                </Table.Thead>
-                <Table.Tbody>{memoizedOvertimeMembers}</Table.Tbody>
-              </Table>
+              <ScrollArea style={{ flex: 1 }}>
+                <Table
+                  striped
+                  stickyHeader
+                  highlightOnHover
+                  withTableBorder
+                  withColumnBorders
+                >
+                  <Table.Thead>
+                    <Table.Tr>
+                      <Table.Th>User Name</Table.Th>
+                      <Table.Th>Price</Table.Th>
+                      <Table.Th>Create User</Table.Th>
+                      <Table.Th>Create Date</Table.Th>
+                      <Table.Th></Table.Th>
+                    </Table.Tr>
+                  </Table.Thead>
+                  <Table.Tbody>{memoizedOvertimeMembers}</Table.Tbody>
+                </Table>
+              </ScrollArea>
             </Card>
           </Flex>
         </Flex>
@@ -657,8 +669,18 @@ function Expenses() {
           Add New Expense
         </Button>
       </Card>
-      <Card mt="sm" withBorder padding="sm">
-        <Flex gap="xs" align="center">
+      <Card
+        mt="sm"
+        withBorder
+        padding="sm"
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          minHeight: 0,
+        }}
+      >
+        <Flex gap="xs" align="center" mb="md">
           <TextInput
             size="xs"
             radius="xl"
@@ -692,34 +714,35 @@ function Expenses() {
             type="checkbox"
           />
         </Flex>
-        <Table
-          striped
-          stickyHeader
-          highlightOnHover
-          withTableBorder
-          withColumnBorders
-          mt={15}
-        >
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>User Name</Table.Th>
-              <Table.Th>Project Name</Table.Th>
-              <Table.Th>Expense Type</Table.Th>
-              <Table.Th>Expense Date</Table.Th>
-              <Table.Th>Total Price</Table.Th>
-              <Table.Th>Currency</Table.Th>
-              <Table.Th>Trip Description</Table.Th>
-              <Table.Th>Out Of Office</Table.Th>
-              <Table.Th>Report Name</Table.Th>
-              <Table.Th>Create User</Table.Th>
-              <Table.Th>Create Date</Table.Th>
-              <Table.Th></Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>{memoizedExpenses}</Table.Tbody>
-        </Table>
+        <ScrollArea style={{ flex: 1 }}>
+          <Table
+            striped
+            stickyHeader
+            highlightOnHover
+            withTableBorder
+            withColumnBorders
+          >
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>User Name</Table.Th>
+                <Table.Th>Project Name</Table.Th>
+                <Table.Th>Expense Type</Table.Th>
+                <Table.Th>Expense Date</Table.Th>
+                <Table.Th>Total Price</Table.Th>
+                <Table.Th>Currency</Table.Th>
+                <Table.Th>Trip Description</Table.Th>
+                <Table.Th>Out Of Office</Table.Th>
+                <Table.Th>Report Name</Table.Th>
+                <Table.Th>Create User</Table.Th>
+                <Table.Th>Create Date</Table.Th>
+                <Table.Th></Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>{memoizedExpenses}</Table.Tbody>
+          </Table>
+        </ScrollArea>
       </Card>
-    </>
+    </Flex>
   );
 }
 

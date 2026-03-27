@@ -102,12 +102,14 @@ function EditProjectModal({
       <TextInput
         style={{ minHeight: MIN_INPUT_HEIGHT }}
         ref={nameInputRef}
+        withAsterisk
         {...projectForm.getInputProps("name")}
         label={"Name"}
       />
 
       <TextInput
         style={{ minHeight: MIN_INPUT_HEIGHT }}
+        withAsterisk
         {...projectForm.getInputProps("code")}
         label={"Code"}
       />

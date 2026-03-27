@@ -35,8 +35,10 @@ import { IconTrash } from "@tabler/icons-react";
 import ExpenseType from "../../../enums/expense-type";
 import { SelectItem } from "../../../types/select-item.types";
 import { zod4Resolver } from "mantine-form-zod-resolver";
+import { CurrentUser } from "../../../types/authentication.types";
 
 interface EditExpenseProps {
+  currentUser: CurrentUser | null;
   expense: Expense;
   updateExpense: (expenseForm: Expense) => void;
   activeUserSelectData: SelectItem[];
@@ -48,6 +50,7 @@ interface EditExpenseProps {
 const MIN_FLEX_HEIGHT = 90;
 
 function EditExpenseModal({
+  currentUser,
   expense,
   updateExpense,
   activeUserSelectData,
@@ -74,7 +77,8 @@ function EditExpenseModal({
       userFullName: "",
       expenseId: expense.id,
       price: 0,
-      createUser: crypto.randomUUID(),
+      createUserId: "",
+      createUserFullName: "",
       createDate: new Date(),
     },
     validate: zod4Resolver(overtimeMemberSchema),
@@ -103,10 +107,16 @@ function EditExpenseModal({
       return;
     }
 
-    if (expenseForm.values.userId === overtimeMemberForm.values.userId) {
-      return toast.error(
+    if (
+      expenseForm.values.overtimeMembers.find(
+        (x) => x.userId === expenseForm.values.userId,
+      )
+    ) {
+      setIsLoading(false);
+      toast.error(
         "You can not add yourself to your expense as overtime member.",
       );
+      return;
     }
 
     const expenseRequest: ExpenseRequest = {
@@ -139,6 +149,9 @@ function EditExpenseModal({
 
     updateExpense({
       ...expenseForm.values,
+      createUserFullName: currentUser
+        ? `${currentUser.name} ${currentUser.surname}`
+        : "",
     });
 
     expenseForm.reset();
@@ -152,12 +165,11 @@ function EditExpenseModal({
   };
 
   const saveOvertimeMember = async () => {
+    if (!currentUser) return;
+
     overtimeMemberForm.validate();
 
     if (!overtimeMemberForm.isValid()) return;
-
-    overtimeMemberForm.values.id = crypto.randomUUID();
-    overtimeMemberForm.values.createDate = new Date();
 
     if (
       expenseForm.values.overtimeMembers.some(
@@ -167,12 +179,24 @@ function EditExpenseModal({
       return toast.error("There is a entry for this user.");
     }
 
+    if (expenseForm.values.userId === overtimeMemberForm.values.userId) {
+      return toast.error(
+        "You can not add yourself to your expense as overtime member.",
+      );
+    }
+
     expenseForm.setFieldValue("overtimeMembers", [
       ...expenseForm.values.overtimeMembers,
-      overtimeMemberForm.values,
+      {
+        ...overtimeMemberForm.values,
+        createUserFullName: `${currentUser.name} ${currentUser.surname}`,
+      },
     ]);
 
-    overtimeMemberForm.reset();
+    overtimeMemberForm.setFieldValue("id", crypto.randomUUID());
+    overtimeMemberForm.setFieldValue("createDate", new Date());
+    overtimeMemberForm.setFieldValue("userId", null);
+    overtimeMemberForm.setFieldValue("price", 0);
   };
 
   const deleteOvertimeMember = (id: string) => {
@@ -209,7 +233,7 @@ function EditExpenseModal({
         <Table.Tr key={x.id}>
           <Table.Td>{x.userFullName}</Table.Td>
           <Table.Td>{x.price}</Table.Td>
-          <Table.Td>{x.userFullName}</Table.Td>
+          <Table.Td>{x.createUserFullName}</Table.Td>
           <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
           <Table.Td>
             <Flex justify={"center"} gap={5}>

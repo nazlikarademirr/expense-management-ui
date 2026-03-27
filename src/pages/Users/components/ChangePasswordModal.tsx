@@ -81,7 +81,7 @@ function ChangePasswordModal({ currentUserId }: ChangePasswordModalProps) {
     );
 
     if (!response.isSuccess) {
-      toast.error("The password could not be updated.");
+      setIsLoading(false);
       return;
     }
 

@@ -15,6 +15,7 @@ import {
   Group,
   PasswordInput,
   Radio,
+  ScrollArea,
   Select,
   Table,
   TextInput,
@@ -39,6 +40,7 @@ import { TiTick, TiTimes } from "react-icons/ti";
 import { IoMdAddCircleOutline, IoMdRemoveCircleOutline } from "react-icons/io";
 import {
   BOOLEAN_ICON_SIZE,
+  PAGE_FLEX_HEIGHT,
   SEARCH_ICON_SIZE,
   TITLE_DIVIDER_MY,
 } from "../../constants/constants.ts";
@@ -47,8 +49,6 @@ import { Team } from "../../types/team.types.ts";
 import { zod4Resolver } from "mantine-form-zod-resolver";
 import { RiLockPasswordLine } from "react-icons/ri";
 import { useAuthentication } from "../../contexts/AuthenticationContext/AuthenticationProvider.tsx";
-import { useNavigate } from "react-router";
-import routes from "../../constants/routes.ts";
 
 const MIN_INPUT_HEIGHT = 80;
 const MIN_INPUT_WIDTH = 250;
@@ -70,24 +70,16 @@ function Users() {
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const auth = useAuthentication();
-
-  const navigate = useNavigate();
-
   const { handleDataRequest } = useRequestHandler();
 
-  if (!auth.currentUser) {
-    auth.logout();
-    navigate(routes.login);
-    toast.error("A problem occurred with the user.");
-  }
+  const auth = useAuthentication();
 
   const form = useForm<User>({
     initialValues: {
       id: crypto.randomUUID(),
       name: "",
       surname: "",
-      teamId: "",
+      teamId: null,
       teamName: "",
       gender: "",
       cardNumber: "",
@@ -98,7 +90,7 @@ function Users() {
       hasTemporaryPassword: false,
       isActive: false,
       searchText: "",
-      createUser: "",
+      createUserId: "",
       createUserFullName: "",
       createDate: new Date(),
     },
@@ -196,15 +188,15 @@ function Users() {
     }
 
     const userRequest: UserRequest = {
-      name: form.values.name,
-      surname: form.values.surname,
+      name: form.values.name.trim(),
+      surname: form.values.surname.trim(),
       teamId: form.values.teamId ?? "",
       gender: Number(form.values.gender),
       cardNumber: form.values.cardNumber,
-      email: form.values.email,
+      email: form.values.email.trim(),
       password: form.values.password,
       role: Number(form.values.role),
-      temporaryPassword: "",
+      temporaryPassword: null,
       hasTemporaryPassword: false,
       isActive: true,
     };
@@ -224,6 +216,9 @@ function Users() {
       ...response.value,
       gender: response.value.gender.toString(),
       role: response.value.role.toString(),
+      createUserFullName: auth.currentUser
+        ? `${auth.currentUser.name} ${auth.currentUser.surname}`
+        : "",
     });
 
     form.reset();
@@ -312,7 +307,7 @@ function Users() {
                 <TiTimes size={BOOLEAN_ICON_SIZE} color="#BA1A1A" />
               )}
             </Table.Td>
-            <Table.Td>{x.createUser}</Table.Td>
+            <Table.Td>{x.createUserFullName}</Table.Td>
             <Table.Td>
               <Flex justify="center" gap={5}>
                 {x.isActive && (
@@ -375,7 +370,7 @@ function Users() {
   }, []);
 
   return (
-    <>
+    <Flex direction="column" h={PAGE_FLEX_HEIGHT}>
       <Title order={3}>Users</Title>
       <Divider my={TITLE_DIVIDER_MY} />
       <Card shadow="xs" radius="md" withBorder>
@@ -496,8 +491,19 @@ function Users() {
           Add New User
         </Button>
       </Card>
-      <Card mt="xs" withBorder radius="md" padding="sm">
-        <Flex gap="xs" align="center">
+      <Card
+        mt="xs"
+        withBorder
+        radius="md"
+        padding="sm"
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          minHeight: 0,
+        }}
+      >
+        <Flex gap="xs" align="center" mb="md">
           <TextInput
             size="xs"
             radius="xl"
@@ -532,33 +538,33 @@ function Users() {
             type="checkbox"
           />
         </Flex>
-
-        <Table
-          striped
-          stickyHeader
-          highlightOnHover
-          withTableBorder
-          withColumnBorders
-          mt={15}
-        >
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>Name</Table.Th>
-              <Table.Th>Surname</Table.Th>
-              <Table.Th>Team Name</Table.Th>
-              <Table.Th>Gender</Table.Th>
-              <Table.Th>Card Number</Table.Th>
-              <Table.Th>Email</Table.Th>
-              <Table.Th>Role</Table.Th>
-              <Table.Th>Status</Table.Th>
-              <Table.Th>Create User</Table.Th>
-              <Table.Th></Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>{memoizedUsers}</Table.Tbody>
-        </Table>
+        <ScrollArea style={{ flex: 1 }}>
+          <Table
+            striped
+            stickyHeader
+            highlightOnHover
+            withTableBorder
+            withColumnBorders
+          >
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>Name</Table.Th>
+                <Table.Th>Surname</Table.Th>
+                <Table.Th>Team Name</Table.Th>
+                <Table.Th>Gender</Table.Th>
+                <Table.Th>Card Number</Table.Th>
+                <Table.Th>Email</Table.Th>
+                <Table.Th>Role</Table.Th>
+                <Table.Th>Status</Table.Th>
+                <Table.Th>Create User</Table.Th>
+                <Table.Th></Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>{memoizedUsers}</Table.Tbody>
+          </Table>
+        </ScrollArea>
       </Card>
-    </>
+    </Flex>
   );
 }
 

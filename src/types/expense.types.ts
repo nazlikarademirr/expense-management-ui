@@ -21,7 +21,7 @@ type Expense = {
   overtimeMembers: OvertimeMember[];
   isActive: boolean;
   searchText: string;
-  createUser: string;
+  createUserId: string;
   createUserFullName: string;
   createDate: Date;
 };
@@ -57,7 +57,7 @@ type ExpenseResponse = {
   overtimeMembers: OvertimeMember[];
   isActive: boolean;
   searchText: string;
-  createUser: string;
+  createUserId: string;
   createUserFullName: string;
   createDate: Date;
 };

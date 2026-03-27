@@ -13,6 +13,7 @@ import {
   Checkbox,
   Divider,
   Flex,
+  ScrollArea,
   Table,
   TextInput,
   Title,
@@ -31,11 +32,13 @@ import useRequestHandler from "../../hooks/useRequestHandler";
 import { TiTick, TiTimes } from "react-icons/ti";
 import {
   BOOLEAN_ICON_SIZE,
+  PAGE_FLEX_HEIGHT,
   SEARCH_ICON_SIZE,
   TITLE_DIVIDER_MY,
 } from "../../constants/constants";
 import { IoMdAddCircleOutline, IoMdRemoveCircleOutline } from "react-icons/io";
 import { zod4Resolver } from "mantine-form-zod-resolver";
+import { useAuthentication } from "../../contexts/AuthenticationContext/AuthenticationProvider";
 
 function Projects() {
   const { projects, addProject, updateProject, replaceProjects } =
@@ -49,6 +52,8 @@ function Projects() {
 
   const [isLoading, setIsLoading] = useState(false);
 
+  const auth = useAuthentication();
+
   const form = useForm<Project>({
     initialValues: {
       id: crypto.randomUUID(),
@@ -56,7 +61,7 @@ function Projects() {
       code: "",
       searchText: "",
       isActive: false,
-      createUser: crypto.randomUUID(),
+      createUserId: crypto.randomUUID(),
       createUserFullName: "",
       createDate: new Date(),
     },
@@ -126,8 +131,8 @@ function Projects() {
     }
 
     const request: ProjectRequest = {
-      name: form.values.name,
-      code: form.values.code,
+      name: form.values.name.trim(),
+      code: form.values.code.trim(),
     };
 
     const response = await handleDataRequest<ProjectRequest, Project>(
@@ -141,7 +146,12 @@ function Projects() {
       return;
     }
 
-    addProject(response.value);
+    addProject({
+      ...response.value,
+      createUserFullName: auth.currentUser
+        ? `${auth.currentUser.name} ${auth.currentUser.surname}`
+        : "",
+    });
 
     form.reset();
 
@@ -199,7 +209,7 @@ function Projects() {
                 <TiTimes size={BOOLEAN_ICON_SIZE} color="#BA1A1A" />
               )}
             </Table.Td>
-            <Table.Td> {x.createUser} </Table.Td>
+            <Table.Td> {x.createUserFullName} </Table.Td>
             <Table.Td>
               <Flex justify={"center"} gap={5}>
                 {x.isActive ? (
@@ -244,7 +254,7 @@ function Projects() {
   }, []);
 
   return (
-    <div>
+    <Flex direction="column" h={PAGE_FLEX_HEIGHT}>
       <Title order={3}>Projects</Title>
       <Divider my={TITLE_DIVIDER_MY} />
       <Card shadow={"xs"} radius={"md"} withBorder>
@@ -274,13 +284,23 @@ function Projects() {
         </Button>
       </Card>
 
-      <Card mt={"xs"} withBorder padding={"sm"}>
-        <Flex gap={"xs"}>
+      <Card
+        mt={"xs"}
+        withBorder
+        padding={"sm"}
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          minHeight: 0,
+        }}
+      >
+        <Flex gap={"xs"} mb="md" align="center">
           <TextInput
             size="xs"
             radius="xl"
             rightSection={<IconSearch size={SEARCH_ICON_SIZE}></IconSearch>}
-            style={{ flexGrow: 120 }}
+            style={{ flex: 1 }}
             {...form.getInputProps("searchText")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -288,33 +308,34 @@ function Projects() {
           <Checkbox
             labelPosition="left"
             label={"Show Active Projects"}
-            style={{ marginTop: "5px", marginLeft: "10px" }}
+            style={{ marginLeft: "10px" }}
             checked={showActiveProjects}
             onChange={() => setShowActiveProjects(!showActiveProjects)}
             type="checkbox"
           />
         </Flex>
-        <Table
-          striped
-          stickyHeader
-          highlightOnHover
-          withTableBorder
-          withColumnBorders
-          mt={15}
-        >
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>Name</Table.Th>
-              <Table.Th>Code</Table.Th>
-              <Table.Th>Status</Table.Th>
-              <Table.Th>Create User</Table.Th>
-              <Table.Th></Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>{memoizedProjects}</Table.Tbody>
-        </Table>
+        <ScrollArea style={{ flex: 1 }}>
+          <Table
+            striped
+            stickyHeader
+            highlightOnHover
+            withTableBorder
+            withColumnBorders
+          >
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>Name</Table.Th>
+                <Table.Th>Code</Table.Th>
+                <Table.Th>Status</Table.Th>
+                <Table.Th>Create User</Table.Th>
+                <Table.Th></Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>{memoizedProjects}</Table.Tbody>
+          </Table>
+        </ScrollArea>
       </Card>
-    </div>
+    </Flex>
   );
 }
 

@@ -14,7 +14,6 @@ import { useNavigate } from "react-router";
 import routes from "../../constants/routes";
 import { RiFileTextLine } from "react-icons/ri";
 import UserMenu from "./UserMenu";
-import toast from "react-hot-toast";
 import Role from "../../enums/role";
 import { useAuthentication } from "../../contexts/AuthenticationContext/AuthenticationProvider";
 
@@ -46,13 +45,6 @@ export function Navbar() {
     navigate(link.route);
   };
 
-  if (!auth.currentUser) {
-    toast.error("A problem occurred with the user.");
-    auth.logout();
-    navigate(routes.login);
-    return;
-  }
-
   const mainLinks = mainLinksMockdata
     .filter((x) =>
       auth.currentUser?.role === Role.User
@@ -82,7 +74,7 @@ export function Navbar() {
       <div className={classes.wrapper}>
         <div className={classes.aside}>
           <div className={classes.logo}>
-            <RiFileTextLine size={30} color="green" />
+            <RiFileTextLine size={30} color="#3f38c8" />
           </div>
           <Flex justify={"center"} direction={"column"}>
             {mainLinks}
