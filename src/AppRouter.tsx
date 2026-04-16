@@ -24,7 +24,7 @@ function AppRouter() {
   }, []);
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/expense-management">
       <Routes>
         <Route
           path={routes.users}
