@@ -9,6 +9,7 @@ import "./global.css";
 import AppRouter from "./AppRouter.tsx";
 import { Toaster } from "react-hot-toast";
 import { AuthenticationProvider } from "./contexts/AuthenticationContext/AuthenticationProvider.tsx";
+import "./helpers/translation/i18n.ts";
 
 createRoot(document.getElementById("root")!).render(
   <MantineProvider>

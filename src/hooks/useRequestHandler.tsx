@@ -132,6 +132,9 @@ function useRequestHandler() {
     return fetch(link, {
       method: RequestType.Post,
       body: data ? JSON.stringify(data) : undefined,
+      headers: {
+        Authorization: `Bearer ${sessionToken}`,
+      },
     })
       .then(async (response) => {
         if (!response.ok) {
