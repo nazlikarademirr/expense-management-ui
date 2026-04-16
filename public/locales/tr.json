@@ -1,0 +1,40 @@
+{
+  "common": {
+    "english": "İngilizce",
+    "turkish": "Türkçe",
+    "edit": "Düzenle",
+    "delete": "Sil",
+    "cancel": "Vazgeç",
+    "createUser": "Oluşturan Kullanıcı",
+    "createDate": "Oluşturulma Tarihi"
+  },
+
+  "expense": {
+    "dateValid": "Gelecek tarih için masraf girişi yapılamaz.",
+    "totalPriceValid": "Toplam tutar, kişisel tutarların toplamından fazla olamaz.",
+    "youCanNotAddYourselfAsOvertimeMember": "Kendinizi mesai arkadaşı olarak ekleyemezsiniz.",
+    "added": "Masraf başarıyla eklendi.",
+    "deleted": "Masraf başarıyla silindi.",
+    "overtimeMemberValid": "Bu kullanıcı için bir kayıt bulunuyor.",
+    "userName": "Kullanıcı Adı",
+    "projectName": "Proje Adı",
+    "date": "Masraf Tarihi",
+    "totalPrice": "Toplam Fiyat",
+    "type": "Masraf Tipi",
+    "tripDescription": "Yol Açıklaması",
+    "currency": "Para Birimi",
+    "outOfOffice": "Ofis Dışı",
+    "price": "Fiyat",
+    "addOvertimeMember": "Mesai Arkadaşı Ekle",
+    "addNew": "Yeni Masraf Ekle",
+    "selectUser": "Kullanıcı Seçiniz",
+    "selectReport": "Rapor Seçiniz",
+    "showUnapproved": "Onaylanmayan Masrafları Göster",
+    "reportName": "Rapor Adı",
+    "food": "Yemek",
+    "transportation": "Ulaşım",
+    "expenses": "Masraflar",
+    "delete": "Masrafı Sil",
+    "deletionQuestion": "Masrafı silmek istediğinizden emin misiniz?"
+  }
+}

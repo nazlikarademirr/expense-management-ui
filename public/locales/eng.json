@@ -1,0 +1,40 @@
+{
+  "common": {
+    "english": "English",
+    "turkish": "Turkish",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "createUser": "Create User",
+    "createDate": "Create Date"
+  },
+
+  "expense": {
+    "dateValid": "Expenses cannot be entered for future dates.",
+    "totalPriceValid": "The total price cannot be less than the sum of the individual prices.",
+    "youCanNotAddYourselfAsOvertimeMember": "You can not add yourself to your expense as overtime member.",
+    "added": "Expense has been added successfully.",
+    "deleted": "Expense has been deleted successfully.",
+    "overtimeMemberValid": "There is a entry for this user.",
+    "userName": "User Name",
+    "projectName": "Project Name",
+    "date": "Expense Date",
+    "totalPrice": "Total Price",
+    "type": "Expense Type",
+    "tripDescription": "Trip Description",
+    "currency": "Currency",
+    "outOfOffice": "Out Of Office",
+    "price": "Price",
+    "addOvertimeMember": "Add Overtime Member",
+    "addNew": "Add New Expense",
+    "selectUser": "Select User",
+    "selectReport": "Select Report",
+    "showUnapproved": "Show Unapproved Expenses",
+    "reportName": "Report Name",
+    "food": "Food",
+    "transportation": "Transportation",
+    "expenses": "Expenses",
+    "delete": "Delete Expense",
+    "deletionQuestion": "Are you sure you want to delete the expense?"
+  }
+}

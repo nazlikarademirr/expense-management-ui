@@ -16,7 +16,7 @@ interface FailureResponse {
 export type ResponseBase<T> = SuccessResponse<T> | FailureResponse;
 
 function useRequestHandler() {
-  const sessionToken = sessionStorage.getItem("token");
+  const accessToken = sessionStorage.getItem("token");
 
   async function handleDataRequest<Request, Response>(
     url: string,
@@ -36,7 +36,7 @@ function useRequestHandler() {
       method: requestType,
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${sessionToken}`,
+        Authorization: `Bearer ${accessToken}`,
       },
       body: requestData ? JSON.stringify(requestData) : undefined,
     })
@@ -132,6 +132,9 @@ function useRequestHandler() {
     return fetch(link, {
       method: RequestType.Post,
       body: data ? JSON.stringify(data) : undefined,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
     })
       .then(async (response) => {
         if (!response.ok) {

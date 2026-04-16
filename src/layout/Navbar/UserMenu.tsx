@@ -1,13 +1,20 @@
-import { Anchor, Avatar, Divider, Menu, Title } from "@mantine/core";
+import { Anchor, Avatar, Divider, Menu, Select, Title } from "@mantine/core";
 import { useAuthentication } from "../../contexts/AuthenticationContext/AuthenticationProvider";
 import { useNavigate } from "react-router";
 import routes from "../../constants/routes";
 import { modals } from "@mantine/modals";
 import ChangePasswordModal from "../../pages/Users/components/ChangePasswordModal";
+import i18n from "../../helpers/translation/i18n";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import Dictionary from "../../helpers/translation/dictionary";
 
 function UserMenu() {
   const auth = useAuthentication();
   const navigate = useNavigate();
+  const { t } = useTranslation();
+
+  const [language, setLanguage] = useState<string | null>("");
 
   const currentUserName = auth.currentUser
     ? auth.currentUser.name.toUpperCase()
@@ -23,6 +30,17 @@ function UserMenu() {
       children: <ChangePasswordModal currentUserId={auth.currentUser?.id} />,
     });
   };
+
+  const handleChangeLanguage = (value: string | null) => {
+    if (!value) return;
+    i18n.changeLanguage(value);
+    localStorage.setItem("lang", value);
+    setLanguage(value);
+  };
+
+  useEffect(() => {
+    setLanguage(localStorage.getItem("lang"));
+  }, []);
 
   return (
     <Menu shadow="md">
@@ -46,6 +64,17 @@ function UserMenu() {
         >
           Change Password
         </Anchor>
+        <Select
+          mx={5}
+          my={10}
+          value={language}
+          onChange={handleChangeLanguage}
+          placeholder="Select Language"
+          data={[
+            { value: "en", label: t(Dictionary.Common.ENGLISH) },
+            { value: "tr", label: t(Dictionary.Common.TURKISH) },
+          ]}
+        />
         <Divider my={4} />
         <Menu.Item
           onClick={() => {

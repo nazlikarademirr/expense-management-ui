@@ -51,9 +51,13 @@ import { Project } from "../../types/project.types";
 import { Report } from "../../types/report.types";
 import { zod4Resolver } from "mantine-form-zod-resolver";
 import { useAuthentication } from "../../contexts/AuthenticationContext/AuthenticationProvider";
+import { useTranslation } from "react-i18next";
+import Dictionary from "../../helpers/translation/dictionary";
 const MIN_FLEX_HEIGHT = 110;
 
 function Expenses() {
+  const { t } = useTranslation();
+
   const {
     expenses,
     addExpense,
@@ -150,11 +154,11 @@ function Expenses() {
 
   const openDeleteExpenseModal = (id: string) => {
     modals.open({
-      title: <Title order={5}>Delete Expense</Title>,
+      title: <Title order={5}>{t(Dictionary.Expense.DELETE)}</Title>,
       size: "md",
       children: (
         <Flex direction="column" gap={20}>
-          <Text>Are you sure you want to delete the expense?</Text>
+          <Text>{t(Dictionary.Expense.DELETION_QUESTION)}</Text>
           <Flex direction="row" gap={10}>
             <Button
               style={{ flexGrow: 1 }}
@@ -166,7 +170,7 @@ function Expenses() {
               variant="light"
               color="blue"
             >
-              Delete
+              {t(Dictionary.Expense.DELETE)}
             </Button>
             <Button
               onClick={() => modals.closeAll()}
@@ -174,7 +178,7 @@ function Expenses() {
               variant="light"
               color="red"
             >
-              Cancel
+              {t(Dictionary.Common.CANCEL)}
             </Button>
           </Flex>
         </Flex>
@@ -253,7 +257,7 @@ function Expenses() {
 
   const checkIfExpenseIsValid = (expense: Expense) => {
     if (expense.expenseDate > new Date()) {
-      toast.error("Expenses cannot be entered for future dates.");
+      toast.error(t(Dictionary.Expense.DATE_VALID));
       return false;
     }
 
@@ -264,7 +268,7 @@ function Expenses() {
     });
 
     if (totalPrice > expense.totalPrice) {
-      toast.error("The total price cannot be less than the sum of the prices.");
+      toast.error(t(Dictionary.Expense.TOTAL_PRICE_VALID));
       return false;
     }
 
@@ -290,7 +294,7 @@ function Expenses() {
       form.values.overtimeMembers.some((x) => x.userId === form.values.userId)
     ) {
       toast.error(
-        "You can not add yourself to your expense as overtime member.",
+        t(Dictionary.Expense.YOU_CAN_NOT_ADD_YOURSELF_AS_OVERTIME_MEMBER),
       );
       setIsLoading(false);
       return;
@@ -332,7 +336,7 @@ function Expenses() {
     form.reset();
     overtimeMemberForm.reset();
 
-    toast.success("Expense has been added successfully!");
+    toast.success(t(Dictionary.Expense.ADDED));
 
     setIsLoading(false);
   };
@@ -354,7 +358,7 @@ function Expenses() {
 
     deleteExpense(id);
 
-    toast.success("Expense has been deleted successfully!");
+    toast.success(t(Dictionary.Expense.DELETED));
 
     setIsLoading(false);
   };
@@ -369,12 +373,12 @@ function Expenses() {
         (x) => x.userId === overtimeMemberForm.values.userId,
       )
     ) {
-      return toast.error("There is a entry for this user.");
+      return toast.error(t(Dictionary.Expense.OVERTIME_MEMBER_VALID));
     }
 
     if (form.values.userId === overtimeMemberForm.values.userId) {
       return toast.error(
-        "You can not add yourself to your expense as overtime member.",
+        t(Dictionary.Expense.YOU_CAN_NOT_ADD_YOURSELF_AS_OVERTIME_MEMBER),
       );
     }
 
@@ -450,7 +454,7 @@ function Expenses() {
             <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
             <Table.Td>
               <Flex justify="center" gap={5}>
-                <Tooltip label="Edit" withArrow>
+                <Tooltip label={t(Dictionary.Common.EDIT)} withArrow>
                   <ActionIcon
                     disabled={x.isApproved}
                     onClick={() => openEditExpense(x)}
@@ -460,7 +464,7 @@ function Expenses() {
                     <IconEdit />
                   </ActionIcon>
                 </Tooltip>
-                <Tooltip label="Delete" withArrow>
+                <Tooltip label={t(Dictionary.Expense.DELETE)} withArrow>
                   <ActionIcon
                     disabled={x.isApproved}
                     onClick={() => openDeleteExpenseModal(x.id)}
@@ -515,7 +519,7 @@ function Expenses() {
 
   return (
     <Flex direction="column" h={PAGE_FLEX_HEIGHT}>
-      <Title order={3}>Expenses</Title>
+      <Title order={3}>{t(Dictionary.Expense.EXPENSES)}</Title>
       <Divider my={TITLE_DIVIDER_MY} />
       <Card shadow="xs" radius="xs" withBorder padding={10}>
         <Flex gap="md" justify="center">
@@ -527,7 +531,7 @@ function Expenses() {
                 withAsterisk
                 data={activeUserSelectData}
                 searchable
-                label="User Name"
+                label={t(Dictionary.Expense.USER_NAME)}
                 style={{ flexGrow: 1 }}
               />
 
@@ -536,7 +540,7 @@ function Expenses() {
                 {...form.getInputProps("projectId")}
                 withAsterisk
                 data={activeProjectSelectData}
-                label="Project Name"
+                label={t(Dictionary.Expense.PROJECT_NAME)}
                 style={{ flexGrow: 1 }}
               />
 
@@ -545,7 +549,7 @@ function Expenses() {
                 {...form.getInputProps("reportId")}
                 data={unapprovedReportSelectData}
                 searchable
-                label="Report Name"
+                label={t(Dictionary.Expense.REPORT_NAME)}
                 clearable
                 style={{ flexGrow: 1 }}
               />
@@ -556,7 +560,7 @@ function Expenses() {
                 {...form.getInputProps("expenseDate")}
                 withAsterisk
                 valueFormat="DD MMMM YYYY"
-                label="Expense Date"
+                label={t(Dictionary.Expense.DATE)}
                 style={{ flexGrow: 1 }}
               />
 
@@ -564,14 +568,14 @@ function Expenses() {
                 w="20%"
                 {...form.getInputProps("totalPrice")}
                 withAsterisk
-                label="Total Price"
+                label={t(Dictionary.Expense.TOTAL_PRICE)}
                 hideControls
                 style={{ flexGrow: 1 }}
               />
 
               <Radio.Group
                 w="20%"
-                label="Expense Type"
+                label={t(Dictionary.Expense.TYPE)}
                 withAsterisk
                 {...form.getInputProps("expenseType")}
                 display="center"
@@ -588,7 +592,7 @@ function Expenses() {
               <TextInput
                 w="20%"
                 {...form.getInputProps("tripDescription")}
-                label="Trip Description"
+                label={t(Dictionary.Expense.TRIP_DESCRIPTION)}
                 withAsterisk={
                   form.values.expenseType === ExpenseType.Transportation
                 }
@@ -600,14 +604,14 @@ function Expenses() {
                 {...form.getInputProps("currency")}
                 withAsterisk
                 data={currencyTypes}
-                label="Currency"
+                label={t(Dictionary.Expense.CURRENCY)}
                 style={{ flexGrow: 1 }}
               />
 
               <Checkbox
                 w="20%"
                 mt={30}
-                label="Out Of Office"
+                label={t(Dictionary.Expense.OUT_OF_OFFICE)}
                 {...form.getInputProps("outOfOffice", { type: "checkbox" })}
                 style={{ flexGrow: 1 }}
               />
@@ -621,20 +625,20 @@ function Expenses() {
                   withAsterisk
                   data={activeUserSelectData}
                   searchable
-                  label="User Name"
+                  label={t(Dictionary.Expense.USER_NAME)}
                   style={{ flexGrow: 1 }}
                 />
 
                 <NumberInput
                   {...overtimeMemberForm.getInputProps("price")}
                   withAsterisk
-                  label="Price"
+                  label={t(Dictionary.Expense.PRICE)}
                   hideControls
                   style={{ flexGrow: 1 }}
                 />
 
                 <Button onClick={saveOvertimeMember} variant="light" mt={25}>
-                  Add Overtime Member
+                  {t(Dictionary.Expense.ADD_OVERTIME_MEMBER)}
                 </Button>
               </Flex>
               <ScrollArea style={{ flex: 1 }}>
@@ -647,10 +651,10 @@ function Expenses() {
                 >
                   <Table.Thead>
                     <Table.Tr>
-                      <Table.Th>User Name</Table.Th>
-                      <Table.Th>Price</Table.Th>
-                      <Table.Th>Create User</Table.Th>
-                      <Table.Th>Create Date</Table.Th>
+                      <Table.Th>{t(Dictionary.Expense.USER_NAME)}</Table.Th>
+                      <Table.Th>{t(Dictionary.Expense.PRICE)}</Table.Th>
+                      <Table.Th>{t(Dictionary.Common.CREATE_USER)}</Table.Th>
+                      <Table.Th>{t(Dictionary.Common.CREATE_DATE)}</Table.Th>
                       <Table.Th></Table.Th>
                     </Table.Tr>
                   </Table.Thead>
@@ -666,7 +670,7 @@ function Expenses() {
           mt={10}
           loading={isLoading}
         >
-          Add New Expense
+          {t(Dictionary.Expense.ADD_NEW)}
         </Button>
       </Card>
       <Card
@@ -692,7 +696,7 @@ function Expenses() {
           <Select
             data={activeUserSelectData}
             searchable
-            placeholder="Select User"
+            placeholder={t(Dictionary.Expense.SELECT_USER)}
             style={{ flexGrow: 1 }}
             clearable
             onChange={(e) => setSelectedUser(e)}
@@ -700,14 +704,14 @@ function Expenses() {
           <Select
             data={reportSelectData}
             searchable
-            placeholder="Select Report"
+            placeholder={t(Dictionary.Expense.SELECT_REPORT)}
             style={{ flexGrow: 1 }}
             clearable
             onChange={(e) => setSelectedReport(e)}
           />
           <Checkbox
             labelPosition="left"
-            label="Show Unapproved Expenses"
+            label={t(Dictionary.Expense.SHOW_UNAPPROVED)}
             style={{ marginLeft: "10px" }}
             checked={showUnapprovedExpenses}
             onChange={() => setShowUnapprovedExpenses(!showUnapprovedExpenses)}
@@ -724,17 +728,17 @@ function Expenses() {
           >
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>User Name</Table.Th>
-                <Table.Th>Project Name</Table.Th>
-                <Table.Th>Expense Type</Table.Th>
-                <Table.Th>Expense Date</Table.Th>
-                <Table.Th>Total Price</Table.Th>
-                <Table.Th>Currency</Table.Th>
-                <Table.Th>Trip Description</Table.Th>
-                <Table.Th>Out Of Office</Table.Th>
-                <Table.Th>Report Name</Table.Th>
-                <Table.Th>Create User</Table.Th>
-                <Table.Th>Create Date</Table.Th>
+                <Table.Th>{t(Dictionary.Expense.USER_NAME)}</Table.Th>
+                <Table.Th>{t(Dictionary.Expense.PROJECT_NAME)}</Table.Th>
+                <Table.Th>{t(Dictionary.Expense.TYPE)}</Table.Th>
+                <Table.Th>{t(Dictionary.Expense.DATE)}</Table.Th>
+                <Table.Th>{t(Dictionary.Expense.TOTAL_PRICE)}</Table.Th>
+                <Table.Th>{t(Dictionary.Expense.CURRENCY)}</Table.Th>
+                <Table.Th>{t(Dictionary.Expense.TRIP_DESCRIPTION)}</Table.Th>
+                <Table.Th>{t(Dictionary.Expense.OUT_OF_OFFICE)}</Table.Th>
+                <Table.Th>{t(Dictionary.Expense.REPORT_NAME)}</Table.Th>
+                <Table.Th>{t(Dictionary.Common.CREATE_USER)}</Table.Th>
+                <Table.Th>{t(Dictionary.Common.CREATE_DATE)}</Table.Th>
                 <Table.Th></Table.Th>
               </Table.Tr>
             </Table.Thead>
