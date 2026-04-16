@@ -154,11 +154,11 @@ function Expenses() {
 
   const openDeleteExpenseModal = (id: string) => {
     modals.open({
-      title: <Title order={5}>{t(Dictionary.Expense.DELETE_EXPENSE)}</Title>,
+      title: <Title order={5}>{t(Dictionary.Expense.DELETE)}</Title>,
       size: "md",
       children: (
         <Flex direction="column" gap={20}>
-          <Text>{t(Dictionary.Expense.DELETE_EXPENSE_QUESTION)}</Text>
+          <Text>{t(Dictionary.Expense.DELETION_QUESTION)}</Text>
           <Flex direction="row" gap={10}>
             <Button
               style={{ flexGrow: 1 }}
@@ -178,7 +178,7 @@ function Expenses() {
               variant="light"
               color="red"
             >
-              {t(Dictionary.Expense.CANCEL)}
+              {t(Dictionary.Common.CANCEL)}
             </Button>
           </Flex>
         </Flex>
@@ -257,7 +257,7 @@ function Expenses() {
 
   const checkIfExpenseIsValid = (expense: Expense) => {
     if (expense.expenseDate > new Date()) {
-      toast.error(t(Dictionary.Expense.EXPENSE_DATE_VALID));
+      toast.error(t(Dictionary.Expense.DATE_VALID));
       return false;
     }
 
@@ -268,7 +268,7 @@ function Expenses() {
     });
 
     if (totalPrice > expense.totalPrice) {
-      toast.error(Dictionary.Expense.EXPENSE_TOTAL_PRICE_VALID);
+      toast.error(t(Dictionary.Expense.TOTAL_PRICE_VALID));
       return false;
     }
 
@@ -294,7 +294,7 @@ function Expenses() {
       form.values.overtimeMembers.some((x) => x.userId === form.values.userId)
     ) {
       toast.error(
-        Dictionary.Expense.YOU_CAN_NOT_ADD_YOURSELF_AS_OVERTIME_MEMBER,
+        t(Dictionary.Expense.YOU_CAN_NOT_ADD_YOURSELF_AS_OVERTIME_MEMBER),
       );
       setIsLoading(false);
       return;
@@ -336,7 +336,7 @@ function Expenses() {
     form.reset();
     overtimeMemberForm.reset();
 
-    toast.success(Dictionary.Expense.EXPENSE_ADDED);
+    toast.success(t(Dictionary.Expense.ADDED));
 
     setIsLoading(false);
   };
@@ -358,7 +358,7 @@ function Expenses() {
 
     deleteExpense(id);
 
-    toast.success(Dictionary.Expense.EXPENSE_DELETED);
+    toast.success(t(Dictionary.Expense.DELETED));
 
     setIsLoading(false);
   };
@@ -373,12 +373,12 @@ function Expenses() {
         (x) => x.userId === overtimeMemberForm.values.userId,
       )
     ) {
-      return toast.error(Dictionary.Expense.OVERTIME_MEMBER_VALID);
+      return toast.error(t(Dictionary.Expense.OVERTIME_MEMBER_VALID));
     }
 
     if (form.values.userId === overtimeMemberForm.values.userId) {
       return toast.error(
-        Dictionary.Expense.YOU_CAN_NOT_ADD_YOURSELF_AS_OVERTIME_MEMBER,
+        t(Dictionary.Expense.YOU_CAN_NOT_ADD_YOURSELF_AS_OVERTIME_MEMBER),
       );
     }
 
@@ -454,7 +454,7 @@ function Expenses() {
             <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
             <Table.Td>
               <Flex justify="center" gap={5}>
-                <Tooltip label={t(Dictionary.Expense.EDIT)} withArrow>
+                <Tooltip label={t(Dictionary.Common.EDIT)} withArrow>
                   <ActionIcon
                     disabled={x.isApproved}
                     onClick={() => openEditExpense(x)}
@@ -560,7 +560,7 @@ function Expenses() {
                 {...form.getInputProps("expenseDate")}
                 withAsterisk
                 valueFormat="DD MMMM YYYY"
-                label={t(Dictionary.Expense.EXPENSE_DATE)}
+                label={t(Dictionary.Expense.DATE)}
                 style={{ flexGrow: 1 }}
               />
 
@@ -575,7 +575,7 @@ function Expenses() {
 
               <Radio.Group
                 w="20%"
-                label={t(Dictionary.Expense.EXPENSE_TYPE)}
+                label={t(Dictionary.Expense.TYPE)}
                 withAsterisk
                 {...form.getInputProps("expenseType")}
                 display="center"
@@ -653,8 +653,8 @@ function Expenses() {
                     <Table.Tr>
                       <Table.Th>{t(Dictionary.Expense.USER_NAME)}</Table.Th>
                       <Table.Th>{t(Dictionary.Expense.PRICE)}</Table.Th>
-                      <Table.Th>{t(Dictionary.Expense.CREATE_USER)}</Table.Th>
-                      <Table.Th>{t(Dictionary.Expense.CREATE_DATE)}</Table.Th>
+                      <Table.Th>{t(Dictionary.Common.CREATE_USER)}</Table.Th>
+                      <Table.Th>{t(Dictionary.Common.CREATE_DATE)}</Table.Th>
                       <Table.Th></Table.Th>
                     </Table.Tr>
                   </Table.Thead>
@@ -670,7 +670,7 @@ function Expenses() {
           mt={10}
           loading={isLoading}
         >
-          {t(Dictionary.Expense.ADD_NEW_EXPENSE)}
+          {t(Dictionary.Expense.ADD_NEW)}
         </Button>
       </Card>
       <Card
@@ -711,7 +711,7 @@ function Expenses() {
           />
           <Checkbox
             labelPosition="left"
-            label={t(Dictionary.Expense.SHOW_UNAPPROVED_EXPENSES)}
+            label={t(Dictionary.Expense.SHOW_UNAPPROVED)}
             style={{ marginLeft: "10px" }}
             checked={showUnapprovedExpenses}
             onChange={() => setShowUnapprovedExpenses(!showUnapprovedExpenses)}
@@ -730,15 +730,15 @@ function Expenses() {
               <Table.Tr>
                 <Table.Th>{t(Dictionary.Expense.USER_NAME)}</Table.Th>
                 <Table.Th>{t(Dictionary.Expense.PROJECT_NAME)}</Table.Th>
-                <Table.Th>{t(Dictionary.Expense.EXPENSE_TYPE)}</Table.Th>
-                <Table.Th>{t(Dictionary.Expense.EXPENSE_DATE)}</Table.Th>
+                <Table.Th>{t(Dictionary.Expense.TYPE)}</Table.Th>
+                <Table.Th>{t(Dictionary.Expense.DATE)}</Table.Th>
                 <Table.Th>{t(Dictionary.Expense.TOTAL_PRICE)}</Table.Th>
                 <Table.Th>{t(Dictionary.Expense.CURRENCY)}</Table.Th>
                 <Table.Th>{t(Dictionary.Expense.TRIP_DESCRIPTION)}</Table.Th>
                 <Table.Th>{t(Dictionary.Expense.OUT_OF_OFFICE)}</Table.Th>
                 <Table.Th>{t(Dictionary.Expense.REPORT_NAME)}</Table.Th>
-                <Table.Th>{t(Dictionary.Expense.CREATE_USER)}</Table.Th>
-                <Table.Th>{t(Dictionary.Expense.CREATE_DATE)}</Table.Th>
+                <Table.Th>{t(Dictionary.Common.CREATE_USER)}</Table.Th>
+                <Table.Th>{t(Dictionary.Common.CREATE_DATE)}</Table.Th>
                 <Table.Th></Table.Th>
               </Table.Tr>
             </Table.Thead>

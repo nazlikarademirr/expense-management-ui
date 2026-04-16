@@ -6,10 +6,13 @@ import { modals } from "@mantine/modals";
 import ChangePasswordModal from "../../pages/Users/components/ChangePasswordModal";
 import i18n from "../../helpers/translation/i18n";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import Dictionary from "../../helpers/translation/dictionary";
 
 function UserMenu() {
   const auth = useAuthentication();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [language, setLanguage] = useState<string | null>("");
 
@@ -29,8 +32,6 @@ function UserMenu() {
   };
 
   const handleChangeLanguage = (value: string | null) => {
-    // eslint-disable-next-line no-debugger
-    debugger;
     if (!value) return;
     i18n.changeLanguage(value);
     localStorage.setItem("lang", value);
@@ -70,8 +71,8 @@ function UserMenu() {
           onChange={handleChangeLanguage}
           placeholder="Select Language"
           data={[
-            { value: "en", label: "English" },
-            { value: "tr", label: "Turkish" },
+            { value: "en", label: t(Dictionary.Common.ENGLISH) },
+            { value: "tr", label: t(Dictionary.Common.TURKISH) },
           ]}
         />
         <Divider my={4} />
