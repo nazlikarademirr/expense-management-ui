@@ -39,6 +39,8 @@ import {
 import { IoMdAddCircleOutline, IoMdRemoveCircleOutline } from "react-icons/io";
 import { zod4Resolver } from "mantine-form-zod-resolver";
 import { useAuthentication } from "../../contexts/AuthenticationContext/AuthenticationProvider";
+import Dictionary from "../../helpers/translation/dictionary";
+import { useTranslation } from "react-i18next";
 
 function Projects() {
   const { projects, addProject, updateProject, replaceProjects } =
@@ -53,6 +55,8 @@ function Projects() {
   const [isLoading, setIsLoading] = useState(false);
 
   const auth = useAuthentication();
+
+  const { t } = useTranslation();
 
   const form = useForm<Project>({
     initialValues: {
@@ -70,7 +74,7 @@ function Projects() {
 
   const openEditProject = (project: Project) => {
     modals.open({
-      title: <Title order={4}>Edit Project</Title>,
+      title: <Title order={4}>{t(Dictionary.Project.EDIT)}</Title>,
       size: "xl",
       children: (
         <EditProjectModal
@@ -99,7 +103,7 @@ function Projects() {
         (x) => x.id !== project.id && x.name.trim() === project.name.trim(),
       )
     ) {
-      toast.error("There is a project with the same name!");
+      toast.error(t(Dictionary.Project.SAME_NAME));
       return false;
     }
 
@@ -108,7 +112,7 @@ function Projects() {
         (x) => x.id !== project.id && x.code.trim() === project.code.trim(),
       )
     ) {
-      toast.error("There is a project with the same code!");
+      toast.error(t(Dictionary.Project.SAME_CODE));
       return false;
     }
 
@@ -155,7 +159,7 @@ function Projects() {
 
     form.reset();
 
-    toast.success("Project has been added successfully!");
+    toast.success(t(Dictionary.Project.ADDED));
 
     setIsLoading(false);
   };
@@ -181,12 +185,12 @@ function Projects() {
     updateProject({ ...project, isActive: !project.isActive });
 
     if (project.isActive) {
-      toast.success("Project deactivated successfully.");
+      toast.success(t(Dictionary.Project.DEACTIVATED));
       setIsLoading(false);
       return;
     }
 
-    toast.success("Project activated successfully.");
+    toast.success(t(Dictionary.Project.ACTIVATED));
 
     setIsLoading(false);
   };
@@ -211,13 +215,13 @@ function Projects() {
             </Table.Td>
             <Table.Td> {x.createUserFullName} </Table.Td>
             <Table.Td>
-              <Flex justify={"center"} gap={5}>
+              <Flex justify="center" gap={5}>
                 {x.isActive ? (
-                  <Tooltip label="Edit" withArrow>
+                  <Tooltip label={t(Dictionary.Common.EDIT)} withArrow>
                     <ActionIcon
                       onClick={() => openEditProject(x)}
-                      variant={"light"}
-                      color={"blue"}
+                      variant="light"
+                      color="blue"
                     >
                       <IconEdit />
                     </ActionIcon>
@@ -226,12 +230,16 @@ function Projects() {
                   <div></div>
                 )}
                 <Tooltip
-                  label={x.isActive ? "Deactivate Project" : "Activate Project"}
+                  label={
+                    x.isActive
+                      ? t(Dictionary.Project.DEACTIVATE)
+                      : t(Dictionary.Project.ACTIVATE)
+                  }
                   withArrow
                 >
                   <ActionIcon
                     onClick={() => changeProjectActivity(x)}
-                    variant={"light"}
+                    variant="light"
                     loading={isLoading}
                     color={x.isActive ? "red" : "green"}
                   >
@@ -255,7 +263,7 @@ function Projects() {
 
   return (
     <Flex direction="column" h={PAGE_FLEX_HEIGHT}>
-      <Title order={3}>Projects</Title>
+      <Title order={3}>{t(Dictionary.Common.PROJECTS)}</Title>
       <Divider my={TITLE_DIVIDER_MY} />
       <Card shadow={"xs"} radius={"md"} withBorder>
         <Flex gap="md" direction="row" style={{ minHeight: 80 }}>
@@ -264,23 +272,23 @@ function Projects() {
             {...form.getInputProps("name")}
             withAsterisk
             style={{ flexGrow: 1 }}
-            label={"Name"}
+            label={t(Dictionary.Project.NAME)}
           />
 
           <TextInput
             {...form.getInputProps("code")}
             withAsterisk
             style={{ flexGrow: 1 }}
-            label={"Code"}
+            label={t(Dictionary.Project.CODE)}
           />
         </Flex>
         <Button
           onClick={handleSave}
-          variant={"light"}
+          variant="light"
           loading={isLoading}
           style={{ flexGrow: 2, marginTop: "15px" }}
         >
-          Add New Project
+          {t(Dictionary.Project.ADD_NEW)}
         </Button>
       </Card>
 
@@ -307,7 +315,7 @@ function Projects() {
           />
           <Checkbox
             labelPosition="left"
-            label={"Show Active Projects"}
+            label={t(Dictionary.Project.SHOW_ACTIVE)}
             style={{ marginLeft: "10px" }}
             checked={showActiveProjects}
             onChange={() => setShowActiveProjects(!showActiveProjects)}
@@ -324,10 +332,10 @@ function Projects() {
           >
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>Name</Table.Th>
-                <Table.Th>Code</Table.Th>
-                <Table.Th>Status</Table.Th>
-                <Table.Th>Create User</Table.Th>
+                <Table.Th>{t(Dictionary.Project.NAME)}</Table.Th>
+                <Table.Th>{t(Dictionary.Project.CODE)}</Table.Th>
+                <Table.Th>{t(Dictionary.Common.STATUS)}</Table.Th>
+                <Table.Th>{t(Dictionary.Common.CREATE_USER)}</Table.Th>
                 <Table.Th></Table.Th>
               </Table.Tr>
             </Table.Thead>

@@ -12,6 +12,8 @@ import urls from "../../../constants/urls";
 import RequestType from "../../../request-handler/request-type";
 import toast from "react-hot-toast";
 import { zod4Resolver } from "mantine-form-zod-resolver";
+import { useTranslation } from "react-i18next";
+import Dictionary from "../../../helpers/translation/dictionary";
 
 interface EditProjectProps {
   project: Project;
@@ -29,6 +31,8 @@ function EditProjectModal({
   const { handleDataRequest } = useRequestHandler();
 
   const [isLoading, setIsLoading] = useState(false);
+
+  const { t } = useTranslation();
 
   const projectForm = useForm({
     initialValues: {
@@ -84,7 +88,7 @@ function EditProjectModal({
       ...projectForm.values,
     });
 
-    toast.success("Project edited successfully.");
+    toast.success(t(Dictionary.Project.UPDATED));
 
     modals.closeAll();
 
@@ -104,14 +108,14 @@ function EditProjectModal({
         ref={nameInputRef}
         withAsterisk
         {...projectForm.getInputProps("name")}
-        label={"Name"}
+        label={t(Dictionary.Project.NAME)}
       />
 
       <TextInput
         style={{ minHeight: MIN_INPUT_HEIGHT }}
         withAsterisk
         {...projectForm.getInputProps("code")}
-        label={"Code"}
+        label={t(Dictionary.Project.CODE)}
       />
       <Button
         variant="light"
@@ -119,7 +123,7 @@ function EditProjectModal({
         onClick={(e) => handleSave(e)}
         loading={isLoading}
       >
-        Edit
+        {t(Dictionary.Common.EDIT)}
       </Button>
     </Flex>
   );

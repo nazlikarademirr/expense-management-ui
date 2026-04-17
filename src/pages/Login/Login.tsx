@@ -25,9 +25,12 @@ import { modals } from "@mantine/modals";
 import { zod4Resolver } from "mantine-form-zod-resolver";
 import ResetPasswordModal from "./components/ResetPasswordModal";
 import ChangePasswordModal from "../Users/components/ChangePasswordModal";
+import Dictionary from "../../helpers/translation/dictionary";
+import { useTranslation } from "react-i18next";
 
 function Login() {
   const auth = useAuthentication();
+  const { t } = useTranslation();
 
   const { handleDataRequest } = useRequestHandler();
 
@@ -42,7 +45,7 @@ function Login() {
 
   const openPasswordResetModal = () => {
     modals.open({
-      title: <Title order={5}>Change Password</Title>,
+      title: <Title order={5}>{t(Dictionary.Login.RESET_PASSWORD)}</Title>,
       size: "md",
       children: <ResetPasswordModal email={form.values.email} />,
     });
@@ -69,7 +72,7 @@ function Login() {
     >(urls.login, RequestType.Post, request);
 
     if (!response.isSuccess) {
-      toast.error("Email or password is wrong!");
+      toast.error(t(Dictionary.Login.EMAIL_OR_PASSWORD_WRONG));
       setIsLoading(false);
       return;
     }
@@ -91,7 +94,7 @@ function Login() {
 
   const changePasswordModal = async (currentUserId: string) => {
     modals.open({
-      title: <Title order={5}>Reset Password</Title>,
+      title: <Title order={5}>{t(Dictionary.Login.RESET_PASSWORD)}</Title>,
       size: "md",
       children: <ChangePasswordModal currentUserId={currentUserId} />,
       closeOnClickOutside: false,
@@ -103,7 +106,7 @@ function Login() {
   return (
     <Flex direction="column" align="center" px="md" mt={220}>
       <Title order={1} mb={30} ta="center">
-        Expense Management
+        {t(Dictionary.Common.EXPENSE_MANAGEMENT)}
       </Title>
       <Card
         withBorder
@@ -116,14 +119,14 @@ function Login() {
         <Flex direction="column" gap={20} w="100%">
           <TextInput
             w="100%"
-            label="Email"
+            label={t(Dictionary.Login.EMAIL)}
             withAsterisk
             {...form.getInputProps("email")}
             style={{ minHeight: 80 }}
           />
           <PasswordInput
             w="100%"
-            label="Password"
+            label={t(Dictionary.Login.PASSWORD)}
             withAsterisk
             {...form.getInputProps("password")}
             style={{ minHeight: 80 }}
@@ -132,7 +135,7 @@ function Login() {
             style={{ fontSize: 15, alignSelf: "flex-end" }}
             onClick={() => openPasswordResetModal()}
           >
-            Forgot My Password
+            {t(Dictionary.Login.FORGOT_MY_PASSWORD)}
           </Anchor>
           <Button
             w="100%"
@@ -140,7 +143,7 @@ function Login() {
             loading={isLoading}
             onClick={() => handleLogin()}
           >
-            Login
+            {t(Dictionary.Login.LOGIN)}
           </Button>
         </Flex>
       </Card>

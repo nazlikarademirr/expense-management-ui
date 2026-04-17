@@ -49,6 +49,8 @@ import { Team } from "../../types/team.types.ts";
 import { zod4Resolver } from "mantine-form-zod-resolver";
 import { RiLockPasswordLine } from "react-icons/ri";
 import { useAuthentication } from "../../contexts/AuthenticationContext/AuthenticationProvider.tsx";
+import Dictionary from "../../helpers/translation/dictionary.ts";
+import { useTranslation } from "react-i18next";
 
 const MIN_INPUT_HEIGHT = 80;
 const MIN_INPUT_WIDTH = 250;
@@ -73,6 +75,8 @@ function Users() {
   const { handleDataRequest } = useRequestHandler();
 
   const auth = useAuthentication();
+
+  const { t } = useTranslation();
 
   const form = useForm<User>({
     initialValues: {
@@ -99,7 +103,7 @@ function Users() {
 
   const openEditUser = (user: User) => {
     modals.open({
-      title: <Title order={4}>Edit User</Title>,
+      title: <Title order={4}>{t(Dictionary.User.EDIT)}</Title>,
       size: "xl",
       children: (
         <EditUserModal
@@ -151,7 +155,7 @@ function Users() {
           x.id !== user.id && x.cardNumber.trim() === user.cardNumber.trim(),
       )
     ) {
-      toast.error("There is a user with the same card number!");
+      toast.error(t(Dictionary.User.SAME_CARD_NUMBER));
       return false;
     }
 
@@ -160,7 +164,7 @@ function Users() {
         (x) => x.id !== user.id && x.email.trim() === user.email.trim(),
       )
     ) {
-      toast.error("There is a user with the same email!");
+      toast.error(t(Dictionary.User.SAME_EMAIL));
       return false;
     }
 
@@ -223,7 +227,7 @@ function Users() {
 
     form.reset();
 
-    toast.success("User has been added successfully!");
+    toast.success(t(Dictionary.User.ADDED));
 
     setIsLoading(false);
   };
@@ -248,19 +252,19 @@ function Users() {
     updateUser({ ...user, isActive: !user.isActive });
 
     if (user.isActive) {
-      toast.success("User deactivated successfully.");
+      toast.success(t(Dictionary.User.DEACTIVATED));
       setIsLoading(false);
       return;
     }
 
-    toast.success("User activated successfully.");
+    toast.success(t(Dictionary.User.ACTIVATED));
 
     setIsLoading(false);
   };
 
   const openTemporaryPasswordModal = (user: User) => {
     modals.open({
-      title: <Title order={5}>Temporary Password</Title>,
+      title: <Title order={5}>{t(Dictionary.User.TEMPORARY_PASSWORD)}</Title>,
       size: "md",
       children: (
         <Flex direction="column" gap={20}>
@@ -274,7 +278,7 @@ function Users() {
               color="cyan"
               fullWidth
             >
-              Close
+              {t(Dictionary.Common.CLOSE)}
             </Button>
           </Flex>
         </Flex>
@@ -311,7 +315,7 @@ function Users() {
             <Table.Td>
               <Flex justify="center" gap={5}>
                 {x.isActive && (
-                  <Tooltip label="Edit" withArrow>
+                  <Tooltip label={t(Dictionary.Common.EDIT)} withArrow>
                     <ActionIcon
                       onClick={() => openEditUser(x)}
                       variant="light"
@@ -322,7 +326,11 @@ function Users() {
                   </Tooltip>
                 )}
                 <Tooltip
-                  label={x.isActive ? "Deactivate User" : "Activate User"}
+                  label={
+                    x.isActive
+                      ? t(Dictionary.User.ACTIVATE)
+                      : t(Dictionary.User.DEACTIVATE)
+                  }
                   withArrow
                 >
                   <ActionIcon
@@ -339,7 +347,10 @@ function Users() {
                   </ActionIcon>
                 </Tooltip>
                 {x.hasTemporaryPassword && (
-                  <Tooltip label="Temporary Password" withArrow>
+                  <Tooltip
+                    label={t(Dictionary.User.TEMPORARY_PASSWORD)}
+                    withArrow
+                  >
                     <ActionIcon
                       onClick={() => openTemporaryPasswordModal(x)}
                       variant="light"
@@ -371,7 +382,7 @@ function Users() {
 
   return (
     <Flex direction="column" h={PAGE_FLEX_HEIGHT}>
-      <Title order={3}>Users</Title>
+      <Title order={3}>{t(Dictionary.Common.USERS)}</Title>
       <Divider my={TITLE_DIVIDER_MY} />
       <Card shadow="xs" radius="md" withBorder>
         <Flex gap="xl" direction="row" justify="center">
@@ -384,7 +395,7 @@ function Users() {
                 minHeight: MIN_INPUT_HEIGHT,
                 minWidth: MIN_INPUT_WIDTH,
               }}
-              label="Name"
+              label={t(Dictionary.User.NAME)}
             />
 
             <TextInput
@@ -395,7 +406,7 @@ function Users() {
                 minHeight: MIN_INPUT_HEIGHT,
                 minWidth: MIN_INPUT_WIDTH,
               }}
-              label="Card Number"
+              label={t(Dictionary.User.CARD_NUMBER)}
             />
           </Flex>
           <Flex gap="xl" direction="column" style={{ flexGrow: 1 }}>
@@ -407,7 +418,7 @@ function Users() {
                 minHeight: MIN_INPUT_HEIGHT,
                 minWidth: MIN_INPUT_WIDTH,
               }}
-              label="Surname"
+              label={t(Dictionary.User.SURNAME)}
             />
 
             <TextInput
@@ -418,7 +429,7 @@ function Users() {
                 minHeight: MIN_INPUT_HEIGHT,
                 minWidth: MIN_INPUT_WIDTH,
               }}
-              label="Email"
+              label={t(Dictionary.User.EMAIL)}
             />
           </Flex>
           <Flex gap="xl" direction="column" style={{ flexGrow: 1 }}>
@@ -432,7 +443,7 @@ function Users() {
                 minHeight: MIN_INPUT_HEIGHT,
                 minWidth: MIN_INPUT_WIDTH,
               }}
-              label="Team Name"
+              label={t(Dictionary.User.TEAM_NAME)}
             />
 
             <PasswordInput
@@ -443,12 +454,12 @@ function Users() {
                 minHeight: MIN_INPUT_HEIGHT,
                 minWidth: MIN_INPUT_WIDTH,
               }}
-              label="Password"
+              label={t(Dictionary.User.PASSWORD)}
             />
           </Flex>
           <Flex gap="xl" direction="column" style={{ flexGrow: 1 }}>
             <Radio.Group
-              label="Gender"
+              label={t(Dictionary.User.GENDER)}
               withAsterisk
               style={{
                 flexGrow: 1,
@@ -465,7 +476,7 @@ function Users() {
             </Radio.Group>
 
             <Radio.Group
-              label="Role"
+              label={t(Dictionary.User.ROLE)}
               withAsterisk
               style={{
                 flexGrow: 1,
@@ -488,7 +499,7 @@ function Users() {
           style={{ flexGrow: 1, marginTop: 15 }}
           loading={isLoading}
         >
-          Add New User
+          {t(Dictionary.User.ADD_NEW)}
         </Button>
       </Card>
       <Card
@@ -516,7 +527,7 @@ function Users() {
           <Select
             data={activeTeamSelectData}
             searchable
-            placeholder="Select Team"
+            placeholder={t(Dictionary.User.SELECT_TEAM)}
             style={{ flexGrow: 1 }}
             clearable
             onChange={(e) => setSelectedTeam(e ?? "")}
@@ -524,14 +535,14 @@ function Users() {
           <Select
             data={roles}
             searchable
-            placeholder="Select Role"
+            placeholder={t(Dictionary.User.SELECT_ROLE)}
             style={{ flexGrow: 1 }}
             clearable
             onChange={(e) => setSelectedRole(e ?? "")}
           />
           <Checkbox
             labelPosition="left"
-            label="Show Active Users"
+            label={t(Dictionary.User.SHOW_ACTIVE)}
             style={{ marginLeft: "10px" }}
             checked={showActiveUsers}
             onChange={() => setShowActiveUsers(!showActiveUsers)}
@@ -548,15 +559,15 @@ function Users() {
           >
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>Name</Table.Th>
-                <Table.Th>Surname</Table.Th>
-                <Table.Th>Team Name</Table.Th>
-                <Table.Th>Gender</Table.Th>
-                <Table.Th>Card Number</Table.Th>
-                <Table.Th>Email</Table.Th>
-                <Table.Th>Role</Table.Th>
-                <Table.Th>Status</Table.Th>
-                <Table.Th>Create User</Table.Th>
+                <Table.Th>{t(Dictionary.User.NAME)}</Table.Th>
+                <Table.Th>{t(Dictionary.User.SURNAME)}</Table.Th>
+                <Table.Th>{t(Dictionary.User.TEAM_NAME)}</Table.Th>
+                <Table.Th>{t(Dictionary.User.GENDER)}</Table.Th>
+                <Table.Th>{t(Dictionary.User.CARD_NUMBER)}</Table.Th>
+                <Table.Th>{t(Dictionary.User.EMAIL)}</Table.Th>
+                <Table.Th>{t(Dictionary.User.ROLE)}</Table.Th>
+                <Table.Th>{t(Dictionary.Common.STATUS)}</Table.Th>
+                <Table.Th>{t(Dictionary.Common.CREATE_USER)}</Table.Th>
                 <Table.Th></Table.Th>
               </Table.Tr>
             </Table.Thead>

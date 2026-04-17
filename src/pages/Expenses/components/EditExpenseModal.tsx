@@ -36,6 +36,8 @@ import ExpenseType from "../../../enums/expense-type";
 import { SelectItem } from "../../../types/select-item.types";
 import { zod4Resolver } from "mantine-form-zod-resolver";
 import { CurrentUser } from "../../../types/authentication.types";
+import { useTranslation } from "react-i18next";
+import Dictionary from "../../../helpers/translation/dictionary";
 
 interface EditExpenseProps {
   currentUser: CurrentUser | null;
@@ -59,6 +61,7 @@ function EditExpenseModal({
   checkIfExpenseIsValid,
 }: EditExpenseProps) {
   const { handleDataRequest } = useRequestHandler();
+  const { t } = useTranslation();
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -114,7 +117,7 @@ function EditExpenseModal({
     ) {
       setIsLoading(false);
       toast.error(
-        "You can not add yourself to your expense as overtime member.",
+        t(Dictionary.Expense.YOU_CAN_NOT_ADD_YOURSELF_AS_OVERTIME_MEMBER),
       );
       return;
     }
@@ -157,7 +160,7 @@ function EditExpenseModal({
     expenseForm.reset();
     overtimeMemberForm.reset();
 
-    toast.success("Expense edited successfully.");
+    toast.success(t(Dictionary.Expense.UPDATED));
 
     modals.closeAll();
 
@@ -176,12 +179,12 @@ function EditExpenseModal({
         (x) => x.userId === overtimeMemberForm.values.userId,
       )
     ) {
-      return toast.error("There is a entry for this user.");
+      return toast.error(t(Dictionary.Expense.OVERTIME_MEMBER_VALID));
     }
 
     if (expenseForm.values.userId === overtimeMemberForm.values.userId) {
       return toast.error(
-        "You can not add yourself to your expense as overtime member.",
+        t(Dictionary.Expense.YOU_CAN_NOT_ADD_YOURSELF_AS_OVERTIME_MEMBER),
       );
     }
 
@@ -268,7 +271,7 @@ function EditExpenseModal({
               withAsterisk
               data={activeUserSelectData}
               searchable
-              label={"User Name"}
+              label={t(Dictionary.Expense.USER_NAME)}
               style={{ flexGrow: 1 }}
             />
 
@@ -278,7 +281,7 @@ function EditExpenseModal({
               onChange={(_, option) => changeProject(option)}
               withAsterisk
               data={activeProjectSelectData}
-              label={"Project Name"}
+              label={t(Dictionary.Expense.PROJECT_NAME)}
               style={{ flexGrow: 1 }}
             />
 
@@ -287,9 +290,9 @@ function EditExpenseModal({
               {...expenseForm.getInputProps("reportId")}
               onChange={(_, option) => changeReport(option)}
               data={unapprovedReportSelectData}
-              placeholder="Select a report."
+              placeholder={t(Dictionary.Expense.SELECT_REPORT)}
               searchable
-              label={"Report Name"}
+              label={t(Dictionary.Expense.REPORT_NAME)}
               style={{ flexGrow: 1 }}
               clearable
             />
@@ -300,7 +303,7 @@ function EditExpenseModal({
               {...expenseForm.getInputProps("expenseDate")}
               withAsterisk
               valueFormat="DD MMMM YYYY"
-              label={"Expense Date"}
+              label={t(Dictionary.Expense.DATE)}
               style={{ flexGrow: 1 }}
             />
 
@@ -308,14 +311,14 @@ function EditExpenseModal({
               w={"20%"}
               {...expenseForm.getInputProps("totalPrice")}
               withAsterisk
-              label={"Total Price"}
+              label={t(Dictionary.Expense.TOTAL_PRICE)}
               hideControls
               style={{ flexGrow: 1 }}
             />
 
             <Radio.Group
               w={"20%"}
-              label="Expense Type"
+              label={t(Dictionary.Expense.TYPE)}
               withAsterisk
               {...expenseForm.getInputProps("expenseType")}
               style={{ flexGrow: 1 }}
@@ -332,7 +335,7 @@ function EditExpenseModal({
             <TextInput
               w={"20%"}
               {...expenseForm.getInputProps("tripDescription")}
-              label={"Trip Description"}
+              label={t(Dictionary.Expense.TRIP_DESCRIPTION)}
               withAsterisk={
                 expenseForm.values.expenseType === ExpenseType.Transportation
               }
@@ -345,14 +348,14 @@ function EditExpenseModal({
               {...expenseForm.getInputProps("currency")}
               withAsterisk
               data={currencyTypes}
-              label={"Currency"}
+              label={t(Dictionary.Expense.CURRENCY)}
               style={{ flexGrow: 1 }}
             />
 
             <Checkbox
               mt={33}
               w={"20%"}
-              label="Out Of Office"
+              label={t(Dictionary.Expense.OUT_OF_OFFICE)}
               {...expenseForm.getInputProps("outOfOffice", {
                 type: "checkbox",
               })}
@@ -369,20 +372,20 @@ function EditExpenseModal({
                 withAsterisk
                 data={activeUserSelectData}
                 searchable
-                label={"User Name"}
+                label={t(Dictionary.Expense.USER_NAME)}
                 style={{ flexGrow: 1 }}
               />
 
               <NumberInput
                 {...overtimeMemberForm.getInputProps("price")}
                 withAsterisk
-                label="Price"
+                label={t(Dictionary.Expense.PRICE)}
                 hideControls
                 style={{ flexGrow: 1 }}
               />
 
               <Button onClick={saveOvertimeMember} variant={"light"} mt={25}>
-                Add Overtime Member
+                {t(Dictionary.Expense.ADD_OVERTIME_MEMBER)}
               </Button>
             </Flex>
 
@@ -397,10 +400,10 @@ function EditExpenseModal({
               <ScrollArea h={250}>
                 <Table.Thead>
                   <Table.Tr>
-                    <Table.Th>User Name</Table.Th>
-                    <Table.Th>Price</Table.Th>
-                    <Table.Th>Create User</Table.Th>
-                    <Table.Th>Create Date</Table.Th>
+                    <Table.Th>{t(Dictionary.Expense.USER_NAME)}</Table.Th>
+                    <Table.Th>{t(Dictionary.Expense.PRICE)}</Table.Th>
+                    <Table.Th>{t(Dictionary.Common.CREATE_USER)}</Table.Th>
+                    <Table.Th>{t(Dictionary.Common.CREATE_DATE)}</Table.Th>
                     <Table.Th></Table.Th>
                   </Table.Tr>
                 </Table.Thead>
@@ -417,7 +420,7 @@ function EditExpenseModal({
         loading={isLoading}
         mt={10}
       >
-        Edit Expense
+        {t(Dictionary.Common.EDIT)}
       </Button>
     </Card>
   );

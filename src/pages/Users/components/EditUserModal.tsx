@@ -22,6 +22,8 @@ import toast from "react-hot-toast";
 import { genders, roles } from "../../../constants/static-data";
 import { SelectItem } from "../../../types/select-item.types";
 import { zod4Resolver } from "mantine-form-zod-resolver";
+import { useTranslation } from "react-i18next";
+import Dictionary from "../../../helpers/translation/dictionary";
 
 interface EditUserProps {
   user: User;
@@ -39,6 +41,8 @@ function EditUserModal({
   checkIfUserIsValid,
 }: EditUserProps) {
   const { handleDataRequest } = useRequestHandler();
+
+  const { t } = useTranslation();
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -75,7 +79,7 @@ function EditUserModal({
     const userRequest: UserRequest = {
       name: userForm.values.name,
       surname: userForm.values.surname,
-      teamId: userForm.values.teamId,
+      teamId: userForm.values.teamId ? userForm.values.teamId : "",
       gender: Number(userForm.values.gender),
       cardNumber: userForm.values.cardNumber,
       email: userForm.values.email,
@@ -105,7 +109,7 @@ function EditUserModal({
       ...userForm.values,
     });
 
-    toast.success("User edited successfully.");
+    toast.success(t(Dictionary.User.UPDATED));
 
     modals.closeAll();
 
@@ -130,13 +134,13 @@ function EditUserModal({
         {...userForm.getInputProps("name")}
         style={{ minHeight: MIN_INPUT_HEIGHT }}
         withAsterisk
-        label={"Name"}
+        label={t(Dictionary.User.NAME)}
       />
       <TextInput
         {...userForm.getInputProps("surname")}
         style={{ minHeight: MIN_INPUT_HEIGHT }}
         withAsterisk
-        label={"Surname"}
+        label={t(Dictionary.User.SURNAME)}
       />
       <Select
         {...userForm.getInputProps("teamId")}
@@ -145,11 +149,11 @@ function EditUserModal({
         withAsterisk
         data={activeTeamSelectData}
         searchable
-        label={"Team Name"}
-        placeholder="Bir takım seçiniz."
+        label={t(Dictionary.User.TEAM_NAME)}
+        placeholder={t(Dictionary.User.SELECT_TEAM)}
       />
       <Radio.Group
-        label="Gender"
+        label={t(Dictionary.User.GENDER)}
         withAsterisk
         style={{ flexGrow: 1, minHeight: MIN_INPUT_HEIGHT }}
         {...userForm.getInputProps("gender")}
@@ -164,16 +168,16 @@ function EditUserModal({
         {...userForm.getInputProps("cardNumber")}
         style={{ minHeight: MIN_INPUT_HEIGHT }}
         withAsterisk
-        label={"Card Number"}
+        label={t(Dictionary.User.CARD_NUMBER)}
       />
       <TextInput
         {...userForm.getInputProps("email")}
         style={{ minHeight: MIN_INPUT_HEIGHT }}
         withAsterisk
-        label={"Email"}
+        label={t(Dictionary.User.EMAIL)}
       />
       <Radio.Group
-        label="Role"
+        label={t(Dictionary.User.ROLE)}
         withAsterisk
         style={{ flexGrow: 1, minHeight: MIN_INPUT_HEIGHT }}
         {...userForm.getInputProps("role")}
@@ -191,7 +195,7 @@ function EditUserModal({
         onClick={(e) => handleSave(e)}
         loading={isLoading}
       >
-        Edit
+        {t(Dictionary.Common.EDIT)}
       </Button>
     </Flex>
   );

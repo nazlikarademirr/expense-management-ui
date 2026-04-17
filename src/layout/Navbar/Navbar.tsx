@@ -16,6 +16,8 @@ import { RiFileTextLine } from "react-icons/ri";
 import UserMenu from "./UserMenu";
 import Role from "../../enums/role";
 import { useAuthentication } from "../../contexts/AuthenticationContext/AuthenticationProvider";
+import { t } from "i18next";
+import Dictionary from "../../helpers/translation/dictionary";
 
 interface Link {
   icon: React.ForwardRefExoticComponent<IconProps & React.RefAttributes<Icon>>;
@@ -24,11 +26,27 @@ interface Link {
 }
 
 const mainLinksMockdata: Link[] = [
-  { icon: IconUser, label: "Users", route: routes.users },
-  { icon: IconUsersGroup, label: "Teams", route: routes.teams },
-  { icon: IconApps, label: "Projects", route: routes.projects },
-  { icon: IconMenuDeep, label: "Expenses", route: routes.expenses },
-  { icon: IconReportAnalytics, label: "Reports", route: routes.reports },
+  { icon: IconUser, label: t(Dictionary.Common.USERS), route: routes.users },
+  {
+    icon: IconUsersGroup,
+    label: t(Dictionary.Common.TEAMS),
+    route: routes.teams,
+  },
+  {
+    icon: IconApps,
+    label: t(Dictionary.Common.PROJECTS),
+    route: routes.projects,
+  },
+  {
+    icon: IconMenuDeep,
+    label: t(Dictionary.Common.EXPENSES),
+    route: routes.expenses,
+  },
+  {
+    icon: IconReportAnalytics,
+    label: t(Dictionary.Common.REPORTS),
+    route: routes.reports,
+  },
 ];
 
 export function Navbar() {
@@ -76,7 +94,7 @@ export function Navbar() {
           <div className={classes.logo}>
             <RiFileTextLine size={30} color="#3f38c8" />
           </div>
-          <Flex justify={"center"} direction={"column"}>
+          <Flex justify="center" direction="column">
             {mainLinks}
             <Flex style={{ bottom: 15, position: "absolute" }}>
               <UserMenu />

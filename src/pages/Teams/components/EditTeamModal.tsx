@@ -12,6 +12,8 @@ import urls from "../../../constants/urls";
 import toast from "react-hot-toast";
 import { modals } from "@mantine/modals";
 import { zod4Resolver } from "mantine-form-zod-resolver";
+import { useTranslation } from "react-i18next";
+import Dictionary from "../../../helpers/translation/dictionary";
 
 interface EditTeamProps {
   team: Team;
@@ -27,6 +29,8 @@ function EditTeamModal({
   const { handleDataRequest } = useRequestHandler();
 
   const [isLoading, setIsLoading] = useState(false);
+
+  const { t } = useTranslation();
 
   const teamForm = useForm({
     initialValues: {
@@ -82,7 +86,7 @@ function EditTeamModal({
       ...teamForm.values,
     });
 
-    toast.success("Team edited successfully.");
+    toast.success(t(Dictionary.Team.UPDATED));
 
     modals.closeAll();
 
@@ -102,7 +106,7 @@ function EditTeamModal({
         {...teamForm.getInputProps("name")}
         style={{ minHeight: 80 }}
         withAsterisk
-        label={"Name"}
+        label={t(Dictionary.Team.NAME)}
       />
 
       <Button
@@ -111,7 +115,7 @@ function EditTeamModal({
         onClick={(e) => handleSave(e)}
         loading={isLoading}
       >
-        Edit
+        {t(Dictionary.Common.EDIT)}
       </Button>
     </Flex>
   );

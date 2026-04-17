@@ -12,6 +12,8 @@ import {
   JsonPatchKeyValuePair,
 } from "../../../types/json-patch-document";
 import { zod4Resolver } from "mantine-form-zod-resolver";
+import Dictionary from "../../../helpers/translation/dictionary";
+import { useTranslation } from "react-i18next";
 
 interface EditReportProps {
   report: Report;
@@ -27,6 +29,8 @@ function EditReportModal({
   const { handleDataRequest } = useRequestHandler();
 
   const [isLoading, setIsLoading] = useState(false);
+
+  const { t } = useTranslation();
 
   const reportForm = useForm({
     initialValues: {
@@ -76,7 +80,7 @@ function EditReportModal({
 
     updateReport(reportForm.values);
 
-    toast.success("Report edited successfully.");
+    toast.success(t(Dictionary.Report.UPDATED));
 
     modals.closeAll();
 
@@ -93,7 +97,7 @@ function EditReportModal({
     <Flex direction={"column"} gap={10}>
       <TextInput
         ref={nameInputRef}
-        label={"Name"}
+        label={t(Dictionary.Report.NAME)}
         style={{ minHeight: 80 }}
         withAsterisk
         {...reportForm.getInputProps("name")}
@@ -104,7 +108,7 @@ function EditReportModal({
         onClick={(e) => handleSave(e)}
         loading={isLoading}
       >
-        Edit
+        {t(Dictionary.Common.EDIT)}
       </Button>
     </Flex>
   );

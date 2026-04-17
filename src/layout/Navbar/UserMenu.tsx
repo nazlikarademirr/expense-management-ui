@@ -62,17 +62,17 @@ function UserMenu() {
           style={{ fontSize: 13 }}
           onClick={() => openChangePasswordModal()}
         >
-          Change Password
+          {t(Dictionary.UserMenu.CHANGE_PASSWORD)}
         </Anchor>
         <Select
           mx={5}
           my={10}
           value={language}
           onChange={handleChangeLanguage}
-          placeholder="Select Language"
+          placeholder={t(Dictionary.UserMenu.SELECT_LANGUAGE)}
           data={[
-            { value: "en", label: t(Dictionary.Common.ENGLISH) },
-            { value: "tr", label: t(Dictionary.Common.TURKISH) },
+            { value: "en", label: t(Dictionary.UserMenu.ENGLISH) },
+            { value: "tr", label: t(Dictionary.UserMenu.TURKISH) },
           ]}
         />
         <Divider my={4} />
@@ -83,7 +83,7 @@ function UserMenu() {
           }}
           color="red"
         >
-          Logout
+          {t(Dictionary.UserMenu.LOGOUT)}
         </Menu.Item>
       </Menu.Dropdown>
     </Menu>

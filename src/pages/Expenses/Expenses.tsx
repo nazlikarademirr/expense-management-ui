@@ -136,7 +136,7 @@ function Expenses() {
 
   const openEditExpense = (expense: Expense) => {
     modals.open({
-      title: <Title order={4}>Edit Expense</Title>,
+      title: <Title order={4}>{t(Dictionary.Expense.EDIT)}</Title>,
       size: 2000,
       children: (
         <EditExpenseModal
@@ -519,7 +519,7 @@ function Expenses() {
 
   return (
     <Flex direction="column" h={PAGE_FLEX_HEIGHT}>
-      <Title order={3}>{t(Dictionary.Expense.EXPENSES)}</Title>
+      <Title order={3}>{t(Dictionary.Common.EXPENSES)}</Title>
       <Divider my={TITLE_DIVIDER_MY} />
       <Card shadow="xs" radius="xs" withBorder padding={10}>
         <Flex gap="md" justify="center">
