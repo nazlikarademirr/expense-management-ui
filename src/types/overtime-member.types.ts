@@ -1,4 +1,6 @@
+import { t } from "i18next";
 import z from "zod/v4";
+import Dictionary from "../helpers/translation/dictionary";
 
 type OvertimeMember = {
   id: string;
@@ -29,10 +31,10 @@ type OvertimeMemberResponse = {
 };
 
 const overtimeMemberSchema = z.object({
-  userId: z.string("User must be selected."),
+  userId: z.string(t(Dictionary.Expense.USER_MUST_BE_SELECTED)),
   price: z
-    .number("Price cannot be empty.")
-    .min(1, "Price cannot be 0 or less."),
+    .number(t(Dictionary.Expense.PRICE_CANNOT_BE_EMPTY))
+    .min(1, t(Dictionary.Expense.PRICE_CANNOT_BE_ZERO)),
 });
 
 export default overtimeMemberSchema;

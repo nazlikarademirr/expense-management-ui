@@ -43,6 +43,8 @@ import RequestType from "../../request-handler/request-type";
 import useRequestHandler from "../../hooks/useRequestHandler";
 import { zod4Resolver } from "mantine-form-zod-resolver";
 import { useAuthentication } from "../../contexts/AuthenticationContext/AuthenticationProvider";
+import { useTranslation } from "react-i18next";
+import Dictionary from "../../helpers/translation/dictionary";
 
 function Reports() {
   const { reports, addReport, updateReport, deleteReport, replaceReports } =
@@ -57,6 +59,8 @@ function Reports() {
   const [isLoading, setIsLoading] = useState(false);
 
   const auth = useAuthentication();
+
+  const { t } = useTranslation();
 
   const form = useForm<Report>({
     initialValues: {
@@ -73,7 +77,7 @@ function Reports() {
 
   const openEditReport = (report: Report) => {
     modals.open({
-      title: <Title order={4}>Edit Report</Title>,
+      title: <Title order={4}>{t(Dictionary.Report.EDIT)}</Title>,
       size: "xl",
       children: (
         <EditReportModal
@@ -105,7 +109,7 @@ function Reports() {
 
     updateReport({ ...report, isApproved: true });
 
-    toast.success("Report approved successfully.");
+    toast.success(t(Dictionary.Report.SUCCESSFULLY_APPROVED));
 
     modals.closeAll();
 
@@ -114,22 +118,22 @@ function Reports() {
 
   const openApproveReportModal = (report: Report) => {
     modals.open({
-      title: <Title order={5}>Approve Report</Title>,
+      title: <Title order={5}>{t(Dictionary.Report.APPROVE)}</Title>,
       size: "md",
       children: (
-        <Flex direction={"column"} gap={20}>
-          <Text>Are you sure you want to approve the report?</Text>
-          <Flex direction={"row"} gap={10}>
+        <Flex direction="column" gap={20}>
+          <Text>{t(Dictionary.Report.APPROVE_QUESTION)}</Text>
+          <Flex direction="row" gap={10}>
             <Button
               style={{ flexGrow: 1 }}
               onClick={() => approveReport(report)}
-              variant={"light"}
-              color={"blue"}
+              variant="light"
+              color="blue"
             >
-              Approve
+              {t(Dictionary.Common.APPROVE)}
             </Button>
-            <Button style={{ flexGrow: 1 }} variant={"light"} color={"red"}>
-              Cancel
+            <Button style={{ flexGrow: 1 }} variant="light" color="red">
+              {t(Dictionary.Common.CANCEL)}
             </Button>
           </Flex>
         </Flex>
@@ -139,30 +143,30 @@ function Reports() {
 
   const openDeleteReportModal = (id: string) => {
     modals.open({
-      title: <Title order={5}>Delete Report</Title>,
+      title: <Title order={5}>{t(Dictionary.Report.DELETE)}</Title>,
       size: "md",
       children: (
-        <Flex direction={"column"} gap={20}>
-          <Text>Are you sure you want to delete the report?</Text>
-          <Flex direction={"row"} gap={10}>
+        <Flex direction="column" gap={20}>
+          <Text>{t(Dictionary.Report.DELETE_QUESTION)}</Text>
+          <Flex direction="row" gap={10}>
             <Button
               style={{ flexGrow: 1 }}
               onClick={() => {
                 handleDelete(id);
                 modals.closeAll();
               }}
-              variant={"light"}
-              color={"blue"}
+              variant="light"
+              color="blue"
             >
-              Delete
+              {t(Dictionary.Common.DELETE)}
             </Button>
             <Button
               onClick={() => modals.closeAll()}
               style={{ flexGrow: 1 }}
-              variant={"light"}
-              color={"red"}
+              variant="light"
+              color="red"
             >
-              Cancel
+              {t(Dictionary.Common.CANCEL)}
             </Button>
           </Flex>
         </Flex>
@@ -187,7 +191,7 @@ function Reports() {
         (x) => x.id !== report.id && x.name.trim() === report.name.trim(),
       )
     ) {
-      toast.error("There is a report with the same name!");
+      toast.error(t(Dictionary.Report.SAME_NAME));
       return false;
     }
     return true;
@@ -233,7 +237,7 @@ function Reports() {
 
     form.reset();
 
-    toast.success("Report has been added successfully!");
+    toast.success(t(Dictionary.Report.ADDED));
 
     setIsLoading(false);
   };
@@ -255,7 +259,7 @@ function Reports() {
 
     deleteReport(id);
 
-    toast.success("Report has been deleted successfully!");
+    toast.success(t(Dictionary.Report.DELETED));
 
     setIsLoading(false);
   };
@@ -300,13 +304,13 @@ function Reports() {
             <Table.Td> {x.createUserFullName} </Table.Td>
             <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
             <Table.Td>
-              <Flex justify={"center"} gap={5}>
+              <Flex justify="center" gap={5}>
                 {x.isApproved ? (
-                  <Tooltip label="Download" withArrow>
+                  <Tooltip label={t(Dictionary.Report.DOWNLOAD)} withArrow>
                     <ActionIcon
                       onClick={() => downloadReport(x)}
-                      variant={"light"}
-                      color={"blue"}
+                      variant="light"
+                      color="blue"
                       loading={isLoading}
                     >
                       <IconDownload />
@@ -314,32 +318,32 @@ function Reports() {
                   </Tooltip>
                 ) : (
                   <Flex>
-                    <Tooltip label="Approve" withArrow>
+                    <Tooltip label={t(Dictionary.Common.APPROVE)} withArrow>
                       <ActionIcon
                         disabled={x.isApproved}
                         onClick={() => openApproveReportModal(x)}
-                        variant={"light"}
-                        color={"green"}
+                        variant="light"
+                        color="green"
                       >
                         <HiCheck size={30} />
                       </ActionIcon>
                     </Tooltip>
-                    <Tooltip label="Edit" withArrow>
+                    <Tooltip label={t(Dictionary.Common.EDIT)} withArrow>
                       <ActionIcon
                         disabled={x.isApproved}
                         onClick={() => openEditReport(x)}
-                        variant={"light"}
-                        color={"blue"}
+                        variant="light"
+                        color="blue"
                       >
                         <IconEdit />
                       </ActionIcon>
                     </Tooltip>
-                    <Tooltip label="Delete" withArrow>
+                    <Tooltip label={t(Dictionary.Common.DELETE)} withArrow>
                       <ActionIcon
                         disabled={x.isApproved}
                         onClick={() => openDeleteReportModal(x.id)}
-                        variant={"light"}
-                        color={"red"}
+                        variant="light"
+                        color="red"
                       >
                         <IconTrash />
                       </ActionIcon>
@@ -361,25 +365,25 @@ function Reports() {
     <Flex direction="column" h={PAGE_FLEX_HEIGHT}>
       <Title order={3}>Reports</Title>
       <Divider my={TITLE_DIVIDER_MY} />
-      <Card shadow={"xs"} radius={"md"} withBorder>
-        <Flex gap={"md"} direction={"column"}>
+      <Card shadow="xs" radius="md" withBorder>
+        <Flex gap="md" direction="column">
           <TextInput
             {...form.getInputProps("name")}
             withAsterisk
             placeholder={format(new Date(), "dd/MM/yyyy")}
-            label={"Name"}
+            label={t(Dictionary.Report.NAME)}
             style={{ minHeight: 80 }}
           />
-          <Button onClick={handleSave} variant={"light"} loading={isLoading}>
-            Add New Report
+          <Button onClick={handleSave} variant="light" loading={isLoading}>
+            {t(Dictionary.Report.ADD_NEW)}
           </Button>
         </Flex>
       </Card>
       <Card
-        mt={"sm"}
-        radius={"md"}
+        mt="sm"
+        radius="md"
         withBorder
-        padding={"sm"}
+        padding="sm"
         style={{
           flex: 1,
           display: "flex",
@@ -387,7 +391,7 @@ function Reports() {
           minHeight: 0,
         }}
       >
-        <Flex gap={"xs"} mb="md" align="center">
+        <Flex gap="xs" mb="md" align="center">
           <TextInput
             size="xs"
             radius="xl"
@@ -399,7 +403,7 @@ function Reports() {
           />
           <Checkbox
             labelPosition="left"
-            label={"Show Unapproved Reports"}
+            label={t(Dictionary.Report.SHOW_UNAPPROVED)}
             style={{ marginLeft: "10px" }}
             checked={showUnapprovedReports}
             onChange={() => setShowUnapprovedReports(!showUnapprovedReports)}
@@ -417,10 +421,10 @@ function Reports() {
           >
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>Name</Table.Th>
-                <Table.Th>Approved</Table.Th>
-                <Table.Th>Create User</Table.Th>
-                <Table.Th>Create Date</Table.Th>
+                <Table.Th>{t(Dictionary.Report.NAME)}</Table.Th>
+                <Table.Th>{t(Dictionary.Report.APPROVED)}</Table.Th>
+                <Table.Th>{t(Dictionary.Common.CREATE_USER)}</Table.Th>
+                <Table.Th>{t(Dictionary.Common.CREATE_DATE)}</Table.Th>
                 <Table.Th></Table.Th>
               </Table.Tr>
             </Table.Thead>

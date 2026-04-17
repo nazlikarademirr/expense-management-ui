@@ -7,6 +7,8 @@ import { modals } from "@mantine/modals";
 import toast from "react-hot-toast";
 import z from "zod/v4";
 import { zod4Resolver } from "mantine-form-zod-resolver";
+import Dictionary from "../../../helpers/translation/dictionary";
+import { useTranslation } from "react-i18next";
 
 interface ResetPasswordModalProps {
   email: string;
@@ -14,6 +16,7 @@ interface ResetPasswordModalProps {
 
 function ResetPasswordModal({ email }: ResetPasswordModalProps) {
   const { handleDataRequest } = useRequestHandler();
+  const { t } = useTranslation();
 
   const form = useForm({
     initialValues: { email: email },
@@ -22,9 +25,9 @@ function ResetPasswordModal({ email }: ResetPasswordModalProps) {
         email: z
           .email()
           .trim()
-          .min(1, "Email cannot be empty.")
+          .min(1, t(Dictionary.Login.EMAIL_CANNOT_BE_EMPTY))
           .refine((v) => v.includes("@acibadem.com"), {
-            message: "Please enter your Acıbadem email address.",
+            message: t(Dictionary.Login.EMAIL_VALID),
           }),
       }),
     ),
@@ -46,16 +49,14 @@ function ResetPasswordModal({ email }: ResetPasswordModalProps) {
 
     modals.closeAll();
     form.reset();
-    toast.success(
-      "Your password has been successfully reset. Please contact your administrator.",
-    );
+    toast.success(t(Dictionary.Login.PASSWORD_RESETED));
   };
 
   return (
     <Flex direction="column" align="flex-start" gap={20}>
-      Your password will be reset. Do you approve?
+      {t(Dictionary.Login.PASSWORD_RESET_MESSAGE)}
       <TextInput
-        label="Email"
+        label={t(Dictionary.Login.EMAIL)}
         withAsterisk
         w={410}
         style={{ minHeight: 80 }}
@@ -68,7 +69,7 @@ function ResetPasswordModal({ email }: ResetPasswordModalProps) {
           color="blue"
           w={200}
         >
-          Approve
+          {t(Dictionary.Common.APPROVE)}
         </Button>
         <Button
           onClick={() => {
@@ -78,7 +79,7 @@ function ResetPasswordModal({ email }: ResetPasswordModalProps) {
           color="red"
           w={200}
         >
-          Cancel
+          {t(Dictionary.Common.CANCEL)}
         </Button>
       </Flex>
     </Flex>

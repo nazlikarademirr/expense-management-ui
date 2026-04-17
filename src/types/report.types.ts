@@ -1,4 +1,6 @@
+import { t } from "i18next";
 import z from "zod/v4";
+import Dictionary from "../helpers/translation/dictionary";
 
 type Report = {
   id: string;
@@ -19,8 +21,8 @@ const reportSchema = z.object({
   name: z
     .string()
     .trim()
-    .min(2, "Name must have at least 2 letters.")
-    .max(128, "Name cannot exceed 128 characters."),
+    .min(2, t(Dictionary.Report.NAME_MIN_HEIGHT))
+    .max(128, t(Dictionary.Project.NAME_MAX_HEIGHT)),
 });
 
 export default reportSchema;

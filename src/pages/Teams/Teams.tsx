@@ -38,6 +38,8 @@ import { IoMdAddCircleOutline, IoMdRemoveCircleOutline } from "react-icons/io";
 import { User } from "../../types/user.types";
 import { zod4Resolver } from "mantine-form-zod-resolver";
 import { useAuthentication } from "../../contexts/AuthenticationContext/AuthenticationProvider";
+import { useTranslation } from "react-i18next";
+import Dictionary from "../../helpers/translation/dictionary";
 
 function Teams() {
   const { teams, addTeam, updateTeam, replaceTeams } = useTeams();
@@ -54,6 +56,8 @@ function Teams() {
 
   const auth = useAuthentication();
 
+  const { t } = useTranslation();
+
   const form = useForm<Team>({
     initialValues: {
       id: crypto.randomUUID(),
@@ -69,7 +73,7 @@ function Teams() {
 
   const openEditTeam = (team: Team) => {
     modals.open({
-      title: <Title order={4}>Edit Team</Title>,
+      title: <Title order={4}>{t(Dictionary.Team.EDIT)}</Title>,
       size: "xl",
       children: (
         <EditTeamModal
@@ -109,7 +113,7 @@ function Teams() {
     if (
       teams.some((x) => x.id !== team.id && x.name.trim() === team.name.trim())
     ) {
-      toast.error("There is a team with the same name!");
+      toast.error(t(Dictionary.Team.SAME_NAME));
       return false;
     }
 
@@ -155,7 +159,7 @@ function Teams() {
 
     form.reset();
 
-    toast.success("Team has been added successfully!");
+    toast.success(t(Dictionary.Team.ADDED));
 
     setIsLoading(false);
   };
@@ -164,9 +168,7 @@ function Teams() {
     setIsLoading(true);
 
     if (users.find((x) => team.isActive && x.teamId === team.id)) {
-      toast.error(
-        "This team already has active users; to deactivate the team, first deactivate the users in that team.",
-      );
+      toast.error(t(Dictionary.Team.ACTIVITY_CHECK));
       setIsLoading(false);
       return;
     }
@@ -189,12 +191,12 @@ function Teams() {
     updateTeam({ ...team, isActive: !team.isActive });
 
     if (team.isActive) {
-      toast.success("Team deactivated successfully.");
+      toast.success(t(Dictionary.Team.DEACTIVATED));
       setIsLoading(false);
       return;
     }
 
-    toast.success("Team activated successfully.");
+    toast.success(t(Dictionary.Team.ACTIVATED));
 
     setIsLoading(false);
   };
@@ -220,7 +222,7 @@ function Teams() {
             <Table.Td>
               <Flex justify={"center"} gap={5}>
                 {x.isActive ? (
-                  <Tooltip label="Edit" withArrow>
+                  <Tooltip label={t(Dictionary.Common.EDIT)} withArrow>
                     <ActionIcon
                       onClick={() => openEditTeam(x)}
                       variant={"light"}
@@ -233,7 +235,11 @@ function Teams() {
                   <div></div>
                 )}
                 <Tooltip
-                  label={x.isActive ? "Deactivate Team" : "Activate Team"}
+                  label={
+                    x.isActive
+                      ? t(Dictionary.Team.DEACTIVATE)
+                      : t(Dictionary.Team.ACTIVATE)
+                  }
                   withArrow
                 >
                   <ActionIcon
@@ -263,7 +269,7 @@ function Teams() {
 
   return (
     <Flex direction="column" h={PAGE_FLEX_HEIGHT}>
-      <Title order={3}>Teams</Title>
+      <Title order={3}>{t(Dictionary.Common.TEAMS)}</Title>
       <Divider my={TITLE_DIVIDER_MY} />
       <Card shadow={"xs"} radius={"md"} withBorder>
         <Flex gap={"md"} direction={"column"}>
@@ -271,10 +277,10 @@ function Teams() {
             {...form.getInputProps("name")}
             style={{ minHeight: 80 }}
             withAsterisk
-            label={"Name"}
+            label={t(Dictionary.Team.NAME)}
           />
           <Button onClick={handleSave} variant={"light"} loading={isLoading}>
-            Add New Team
+            {t(Dictionary.Team.ADD_NEW)}
           </Button>
         </Flex>
       </Card>
@@ -302,7 +308,7 @@ function Teams() {
           />
           <Checkbox
             labelPosition="left"
-            label={"Show Active Teams"}
+            label={t(Dictionary.Team.SHOW_ACTIVE)}
             style={{ marginLeft: "10px" }}
             checked={showActiveTeams}
             onChange={() => setShowActiveTeams(!showActiveTeams)}
@@ -321,9 +327,9 @@ function Teams() {
             >
               <Table.Thead>
                 <Table.Tr>
-                  <Table.Th>Name</Table.Th>
-                  <Table.Th>Status</Table.Th>
-                  <Table.Th>Create User</Table.Th>
+                  <Table.Th>{t(Dictionary.Team.NAME)}</Table.Th>
+                  <Table.Th>{t(Dictionary.Common.STATUS)}</Table.Th>
+                  <Table.Th>{t(Dictionary.Common.CREATE_USER)}</Table.Th>
                   <Table.Th></Table.Th>
                 </Table.Tr>
               </Table.Thead>

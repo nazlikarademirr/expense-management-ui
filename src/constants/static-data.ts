@@ -1,42 +1,44 @@
+import { t } from "i18next";
 import CurrencyType from "../enums/currency-type";
 import ExpenseType from "../enums/expense-type";
 import Gender from "../enums/gender";
 import Role from "../enums/role";
+import Dictionary from "../helpers/translation/dictionary";
 
 const genders = [
   {
     value: Gender.Male,
-    label: "Male",
+    label: t(Dictionary.Common.MALE),
   },
   {
     value: Gender.Female,
-    label: "Female",
+    label: t(Dictionary.Common.FEMALE),
   },
 ];
 
 const roles = [
   {
     value: Role.Admin,
-    label: "Admin",
+    label: t(Dictionary.Common.ADMIN),
   },
   {
     value: Role.Manager,
-    label: "Manager",
+    label: t(Dictionary.Common.MANAGER),
   },
   {
     value: Role.User,
-    label: "User",
+    label: t(Dictionary.Common.USER),
   },
 ];
 
 const expenseTypes = [
   {
     value: ExpenseType.Food,
-    label: "Food",
+    label: t(Dictionary.Expense.FOOD),
   },
   {
     value: ExpenseType.Transportation,
-    label: "Transportation",
+    label: t(Dictionary.Expense.TRANSPORTATION),
   },
 ];
 

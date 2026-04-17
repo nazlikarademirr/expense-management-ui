@@ -1,4 +1,6 @@
+import { t } from "i18next";
 import z from "zod/v4";
+import Dictionary from "../helpers/translation/dictionary";
 
 type Project = {
   id: string;
@@ -20,13 +22,13 @@ const projectSchema = z.object({
   name: z
     .string()
     .trim()
-    .min(2, "Name must have at least 2 letters.")
-    .max(128, "Name cannot exceed 128 characters."),
+    .min(2, t(Dictionary.Project.NAME_MIN_HEIGHT))
+    .max(128, t(Dictionary.Project.NAME_MAX_HEIGHT)),
   code: z
     .string()
     .trim()
-    .min(2, "Code must have at least 2 letters.")
-    .max(128, "Code cannot exceed 128 characters."),
+    .min(2, t(Dictionary.Project.CODE_MIN_HEIGHT))
+    .max(128, t(Dictionary.Project.CODE_MAX_HEIGHT)),
 });
 
 export default projectSchema;

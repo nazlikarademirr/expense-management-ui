@@ -2,6 +2,8 @@ import z from "zod/v4";
 import { OvertimeMember } from "./overtime-member.types";
 import ExpenseType from "../enums/expense-type";
 import CurrencyType from "../enums/currency-type";
+import { t } from "i18next";
+import Dictionary from "../helpers/translation/dictionary";
 
 type Expense = {
   id: string;
@@ -64,16 +66,22 @@ type ExpenseResponse = {
 
 const expenseSchema = z
   .object({
-    userId: z.string("User must be selected."),
-    projectId: z.string("Project must be selected."),
-    expenseType: z.enum(ExpenseType, "Expense type must be selected."),
-    expenseDate: z.date("Expense date must be selected."),
+    userId: z.string(t(Dictionary.Expense.USER_MUST_BE_SELECTED)),
+    projectId: z.string(t(Dictionary.Expense.PROJECT_MUST_BE_SELECTED)),
+    expenseType: z.enum(
+      ExpenseType,
+      t(Dictionary.Expense.TYPE_MUST_BE_SELECTED),
+    ),
+    expenseDate: z.date(t(Dictionary.Expense.DATE_MUST_BE_SELECTED)),
     totalPrice: z
-      .number("Total price cannot be empty.")
-      .min(1, "Total price cannot be 0 or less."),
-    currency: z.enum(CurrencyType, "Currency must be selected."),
+      .number(t(Dictionary.Expense.TOTAL_PRICE_CANNOT_BE_EMPTY))
+      .min(1, t(Dictionary.Expense.TOTAL_PRICE_CANNOT_BE_ZERO)),
+    currency: z.enum(
+      CurrencyType,
+      t(Dictionary.Expense.CURRENCY_MUST_BE_SELECTED),
+    ),
     tripDescription: z.string().nullish(),
-    outOfOffice: z.boolean("Out of office cannot be empty."),
+    outOfOffice: z.boolean(t(Dictionary.Expense.OUT_OF_OFFICE_CANNOT_BE_EMPTY)),
   })
   .superRefine((data, ctx) => {
     if (
@@ -83,8 +91,7 @@ const expenseSchema = z
       ctx.addIssue({
         code: "custom",
         path: ["tripDescription"],
-        message:
-          "When the expense type is transportation, the description cannot be left blank.",
+        message: t(Dictionary.Expense.DESCRIPTION_RULE),
       });
     }
   });
