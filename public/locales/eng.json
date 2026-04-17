@@ -65,20 +65,21 @@
     "selectTeam": "Select Team",
     "selectRole": "Select Role",
     "showActive": "Show Active Users",
-    "nameMinHeight": "Name must have at least 2 letters.",
-    "nameMaxHeight": "Name cannot exceed 128 characters.",
-    "surnameMinHeight": "Surname must have at least 2 letters.",
-    "surnameMaxHeight": "Surname cannot exceed 128 characters.",
+    "nameMinLength": "Name must have at least 2 letters.",
+    "nameMaxLength": "Name cannot exceed 128 characters.",
+    "surnameMinLength": "Surname must have at least 2 letters.",
+    "surnameMaxLength": "Surname cannot exceed 128 characters.",
     "teamMustBeSelected": "Team must be selected.",
     "genderMustBeSelected": "Gender must be selected.",
     "cardNumberCannotBeEmpty": "Card number cannot be empty.",
-    "cardNumberMaxHeight": "Card number cannot exceed 8 characters.",
+    "cardNumberMaxLength": "Card number cannot exceed 8 characters.",
     "emailRule": "Please enter your Acıbadem email address.",
-    "emailMinHeight": "Email must have at least 14 letters.",
-    "emailMaxHeight": "Email cannot exceed 128 characters.",
-    "passwordMinHeight": "Password cannot be less than 8 characters.",
-    "passwordMaxHeight": "Password cannot exceed 32 characters.",
-    "roleMustBeSelected": "Role must be selected."
+    "emailMinLength": "Email must have at least 14 letters.",
+    "emailMaxLength": "Email cannot exceed 128 characters.",
+    "passwordMinLength": "Password cannot be less than 8 characters.",
+    "passwordMaxLength": "Password cannot exceed 32 characters.",
+    "roleMustBeSelected": "Role must be selected.",
+    "updated": "User has been updated successfully."
   },
 
   "team": {
@@ -93,8 +94,9 @@
     "deactivate": "Deactivate Team",
     "showActive": "Show Active Teams",
     "edit": "Edit Team",
-    "nameMinHeight": "Name must have at least 2 letters.",
-    "nameMaxHeight": "Name cannot exceed 128 characters."
+    "nameMinLength": "Name must have at least 2 letters.",
+    "nameMaxLength": "Name cannot exceed 128 characters.",
+    "updated": "Team has been updated successfully."
   },
 
   "project": {
@@ -110,11 +112,11 @@
     "deactivate": "Deactivate Project",
     "addNew": "Add New Project",
     "showActive": "Show Active Projects",
-    "edited": "Project edited successfully.",
-    "nameMinHeight": "Name must have at least 2 letters.",
-    "nameMaxHeight": "Name cannot exceed 128 characters.",
-    "codeMinHeight": "Code must have at least 2 letters.",
-    "codeMaxHeight": "Code cannot exceed 128 characters."
+    "updated": "Project updated successfully.",
+    "nameMinLength": "Name must have at least 2 letters.",
+    "nameMaxLength": "Name cannot exceed 128 characters.",
+    "codeMinLength": "Code must have at least 2 letters.",
+    "codeMaxLength": "Code cannot exceed 128 characters."
   },
 
   "expense": {
@@ -122,7 +124,7 @@
     "totalPriceValid": "The total price cannot be less than the sum of the individual prices.",
     "youCanNotAddYourselfAsOvertimeMember": "You can not add yourself to your expense as overtime member.",
     "added": "Expense has been added successfully.",
-    "edited": "Expense edited successfully.",
+    "updated": "Expense updated successfully.",
     "deleted": "Expense has been deleted successfully.",
     "overtimeMemberValid": "There is a entry for this user.",
     "userName": "User Name",
@@ -174,7 +176,7 @@
     "showUnapproved": "Show Unapproved Reports",
     "successfullyApproved": "Report approved successfully.",
     "updated": "Report has been updated successfully.",
-    "nameMinHeight": "Name must have at least 2 letters.",
-    "nameMaxHeight": "Name cannot exceed 128 characters."
+    "nameMinLength": "Name must have at least 2 letters.",
+    "nameMaxLength": "Name cannot exceed 128 characters."
   }
 }

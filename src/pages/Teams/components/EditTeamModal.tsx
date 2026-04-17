@@ -86,7 +86,7 @@ function EditTeamModal({
       ...teamForm.values,
     });
 
-    toast.success(t(Dictionary.Team.ADDED));
+    toast.success(t(Dictionary.Team.UPDATED));
 
     modals.closeAll();
 

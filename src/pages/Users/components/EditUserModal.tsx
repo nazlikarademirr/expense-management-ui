@@ -109,7 +109,7 @@ function EditUserModal({
       ...userForm.values,
     });
 
-    toast.success(t(Dictionary.User.ADDED));
+    toast.success(t(Dictionary.User.UPDATED));
 
     modals.closeAll();
 

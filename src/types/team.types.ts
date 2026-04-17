@@ -20,8 +20,8 @@ const teamSchema = z.object({
   name: z
     .string()
     .trim()
-    .min(2, t(Dictionary.Team.NAME_MIN_HEIGHT))
-    .max(128, t(Dictionary.Team.NAME_MAX_HEIGHT)),
+    .min(2, t(Dictionary.Team.NAME_MIN_LENGTH))
+    .max(128, t(Dictionary.Team.NAME_MAX_LENGTH)),
 });
 
 export default teamSchema;

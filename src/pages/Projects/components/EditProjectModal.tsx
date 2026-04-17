@@ -88,7 +88,7 @@ function EditProjectModal({
       ...projectForm.values,
     });
 
-    toast.success(t(Dictionary.Project.EDITED));
+    toast.success(t(Dictionary.Project.UPDATED));
 
     modals.closeAll();
 

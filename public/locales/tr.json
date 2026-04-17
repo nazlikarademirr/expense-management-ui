@@ -65,20 +65,21 @@
     "selectTeam": "Takım Seçiniz",
     "selectRole": "Rol Seçiniz",
     "showActive": "Aktif Kullanıcıları Göster",
-    "nameMinHeight": "İsim en az 2 harften oluşmalıdır.",
-    "nameMaxHeight": "İsim 128 karakteri geçemez.",
-    "surnameMinHeight": "Soyisim en az 2 karakterden oluşmalıdır.",
-    "surnameMaxHeight": "Soyisim 128 karakteri geçemez.",
+    "nameMinLength": "İsim en az 2 harften oluşmalıdır.",
+    "nameMaxLength": "İsim 128 karakteri geçemez.",
+    "surnameMinLength": "Soyisim en az 2 karakterden oluşmalıdır.",
+    "surnameMaxLength": "Soyisim 128 karakteri geçemez.",
     "teamMustBeSelected": "Takım seçilmelidir.",
     "genderMustBeSelected": "Cinsiyet seçilmelidir.",
     "cardNumberCannotBeEmpty": "Kart numarası boş olamaz.",
-    "cardNumberMaxHeight": "Kart numarası 8 karakteri geçemez.",
+    "cardNumberMaxLength": "Kart numarası 8 karakteri geçemez.",
     "emailRule": "Lütfen Acıbadem e-posta adresinizi girin.",
-    "emailMinHeight": "E-posta en az 14 harften oluşmalıdır.",
-    "emailMaxHeight": "E-posta 128 karakteri geçemez.",
-    "passwordMinHeight": "Şifre en az 8 karakter olmalıdır.",
-    "passwordMaxHeight": "Şifre 32 karakteri geçemez.",
-    "roleMustBeSelected": "Rol seçilmelidir."
+    "emailMinLength": "E-posta en az 14 harften oluşmalıdır.",
+    "emailMaxLength": "E-posta 128 karakteri geçemez.",
+    "passwordMinLength": "Şifre en az 8 karakter olmalıdır.",
+    "passwordMaxLength": "Şifre 32 karakteri geçemez.",
+    "roleMustBeSelected": "Rol seçilmelidir.",
+    "updated": "Kullanıcı başarıyla güncellendi."
   },
 
   "team": {
@@ -93,8 +94,9 @@
     "deactivate": "Ekibi Devre Dışı Bırak",
     "showActive": "Aktif Ekipleri Göster",
     "edit": "Ekibi Düzenle",
-    "nameMinHeight": "İsim en az 2 harften oluşmalıdır.",
-    "nameMaxHeight": "İsim 128 karakteri geçemez."
+    "nameMinLength": "İsim en az 2 harften oluşmalıdır.",
+    "nameMaxLength": "İsim 128 karakteri geçemez.",
+    "updated": "Ekip başarıyla güncellendi."
   },
 
   "project": {
@@ -110,11 +112,11 @@
     "deactivate": "Projeyi Devre Dışı Bırak",
     "addNew": "Yeni Proje Ekle",
     "showActive": "Aktif Projeleri Göster",
-    "edited": "Proje başarıyla düzenlendi.",
-    "nameMinHeight": "İsim en az 2 harften oluşmalıdır.",
-    "nameMaxHeight": "İsim 128 karakteri geçemez.",
-    "codeMinHeight": "Kod en az 2 harften oluşmalıdır.",
-    "codeMaxHeight": "Kod 128 karakteri geçemez."
+    "updated": "Proje başarıyla güncellendi.",
+    "nameMinLengtht": "İsim en az 2 harften oluşmalıdır.",
+    "nameMaxLength": "İsim 128 karakteri geçemez.",
+    "codeMinLength": "Kod en az 2 harften oluşmalıdır.",
+    "codeMaxLength": "Kod 128 karakteri geçemez."
   },
 
   "expense": {
@@ -122,7 +124,7 @@
     "totalPriceValid": "Toplam tutar, kişisel tutarların toplamından fazla olamaz.",
     "youCanNotAddYourselfAsOvertimeMember": "Kendinizi mesai arkadaşı olarak ekleyemezsiniz.",
     "added": "Masraf başarıyla eklendi.",
-    "edited": "Masraf başarıyla güncellendi.",
+    "updated": "Masraf başarıyla güncellendi.",
     "deleted": "Masraf başarıyla silindi.",
     "overtimeMemberValid": "Bu kullanıcı için bir kayıt bulunuyor.",
     "userName": "Kullanıcı Adı",
@@ -173,8 +175,8 @@
     "name": "Ad",
     "showUnapproved": "Onaylanmayan Raporları Göster",
     "successfullyApproved": "Rapor başarıyla onaylandı.",
-    "updated": "Rapor başarıyla düzenlendi.",
-    "nameMinHeight": "İsim en az 2 harften oluşmalıdır.",
-    "nameMaxHeight": "İsim 128 karakteri geçemez."
+    "updated": "Rapor başarıyla güncellendi.",
+    "nameMinLength": "İsim en az 2 harften oluşmalıdır.",
+    "nameMaxLength": "İsim 128 karakteri geçemez."
   }
 }

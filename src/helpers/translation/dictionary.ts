@@ -65,21 +65,22 @@ abstract class Dictionary {
     static readonly SELECT_TEAM = "user.selectTeam";
     static readonly SELECT_ROLE = "user.selectRole";
     static readonly SHOW_ACTIVE = "user.showActive";
-    static readonly NAME_MIN_HEIGHT = "user.nameMinHeight";
-    static readonly NAME_MAX_HEIGHT = "user.nameMaxHeight";
-    static readonly SURNAME_MIN_HEIGHT = "user.surnameMinHeight";
-    static readonly SURNAME_MAX_HEIGHT = "user.surnameMaxHeight";
+    static readonly NAME_MIN_LENGTH = "user.nameMinLength";
+    static readonly NAME_MAX_LENGTH = "user.nameMaxLength";
+    static readonly SURNAME_MIN_LENGTH = "user.surnameMinLength";
+    static readonly SURNAME_MAX_LENGTH = "user.surnameMaxLength";
     static readonly TEAM_MUST_BE_SELECTED = "user.teamMustBeSelected";
     static readonly GENDER_MUST_BE_SELECTED = "user.genderMustBeSelected";
     static readonly CARD_NUMBER_CANNOT_BE_EMPTY =
       "user.cardNumberCannotBeEmpty";
-    static readonly CARD_NUMBER_MAX_HEIGHT = "user.cardNumberMaxHeight";
+    static readonly CARD_NUMBER_MAX_LENGTH = "user.cardNumberMaxLength";
     static readonly EMAIL_RULE = "user.emailRule";
-    static readonly EMAIL_MIN_HEIGHT = "user.emailMinHeight";
-    static readonly EMAIL_MAX_HEIGHT = "user.emailMaxHeight";
-    static readonly PASSWORD_MIN_HEIGHT = "user.passwordMinHeight";
-    static readonly PASSWORD_MAX_HEIGHT = "user.passwordMaxHeight";
+    static readonly EMAIL_MIN_LENGTH = "user.emailMinLength";
+    static readonly EMAIL_MAX_LENGTH = "user.emailMaxLength";
+    static readonly PASSWORD_MIN_LENGTH = "user.passwordMinLength";
+    static readonly PASSWORD_MAX_LENGTH = "user.passwordMaxLength";
     static readonly ROLE_MUST_BE_SELECTED = "user.roleMustBeSelected";
+    static readonly UPDATED = "user.updated";
   };
 
   static Team = class {
@@ -94,8 +95,9 @@ abstract class Dictionary {
     static readonly DEACTIVATE = "team.deactivate";
     static readonly SHOW_ACTIVE = "team.showActive";
     static readonly EDIT = "team.edit";
-    static readonly NAME_MIN_HEIGHT = "team.nameMinHeight";
-    static readonly NAME_MAX_HEIGHT = "team.nameMaxHeight";
+    static readonly NAME_MIN_LENGTH = "team.nameMinLength";
+    static readonly NAME_MAX_LENGTH = "team.nameMaxLength";
+    static readonly UPDATED = "team.updated";
   };
 
   static Project = class {
@@ -111,11 +113,11 @@ abstract class Dictionary {
     static readonly DEACTIVATE = "project.deactivate";
     static readonly ADD_NEW = "project.addNew";
     static readonly SHOW_ACTIVE = "project.showActive";
-    static readonly EDITED = "project.edited";
-    static readonly NAME_MIN_HEIGHT = "project.nameMinHeight";
-    static readonly NAME_MAX_HEIGHT = "project.nameMaxHeight";
-    static readonly CODE_MIN_HEIGHT = "project.codeMinHeight";
-    static readonly CODE_MAX_HEIGHT = "project.codeMaxHeight";
+    static readonly UPDATED = "project.updated";
+    static readonly NAME_MIN_LENGTH = "project.nameMinLength";
+    static readonly NAME_MAX_LENGTH = "project.nameMaxLength";
+    static readonly CODE_MIN_LENGTH = "project.codeMinLength";
+    static readonly CODE_MAX_LENGTH = "project.codeMaxLength";
   };
 
   static Expense = class {
@@ -124,7 +126,7 @@ abstract class Dictionary {
     static readonly YOU_CAN_NOT_ADD_YOURSELF_AS_OVERTIME_MEMBER =
       "expense.youCanNotAddYourselfAsOvertimeMember";
     static readonly ADDED = "expense.added";
-    static readonly EDITED = "expense.edited";
+    static readonly UPDATED = "expense.updated";
     static readonly DELETED = "expense.deleted";
     static readonly OVERTIME_MEMBER_VALID = "expense.overtimeMemberValid";
     static readonly USER_NAME = "expense.userName";
@@ -180,8 +182,8 @@ abstract class Dictionary {
     static readonly SHOW_UNAPPROVED = "report.showUnapproved";
     static readonly SUCCESSFULLY_APPROVED = "report.successfullyApproved";
     static readonly UPDATED = "report.updated";
-    static readonly NAME_MIN_HEIGHT = "report.nameMinHeight";
-    static readonly NAME_MAX_HEIGHT = "report.nameMaxHeight";
+    static readonly NAME_MIN_LENGTH = "report.nameMinLength";
+    static readonly NAME_MAX_LENGTH = "report.nameMaxLength";
   };
 }
 

@@ -160,7 +160,7 @@ function EditExpenseModal({
     expenseForm.reset();
     overtimeMemberForm.reset();
 
-    toast.success(t(Dictionary.Expense.EDITED));
+    toast.success(t(Dictionary.Expense.UPDATED));
 
     modals.closeAll();
 

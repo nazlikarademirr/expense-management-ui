@@ -62,33 +62,33 @@ const userSchema = z.object({
   name: z
     .string()
     .trim()
-    .min(2, t(Dictionary.User.NAME_MIN_HEIGHT))
-    .max(128, t(Dictionary.User.NAME_MAX_HEIGHT)),
+    .min(2, t(Dictionary.User.NAME_MIN_LENGTH))
+    .max(128, t(Dictionary.User.NAME_MAX_LENGTH)),
   surname: z
     .string()
     .trim()
-    .min(2, t(Dictionary.User.SURNAME_MIN_HEIGHT))
-    .max(128, t(Dictionary.User.SURNAME_MAX_HEIGHT)),
+    .min(2, t(Dictionary.User.SURNAME_MIN_LENGTH))
+    .max(128, t(Dictionary.User.SURNAME_MAX_LENGTH)),
   teamId: z.string().trim().min(1, t(Dictionary.User.TEAM_MUST_BE_SELECTED)),
   gender: z.enum(Gender, t(Dictionary.User.GENDER_MUST_BE_SELECTED)),
   cardNumber: z
     .string()
     .trim()
     .min(1, t(Dictionary.User.CARD_NUMBER_CANNOT_BE_EMPTY))
-    .max(8, t(Dictionary.User.CARD_NUMBER_MAX_HEIGHT)),
+    .max(8, t(Dictionary.User.CARD_NUMBER_MAX_LENGTH)),
   email: z
     .email()
     .trim()
     .refine((v) => v.includes("@acibadem.com"), {
       message: t(Dictionary.User.EMAIL_RULE),
     })
-    .min(14, t(Dictionary.User.EMAIL_MIN_HEIGHT))
-    .max(128, t(Dictionary.User.EMAIL_MAX_HEIGHT)),
+    .min(14, t(Dictionary.User.EMAIL_MIN_LENGTH))
+    .max(128, t(Dictionary.User.EMAIL_MAX_LENGTH)),
   password: z
     .string()
     .trim()
-    .min(8, t(Dictionary.User.PASSWORD_MIN_HEIGHT))
-    .max(32, t(Dictionary.User.PASSWORD_MAX_HEIGHT))
+    .min(8, t(Dictionary.User.PASSWORD_MIN_LENGTH))
+    .max(32, t(Dictionary.User.PASSWORD_MAX_LENGTH))
     .optional(),
   role: z.enum(Role, t(Dictionary.User.ROLE_MUST_BE_SELECTED)),
 });
