@@ -18,7 +18,9 @@
     "manager": "Manager",
     "user": "User",
     "expenseManagement": "Expense Management",
-    "status": "Status"
+    "status": "Status",
+    "loading": "Loading..",
+    "unexpectedError": "An unexpected error occurred."
   },
 
   "userMenu": {
@@ -157,7 +159,17 @@
     "outOfOfficeCannotBeEmpty": "Out of office cannot be empty.",
     "descriptionRule": "When the expense type is transportation, the description cannot be left blank.",
     "priceCannotBeEmpty": "Price cannot be empty.",
-    "priceCannotBeZero": "Price cannot be 0 or less."
+    "priceCannotBeZero": "Price cannot be 0 or less.",
+    "receiptUploader": "Drag the receipt or invoice here",
+    "receiptSelect": "or select by clicking · max. 10MB",
+    "removeImage": "Remove image.",
+    "photoProcessing": "The photo is being processed..",
+    "lowResolution": "Low Resolution",
+    "accuracyRate": "Accuracy Rate:",
+    "imageQuality": "Image quality is poor, results may be inaccurate. Please check.",
+    "filesUpload": "Only JPG, PNG, or WebP files can be uploaded.",
+    "ocrRequestTimedOut": "The OCR request timed out. Please try again.",
+    "fileSize": "The file size must be less than {{fileSize}}MB."
   },
 
   "report": {

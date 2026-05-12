@@ -53,6 +53,8 @@ import { zod4Resolver } from "mantine-form-zod-resolver";
 import { useAuthentication } from "../../contexts/AuthenticationContext/AuthenticationProvider";
 import { useTranslation } from "react-i18next";
 import Dictionary from "../../helpers/translation/dictionary";
+import { OcrResult } from "../../types/ocr.types";
+import ReceiptUploader from "../../components/ReceiptUploader/ReceiptUploader";
 const MIN_FLEX_HEIGHT = 110;
 
 function Expenses() {
@@ -413,6 +415,78 @@ function Expenses() {
     form.setFieldValue("overtimeMembers", overtimeMembers);
   };
 
+  const normalizeText = (value: string) =>
+    value
+      .toLocaleLowerCase("tr-TR")
+      .replace(/ı/g, "i")
+      .replace(/ğ/g, "g")
+      .replace(/ü/g, "u")
+      .replace(/ş/g, "s")
+      .replace(/ö/g, "o")
+      .replace(/ç/g, "c");
+
+  const setExpenseTypeFromOcr = (result: OcrResult) => {
+    const text = normalizeText(result.rawText.join(" "));
+
+    if (
+      text.includes("yiyecek") ||
+      text.includes("icecek") ||
+      text.includes("kdv") ||
+      text.includes("KDV")
+    ) {
+      const foodValue = expenseTypes[ExpenseType.Food].value;
+      form.setFieldValue("expenseType", foodValue);
+      return foodValue;
+    }
+
+    if (
+      text.includes("maliye") ||
+      text.includes("bakanligi") ||
+      text.includes("turkiye") ||
+      text.includes("esnaf") ||
+      text.includes("sanatkarlari") ||
+      text.includes("konfederasyonu")
+    ) {
+      const transportationValue =
+        expenseTypes[ExpenseType.Transportation].value;
+      form.setFieldValue("expenseType", transportationValue);
+      return transportationValue;
+    }
+  };
+
+  const setCurrencyFromOcr = (result: OcrResult) => {
+    const text = normalizeText(result.rawText.join(" "));
+
+    if (
+      text.includes("tl") ||
+      text.includes("₺") ||
+      text.includes("yiyecek") ||
+      text.includes("icecek") ||
+      text.includes("kdv") ||
+      text.includes("KDV") ||
+      text.includes("%10") ||
+      text.includes("maliye") ||
+      text.includes("bakanligi") ||
+      text.includes("turkiye") ||
+      text.includes("esnaf") ||
+      text.includes("sanatkarlari") ||
+      text.includes("konfederasyonu")
+    ) {
+      const tl = currencyTypes.find(
+        (x) =>
+          x.label.toLowerCase().includes("tl") ||
+          x.label.toLowerCase().includes("try"),
+      );
+
+      if (tl) {
+        form.setFieldValue("currency", tl.value);
+        return tl.value;
+      }
+    }
+
+    return null;
+  };
+
   const memoizedExpenses = useMemo(
     () =>
       expenses
@@ -508,6 +582,13 @@ function Expenses() {
         </Table.Tr>
       )),
     [form.values.overtimeMembers],
+  );
+
+  const ocrMapping = useMemo(
+    () => ({
+      date: "expenseDate" as keyof Expense,
+    }),
+    [],
   );
 
   useEffect(() => {
@@ -616,6 +697,25 @@ function Expenses() {
                 style={{ flexGrow: 1 }}
               />
             </Flex>
+          </Flex>
+          <Flex>
+            <ReceiptUploader<Expense>
+              form={form}
+              mapping={ocrMapping}
+              onOcrComplete={(result: OcrResult) => {
+                console.log(result.rawText);
+                setExpenseTypeFromOcr(result);
+                setCurrencyFromOcr(result);
+                if (result.totalPrice)
+                  form.setFieldValue(
+                    "totalPrice",
+                    parseFloat(result.totalPrice),
+                  );
+              }}
+              onResetComplete={() => {
+                form.reset();
+              }}
+            />
           </Flex>
           <Flex w="40%" justify="center" h="320px">
             <Card shadow="xs" radius="md" withBorder padding={10} w="100%">
