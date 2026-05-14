@@ -166,8 +166,8 @@
     "photoProcessing": "The photo is being processed..",
     "lowResolution": "Low Resolution",
     "accuracyRate": "Accuracy Rate:",
-    "imageQuality": "Image quality is poor, results may be inaccurate. Please check.",
-    "filesUpload": "Only JPG, PNG, or WebP files can be uploaded.",
+    "lowImageQuality": "Image quality is poor, results may be inaccurate. Please check.",
+    "fileUploadRule": "Only JPG, PNG, or WebP files can be uploaded.",
     "ocrRequestTimedOut": "The OCR request timed out. Please try again.",
     "fileSize": "The file size must be less than {{fileSize}}MB."
   },

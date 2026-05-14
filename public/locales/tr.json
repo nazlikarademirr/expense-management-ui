@@ -166,8 +166,8 @@
     "photoProcessing": "Fotoğraf işleniyor..",
     "lowResolution": "Düşük Çözünürlük",
     "accuracyRate": "Doğruluk Oranı:",
-    "imageQuality": "Görüntü kalitesi düşük, sonuçlar hatalı olabilir. Lütfen kontrol edin.",
-    "filesUpload": "Sadece JPG, PNG veya WebP dosyaları yüklenebilir.",
+    "lowImageQuality": "Görüntü kalitesi düşük, sonuçlar hatalı olabilir. Lütfen kontrol edin.",
+    "fileUploadRule": "Sadece JPG, PNG veya WebP dosyaları yüklenebilir.",
     "ocrRequestTimedOut": "OCR isteği zaman aşımına uğradı. Lütfen tekrar deneyin.",
     "fileSize": "Dosya boyutu {{fileSize}}MB'dan küçük olmalıdır."
   },

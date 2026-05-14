@@ -172,8 +172,8 @@ abstract class Dictionary {
     static readonly PHOTO_PROCESSING = "expense.photoProcessing";
     static readonly LOW_RESOLUTION = "expense.lowResolution";
     static readonly ACCURACY_RATE = "expense.accuracyRate";
-    static readonly IMAGE_QUALITY = "expense.imageQuality";
-    static readonly FILES_UPLOAD = "expense.filesUpload";
+    static readonly LOW_IMAGE_QUALITY = "expense.lowImageQuality";
+    static readonly FILE_UPLOAD_RULE = "expense.fileUploadRule";
     static readonly OCR_REQUEST_TIMED_OUT = "expense.ocrRequestTimedOut";
     static readonly FILE_SIZE = "expense.fileSize";
   };

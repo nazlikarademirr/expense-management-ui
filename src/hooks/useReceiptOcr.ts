@@ -1,8 +1,8 @@
 import { useState, useCallback } from "react";
 import { OcrResult, OcrStatus } from "../types/ocr.types";
-import { extractReceiptData } from "../request-handler/ocr-request-handler";
 import { useTranslation } from "react-i18next";
 import Dictionary from "../helpers/translation/dictionary";
+import { extractReceiptData } from "../request-handler/ocr-request-handler";
 
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_SIZE_MB = 10;
@@ -34,7 +34,7 @@ function useReceiptOcr(): UseReceiptOcrReturn {
   const processFile = useCallback(
     async (file: File): Promise<OcrResult | null> => {
       if (!ACCEPTED_TYPES.includes(file.type)) {
-        setError(t(Dictionary.Expense.FILES_UPLOAD));
+        setError(t(Dictionary.Expense.FILE_UPLOAD_RULE));
         setStatus("error");
         return null;
       }
@@ -60,7 +60,7 @@ function useReceiptOcr(): UseReceiptOcrReturn {
         const data = await extractReceiptData(file);
 
         if (data.confidence < 0.5) {
-          setError(t(Dictionary.Expense.IMAGE_QUALITY));
+          setError(t(Dictionary.Expense.LOW_IMAGE_QUALITY));
         }
 
         setResult(data);
