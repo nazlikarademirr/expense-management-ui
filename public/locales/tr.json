@@ -18,7 +18,9 @@
     "manager": "Müdür",
     "user": "Kullanıcı",
     "expenseManagement": "Masraf Yönetimi",
-    "status": "Durum"
+    "status": "Durum",
+    "loading": "Yükleniyor..",
+    "unexpectedError": "Beklenmeyen bir hata oluştu."
   },
 
   "userMenu": {
@@ -157,7 +159,17 @@
     "outOfOfficeCannotBeEmpty": "Ofis dışı bilgisi boş olamaz.",
     "descriptionRule": "Gider türü ulaşım olduğunda, açıklama kısmı boş bırakılamaz.",
     "priceCannotBeEmpty": "Fiyat boş olamaz.",
-    "priceCannotBeZero": "Fiyat 0 veya daha az olamaz."
+    "priceCannotBeZero": "Fiyat 0 veya daha az olamaz.",
+    "receiptUploader": "Fiş veya faturayı buraya sürükleyin",
+    "receiptSelect": "ya da tıklayarak seçin · maks. 10MB",
+    "removeImage": "Görüntüyü kaldır.",
+    "photoProcessing": "Fotoğraf işleniyor..",
+    "textNotDetected": "Metin Algılanamadı",
+    "accuracyRate": "Doğruluk Oranı:",
+    "lowImageQuality": "Görüntü kalitesi düşük, sonuçlar hatalı olabilir. Lütfen kontrol edin.",
+    "fileUploadRule": "Sadece JPG, PNG veya WebP dosyaları yüklenebilir.",
+    "ocrRequestTimedOut": "OCR isteği zaman aşımına uğradı. Lütfen tekrar deneyin.",
+    "fileSize": "Dosya boyutu {{fileSize}}MB'dan küçük olmalıdır."
   },
 
   "report": {

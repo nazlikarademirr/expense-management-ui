@@ -19,6 +19,8 @@ abstract class Dictionary {
     static readonly USER = "common.user";
     static readonly EXPENSE_MANAGEMENT = "common.expenseManagement";
     static readonly STATUS = "common.status";
+    static readonly LOADING = "common.loading";
+    static readonly UNEXPECTED_ERROR = "common.unexpectedError";
   };
 
   static UserMenu = class {
@@ -164,6 +166,16 @@ abstract class Dictionary {
     static readonly DESCRIPTION_RULE = "expense.descriptionRule";
     static readonly PRICE_CANNOT_BE_EMPTY = "expense.priceCannotBeEmpty";
     static readonly PRICE_CANNOT_BE_ZERO = "expense.priceCannotBeZero";
+    static readonly RECEIPT_UPLOADER = "expense.receiptUploader";
+    static readonly RECEIPT_SELECT = "expense.receiptSelect";
+    static readonly REMOVE_IMAGE = "expense.removeImage";
+    static readonly PHOTO_PROCESSING = "expense.photoProcessing";
+    static readonly TEXT_NOT_DETECTED = "expense.textNotDetected";
+    static readonly ACCURACY_RATE = "expense.accuracyRate";
+    static readonly LOW_IMAGE_QUALITY = "expense.lowImageQuality";
+    static readonly FILE_UPLOAD_RULE = "expense.fileUploadRule";
+    static readonly OCR_REQUEST_TIMED_OUT = "expense.ocrRequestTimedOut";
+    static readonly FILE_SIZE = "expense.fileSize";
   };
 
   static Report = class {
