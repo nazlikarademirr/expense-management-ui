@@ -55,7 +55,32 @@ import { useTranslation } from "react-i18next";
 import Dictionary from "../../helpers/translation/dictionary";
 import { OcrResult } from "../../types/ocr.types";
 import ReceiptUploader from "../../components/ReceiptUploader/ReceiptUploader";
+import normalizeText from "../../helpers/NormalizeText";
 const MIN_FLEX_HEIGHT = 110;
+const foodSelectorKeywords = ["yiyecek", "icecek", "KDV", "kdv"];
+const tripSelectorKeywords = [
+  "maliye",
+  "bakanligi",
+  "turkiye",
+  "esnaf",
+  "sanatkarlari",
+  "konfederasyonu",
+];
+const tlCurrencySelectorKeywords = [
+  "tl",
+  "₺",
+  "yiyecek",
+  "icecek",
+  "kdv",
+  "KDV",
+  "%10",
+  "maliye",
+  "bakanligi",
+  "turkiye",
+  "esnaf",
+  "sanatkarlari",
+  "konfederasyonu",
+];
 
 function Expenses() {
   const { t } = useTranslation();
@@ -415,38 +440,16 @@ function Expenses() {
     form.setFieldValue("overtimeMembers", overtimeMembers);
   };
 
-  const normalizeText = (value: string) =>
-    value
-      .toLocaleLowerCase("tr-TR")
-      .replace(/ı/g, "i")
-      .replace(/ğ/g, "g")
-      .replace(/ü/g, "u")
-      .replace(/ş/g, "s")
-      .replace(/ö/g, "o")
-      .replace(/ç/g, "c");
-
   const setExpenseTypeFromOcr = (result: OcrResult) => {
     const text = normalizeText(result.rawText.join(" "));
 
-    if (
-      text.includes("yiyecek") ||
-      text.includes("icecek") ||
-      text.includes("kdv") ||
-      text.includes("KDV")
-    ) {
+    if (foodSelectorKeywords.some((x) => text.includes(x))) {
       const foodValue = expenseTypes[ExpenseType.Food].value;
       form.setFieldValue("expenseType", foodValue);
       return foodValue;
     }
 
-    if (
-      text.includes("maliye") ||
-      text.includes("bakanligi") ||
-      text.includes("turkiye") ||
-      text.includes("esnaf") ||
-      text.includes("sanatkarlari") ||
-      text.includes("konfederasyonu")
-    ) {
+    if (tripSelectorKeywords.some((x) => text.includes(x))) {
       const transportationValue =
         expenseTypes[ExpenseType.Transportation].value;
       form.setFieldValue("expenseType", transportationValue);
@@ -457,21 +460,7 @@ function Expenses() {
   const setCurrencyFromOcr = (result: OcrResult) => {
     const text = normalizeText(result.rawText.join(" "));
 
-    if (
-      text.includes("tl") ||
-      text.includes("₺") ||
-      text.includes("yiyecek") ||
-      text.includes("icecek") ||
-      text.includes("kdv") ||
-      text.includes("KDV") ||
-      text.includes("%10") ||
-      text.includes("maliye") ||
-      text.includes("bakanligi") ||
-      text.includes("turkiye") ||
-      text.includes("esnaf") ||
-      text.includes("sanatkarlari") ||
-      text.includes("konfederasyonu")
-    ) {
+    if (tlCurrencySelectorKeywords.some((x) => text.includes(x))) {
       const tl = currencyTypes.find(
         (x) =>
           x.label.toLowerCase().includes("tl") ||
@@ -485,6 +474,14 @@ function Expenses() {
     }
 
     return null;
+  };
+
+  const ocrComplete = (result: OcrResult) => {
+    if (result.confidence < 0.7) return;
+    setExpenseTypeFromOcr(result);
+    setCurrencyFromOcr(result);
+    if (result.totalPrice)
+      form.setFieldValue("totalPrice", parseFloat(result.totalPrice));
   };
 
   const memoizedExpenses = useMemo(
@@ -702,16 +699,7 @@ function Expenses() {
             <ReceiptUploader<Expense>
               form={form}
               mapping={ocrMapping}
-              onOcrComplete={(result: OcrResult) => {
-                console.log(result.rawText);
-                setExpenseTypeFromOcr(result);
-                setCurrencyFromOcr(result);
-                if (result.totalPrice)
-                  form.setFieldValue(
-                    "totalPrice",
-                    parseFloat(result.totalPrice),
-                  );
-              }}
+              onOcrComplete={ocrComplete}
               onResetComplete={() => {
                 form.reset();
               }}

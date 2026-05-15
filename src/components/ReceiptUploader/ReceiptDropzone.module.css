@@ -1,6 +1,5 @@
 .wrapper {
   width: 300px;
-  height: 320px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -9,16 +8,9 @@
 
 .dropzone {
   border: 2px dashed #d1d5db;
-  border-radius: 12px;
-  width: 300px;
-  min-width: 300px;
-  max-width: 300px;
-  height: 250px;
-  min-height: 250px;
-  max-height: 250px;
-  flex: 0 0 250px;
+  border-radius: 10px;
+  flex: 0 0 270px;
   flex-shrink: 0;
-
   display: flex;
   align-items: center;
   justify-content: center;
@@ -29,6 +21,11 @@
   position: relative;
   overflow: hidden;
   background: #fafafa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 12px;
+  box-sizing: border-box;
 }
 
 .dropzone:hover:not(.hasPreview) {
@@ -69,6 +66,9 @@
   width: 100%;
   height: 100%;
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .preview {
@@ -77,6 +77,8 @@
   object-fit: contain;
   display: block;
   border-radius: 10px;
+  display: block;
+  margin: auto;
 }
 
 .overlay {

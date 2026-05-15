@@ -164,7 +164,7 @@
     "receiptSelect": "or select by clicking · max. 10MB",
     "removeImage": "Remove image.",
     "photoProcessing": "The photo is being processed..",
-    "lowResolution": "Low Resolution",
+    "textNotDetected": "Text Not Detected",
     "accuracyRate": "Accuracy Rate:",
     "lowImageQuality": "Image quality is poor, results may be inaccurate. Please check.",
     "fileUploadRule": "Only JPG, PNG, or WebP files can be uploaded.",

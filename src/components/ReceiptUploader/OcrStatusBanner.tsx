@@ -2,6 +2,9 @@ import { useTranslation } from "react-i18next";
 import { OcrResult, OcrStatus } from "../../types/ocr.types";
 import styles from "./OcrStatusBanner.module.css";
 import Dictionary from "../../helpers/translation/dictionary";
+import { FiAlertTriangle } from "react-icons/fi";
+import { TiTick } from "react-icons/ti";
+import { Alert, Flex, Text } from "@mantine/core";
 
 interface Props {
   status: OcrStatus;
@@ -16,9 +19,15 @@ function OcrStatusBanner({ status, error, result }: Props) {
 
   if (status === "error" && error) {
     return (
-      <div className={`${styles.banner} ${styles.error}`} role="alert">
-        <span>⚠️</span> {error}
-      </div>
+      <Alert
+        icon={<FiAlertTriangle size={18} />}
+        color="red"
+        variant="light"
+        radius="md"
+        role="alert"
+      >
+        {error}
+      </Alert>
     );
   }
 
@@ -26,17 +35,32 @@ function OcrStatusBanner({ status, error, result }: Props) {
     const lowConf = result.confidence > 0 && result.confidence < 0.7;
 
     return (
-      <div
+      <Flex
         className={`${styles.banner} ${lowConf ? styles.warn : styles.success}`}
-        role="status"
+        role={lowConf ? "alert" : "status"}
+        align="center"
+        justify="space-between"
+        gap={8}
       >
-        <span>{lowConf ? "⚠️" : "✅"}</span>
-        <span>{lowConf && t(Dictionary.Expense.LOW_RESOLUTION)}</span>
-        <span className={styles.conf}>
-          {t(Dictionary.Expense.ACCURACY_RATE)} %
-          {Math.round(result.confidence * 100)}
-        </span>
-      </div>
+        <Flex align="center" gap={5}>
+          {lowConf ? (
+            <FiAlertTriangle size={15} style={{ marginTop: 3 }} />
+          ) : (
+            <TiTick color="green" size={20} />
+          )}
+
+          <Text size="sm">
+            {lowConf ? t(Dictionary.Expense.TEXT_NOT_DETECTED) : ""}
+          </Text>
+        </Flex>
+
+        {!lowConf && (
+          <Text className={styles.conf}>
+            {t(Dictionary.Expense.ACCURACY_RATE)} %
+            {Math.round(result.confidence * 100)}
+          </Text>
+        )}
+      </Flex>
     );
   }
 

@@ -164,7 +164,7 @@
     "receiptSelect": "ya da tıklayarak seçin · maks. 10MB",
     "removeImage": "Görüntüyü kaldır.",
     "photoProcessing": "Fotoğraf işleniyor..",
-    "lowResolution": "Düşük Çözünürlük",
+    "textNotDetected": "Metin Algılanamadı",
     "accuracyRate": "Doğruluk Oranı:",
     "lowImageQuality": "Görüntü kalitesi düşük, sonuçlar hatalı olabilir. Lütfen kontrol edin.",
     "fileUploadRule": "Sadece JPG, PNG veya WebP dosyaları yüklenebilir.",

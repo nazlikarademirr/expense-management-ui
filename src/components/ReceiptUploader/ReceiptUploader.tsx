@@ -3,9 +3,10 @@ import type { UseFormReturnType } from "@mantine/form";
 import { OcrResult } from "../../types/ocr.types";
 import styles from "./ReceiptDropzone.module.css";
 import useReceiptOcr from "../../hooks/useReceiptOcr";
-import OcrFieldMapper from "./OcrFieldMapper";
 import ReceiptDropzone from "./ReceiptDropzone";
 import OcrStatusBanner from "./OcrStatusBanner";
+import { Flex } from "@mantine/core";
+import OcrFieldMapper from "./OcrFieldMapper";
 
 interface FieldMapping<TValues> {
   date?: keyof TValues;
@@ -47,8 +48,8 @@ function ReceiptUploader<TValues extends Record<string, unknown>>({
   }, [reset, onResetComplete]);
 
   return (
-    <div>
-      <div className={styles.wrapper}>
+    <Flex direction="column">
+      <Flex className={styles.wrapper} direction="column">
         <ReceiptDropzone
           status={status}
           onFileSelect={handleFile}
@@ -57,14 +58,15 @@ function ReceiptUploader<TValues extends Record<string, unknown>>({
         />
 
         <OcrStatusBanner status={status} error={error} result={result} />
-      </div>
+      </Flex>
+
       <OcrFieldMapper
         result={result}
         form={form}
         mapping={mapping}
         clearOnEmpty={clearOnEmpty}
       />
-    </div>
+    </Flex>
   );
 }
 

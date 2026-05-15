@@ -170,7 +170,7 @@ abstract class Dictionary {
     static readonly RECEIPT_SELECT = "expense.receiptSelect";
     static readonly REMOVE_IMAGE = "expense.removeImage";
     static readonly PHOTO_PROCESSING = "expense.photoProcessing";
-    static readonly LOW_RESOLUTION = "expense.lowResolution";
+    static readonly TEXT_NOT_DETECTED = "expense.textNotDetected";
     static readonly ACCURACY_RATE = "expense.accuracyRate";
     static readonly LOW_IMAGE_QUALITY = "expense.lowImageQuality";
     static readonly FILE_UPLOAD_RULE = "expense.fileUploadRule";

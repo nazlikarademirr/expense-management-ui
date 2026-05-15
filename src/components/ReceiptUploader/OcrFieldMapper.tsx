@@ -22,6 +22,10 @@ function OcrFieldMapper<TValues extends Record<string, unknown>>({
   useEffect(() => {
     if (!result) return;
 
+    if (result.confidence < 0.7) {
+      return;
+    }
+
     const nextValues: Partial<TValues> = {};
 
     const toValidDate = (value: string | null): Date | null => {
@@ -33,6 +37,7 @@ function OcrFieldMapper<TValues extends Record<string, unknown>>({
 
       return date;
     };
+
     if (mapping.date) {
       const parsedDate = toValidDate(result.date);
 
