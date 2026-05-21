@@ -21,6 +21,16 @@ abstract class Dictionary {
     static readonly STATUS = "common.status";
     static readonly LOADING = "common.loading";
     static readonly UNEXPECTED_ERROR = "common.unexpectedError";
+    static readonly SAVE = "common.save";
+    static readonly OTHER = "common.other";
+    static readonly YES = "common.yes";
+    static readonly NO = "common.no";
+  };
+
+  static Authentication = class {
+    static readonly USE_AUTHENTICATION_REQUIRED =
+      "authentication.useAuthenticationRequired";
+    static readonly SESSION_EXPIRED = "authentication.sessionExpired";
   };
 
   static UserMenu = class {
@@ -83,6 +93,19 @@ abstract class Dictionary {
     static readonly PASSWORD_MAX_LENGTH = "user.passwordMaxLength";
     static readonly ROLE_MUST_BE_SELECTED = "user.roleMustBeSelected";
     static readonly UPDATED = "user.updated";
+    static readonly PASSWORDS_NOT_MATCH = "user.passwordsNotMatch";
+    static readonly PASSWORD_SUCCESSFULLY_UPDATED =
+      "user.passwordSuccessfullyUpdated";
+    static readonly CURRENT_PASSWORD = "user.currentPassword";
+    static readonly NEW_PASSWORD = "user.newPassword";
+    static readonly NEW_PASSWORD_AGAIN = "user.newPasswordAgain";
+    static readonly CURRENT_PASSWORD_CANNOT_BE_EMPTY =
+      "user.currentPasswordCannotBeEmpty";
+    static readonly NEW_PASSWORD_CANNOT_BE_EMPTY =
+      "user.newPasswordCannotBeEmpty";
+    static readonly NEW_PASSWORD_AGAIN_CANNOT_BE_EMPTY =
+      "user.newPasswordAgainCannotBeEmpty";
+    static readonly PROBLEM_OCCURRED_WITH_USER = "user.problemOccurredWithUser";
   };
 
   static Team = class {
@@ -134,7 +157,7 @@ abstract class Dictionary {
     static readonly USER_NAME = "expense.userName";
     static readonly PROJECT_NAME = "expense.projectName";
     static readonly DATE = "expense.date";
-    static readonly TRIP_DESCRIPTION = "expense.tripDescription";
+    static readonly DESCRIPTION = "expense.description";
     static readonly CURRENCY = "expense.currency";
     static readonly OUT_OF_OFFICE = "expense.outOfOffice";
     static readonly PRICE = "expense.price";

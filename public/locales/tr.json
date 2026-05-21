@@ -20,7 +20,16 @@
     "expenseManagement": "Masraf Yönetimi",
     "status": "Durum",
     "loading": "Yükleniyor..",
-    "unexpectedError": "Beklenmeyen bir hata oluştu."
+    "unexpectedError": "Beklenmeyen bir hata oluştu.",
+    "save": "Kaydet",
+    "other": "Diğer",
+    "yes": "Evet",
+    "no": "Hayır"
+  },
+
+  "authentication": {
+    "useAuthenticationRequired": "useAuthentication bir AuthenticationProvider içinde kullanılmalıdır.",
+    "sessionExpired": "Oturumunuzun süresi doldu, lütfen tekrar giriş yapın."
   },
 
   "userMenu": {
@@ -81,7 +90,16 @@
     "passwordMinLength": "Şifre en az 8 karakter olmalıdır.",
     "passwordMaxLength": "Şifre 32 karakteri geçemez.",
     "roleMustBeSelected": "Rol seçilmelidir.",
-    "updated": "Kullanıcı başarıyla güncellendi."
+    "updated": "Kullanıcı başarıyla güncellendi.",
+    "passwordsNotMatch": "Yeni parola ve parola tekrarı birbirine uymuyor.",
+    "passwordSuccessfullyUpdated": "Parolanız başarıyla güncellendi.",
+    "currentPassword": "Mevcut Parola",
+    "newPassword": "Yeni Parola",
+    "newPasswordAgain": "Yeni Parola Tekrar",
+    "currentPasswordCannotBeEmpty": "Mevcut parola boş olamaz.",
+    "newPasswordCannotBeEmpty": "Yeni parola boş olamaz.",
+    "newPasswordAgainCannotBeEmpty": "Yeni parola tekrarı boş olamaz.",
+    "problemOccurredWithUser": "Kullanıcıyla ilgili bir sorun oluştu."
   },
 
   "team": {
@@ -134,7 +152,7 @@
     "date": "Masraf Tarihi",
     "totalPrice": "Toplam Fiyat",
     "type": "Masraf Tipi",
-    "tripDescription": "Yol Açıklaması",
+    "description": "Açıklama",
     "currency": "Para Birimi",
     "outOfOffice": "Ofis Dışı",
     "price": "Fiyat",
@@ -157,7 +175,7 @@
     "totalPriceCannotBeZero": "Toplam fiyat 0 veya daha az olamaz.",
     "currencyMustBeSelected": "Para birimi seçilmelidir.",
     "outOfOfficeCannotBeEmpty": "Ofis dışı bilgisi boş olamaz.",
-    "descriptionRule": "Gider türü ulaşım olduğunda, açıklama kısmı boş bırakılamaz.",
+    "descriptionRule": "Gider türü ulaşım veya diğer olduğunda, açıklama kısmı boş bırakılamaz.",
     "priceCannotBeEmpty": "Fiyat boş olamaz.",
     "priceCannotBeZero": "Fiyat 0 veya daha az olamaz.",
     "receiptUploader": "Fiş veya faturayı buraya sürükleyin",

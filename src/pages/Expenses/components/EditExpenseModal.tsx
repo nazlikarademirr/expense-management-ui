@@ -38,6 +38,7 @@ import { zod4Resolver } from "mantine-form-zod-resolver";
 import { CurrentUser } from "../../../types/authentication.types";
 import { useTranslation } from "react-i18next";
 import Dictionary from "../../../helpers/translation/dictionary";
+import Role from "../../../enums/role";
 
 interface EditExpenseProps {
   currentUser: CurrentUser | null;
@@ -45,6 +46,7 @@ interface EditExpenseProps {
   updateExpense: (expenseForm: Expense) => void;
   activeUserSelectData: SelectItem[];
   activeProjectSelectData: SelectItem[];
+  reportSelectData: SelectItem[];
   unapprovedReportSelectData: SelectItem[];
   checkIfExpenseIsValid: (expense: Expense) => boolean;
 }
@@ -57,6 +59,7 @@ function EditExpenseModal({
   updateExpense,
   activeUserSelectData,
   activeProjectSelectData,
+  reportSelectData,
   unapprovedReportSelectData,
   checkIfExpenseIsValid,
 }: EditExpenseProps) {
@@ -129,7 +132,7 @@ function EditExpenseModal({
       expenseDate: expenseForm.values.expenseDate,
       totalPrice: expenseForm.values.totalPrice,
       currency: Number(expenseForm.values.currency),
-      tripDescription: expenseForm.values.tripDescription,
+      description: expenseForm.values.description,
       outOfOffice: expenseForm.values.outOfOffice,
       reportId: expenseForm.values.reportId ?? "",
       overtimeMembers: expenseForm.values.overtimeMembers,
@@ -289,7 +292,11 @@ function EditExpenseModal({
               w={"20%"}
               {...expenseForm.getInputProps("reportId")}
               onChange={(_, option) => changeReport(option)}
-              data={unapprovedReportSelectData}
+              data={
+                currentUser?.role === Role.User
+                  ? unapprovedReportSelectData
+                  : reportSelectData
+              }
               placeholder={t(Dictionary.Expense.SELECT_REPORT)}
               searchable
               label={t(Dictionary.Expense.REPORT_NAME)}
@@ -334,10 +341,11 @@ function EditExpenseModal({
           <Flex gap={"sm"} style={{ flexGrow: 1, minHeight: MIN_FLEX_HEIGHT }}>
             <TextInput
               w={"20%"}
-              {...expenseForm.getInputProps("tripDescription")}
-              label={t(Dictionary.Expense.TRIP_DESCRIPTION)}
+              {...expenseForm.getInputProps("description")}
+              label={t(Dictionary.Expense.DESCRIPTION)}
               withAsterisk={
-                expenseForm.values.expenseType === ExpenseType.Transportation
+                expenseForm.values.expenseType === ExpenseType.Transportation ||
+                expenseForm.values.expenseType === ExpenseType.Other
               }
               disabled={expenseForm.values.expenseType === ExpenseType.Food}
               style={{ flexGrow: 1 }}
