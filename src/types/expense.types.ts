@@ -15,7 +15,7 @@ type Expense = {
   expenseDate: Date;
   totalPrice: number;
   currency: string | null;
-  tripDescription: string;
+  description: string;
   outOfOffice: boolean;
   reportId: string | null;
   reportName: string;
@@ -35,7 +35,7 @@ type ExpenseRequest = {
   expenseDate: Date;
   totalPrice: number;
   currency: number;
-  tripDescription: string;
+  description: string;
   outOfOffice: boolean;
   reportId: string;
   overtimeMembers: OvertimeMember[];
@@ -51,7 +51,7 @@ type ExpenseResponse = {
   expenseDate: Date;
   totalPrice: number;
   currency: number;
-  tripDescription: string;
+  description: string;
   outOfOffice: boolean;
   reportId: string;
   reportName: string;
@@ -80,17 +80,17 @@ const expenseSchema = z
       CurrencyType,
       t(Dictionary.Expense.CURRENCY_MUST_BE_SELECTED),
     ),
-    tripDescription: z.string().nullish(),
+    description: z.string().nullish(),
     outOfOffice: z.boolean(t(Dictionary.Expense.OUT_OF_OFFICE_CANNOT_BE_EMPTY)),
   })
   .superRefine((data, ctx) => {
     if (
-      data.expenseType === ExpenseType.Transportation &&
-      !data.tripDescription
+      data.expenseType === ExpenseType.Transportation ||
+      (data.expenseType === ExpenseType.Other && !data.description)
     ) {
       ctx.addIssue({
         code: "custom",
-        path: ["tripDescription"],
+        path: ["description"],
         message: t(Dictionary.Expense.DESCRIPTION_RULE),
       });
     }

@@ -8,6 +8,9 @@ import urls from "../../../constants/urls";
 import RequestType from "../../../request-handler/request-type";
 import z from "zod/v4";
 import { zod4Resolver } from "mantine-form-zod-resolver";
+import { useTranslation } from "react-i18next";
+import Dictionary from "../../../helpers/translation/dictionary";
+import { t } from "i18next";
 
 interface ChangePasswordModalProps {
   currentUserId: string | undefined;
@@ -23,17 +26,21 @@ const changeUserPasswordSchema = z.object({
   currentPassword: z
     .string()
     .trim()
-    .min(1, "Current password cannot be empty."),
-  newPassword: z.string().trim().min(1, "New password cannot be empty."),
+    .min(1, t(Dictionary.User.CURRENT_PASSWORD_CANNOT_BE_EMPTY)),
+  newPassword: z
+    .string()
+    .trim()
+    .min(1, t(Dictionary.User.NEW_PASSWORD_CANNOT_BE_EMPTY)),
   newPasswordAgain: z
     .string()
     .trim()
-    .min(1, "New password again cannot be empty."),
+    .min(1, t(Dictionary.User.NEW_PASSWORD_AGAIN_CANNOT_BE_EMPTY)),
 });
 
 function ChangePasswordModal({ currentUserId }: ChangePasswordModalProps) {
   const { handleDataRequest } = useRequestHandler();
   const [isLoading, setIsLoading] = useState(false);
+  const { t } = useTranslation();
 
   const form = useForm<ChangeUserPassword>({
     initialValues: {
@@ -46,7 +53,7 @@ function ChangePasswordModal({ currentUserId }: ChangePasswordModalProps) {
 
   const handleSave = async () => {
     if (!currentUserId) {
-      toast.error("A problem occurred with the user.");
+      toast.error(t(Dictionary.User.PROBLEM_OCCURRED_WITH_USER));
       return;
     }
 
@@ -67,9 +74,7 @@ function ChangePasswordModal({ currentUserId }: ChangePasswordModalProps) {
     };
 
     if (form.values.newPassword !== form.values.newPasswordAgain) {
-      toast.error(
-        "The new password and the password confirmation do not match.",
-      );
+      toast.error(t(Dictionary.User.PASSWORDS_NOT_MATCH));
       setIsLoading(false);
       return;
     }
@@ -86,7 +91,7 @@ function ChangePasswordModal({ currentUserId }: ChangePasswordModalProps) {
     }
 
     modals.closeAll();
-    toast.success("Your password has been successfully updated.");
+    toast.success(t(Dictionary.User.PASSWORD_SUCCESSFULLY_UPDATED));
 
     setIsLoading(false);
   };
@@ -95,19 +100,19 @@ function ChangePasswordModal({ currentUserId }: ChangePasswordModalProps) {
     <Flex direction="column" gap={20}>
       <PasswordInput
         {...form.getInputProps("currentPassword")}
-        label="Current Password"
+        label={t(Dictionary.User.CURRENT_PASSWORD)}
         withAsterisk
         style={{ minHeight: 80 }}
       />
       <PasswordInput
         {...form.getInputProps("newPassword")}
-        label="New Password"
+        label={t(Dictionary.User.NEW_PASSWORD)}
         withAsterisk
         style={{ minHeight: 80 }}
       />
       <PasswordInput
         {...form.getInputProps("newPasswordAgain")}
-        label="New Password Again"
+        label={t(Dictionary.User.NEW_PASSWORD_AGAIN)}
         withAsterisk
         style={{ minHeight: 80 }}
       />
@@ -119,7 +124,7 @@ function ChangePasswordModal({ currentUserId }: ChangePasswordModalProps) {
           color="blue"
           fullWidth
         >
-          Save
+          {t(Dictionary.Common.SAVE)}
         </Button>
       </Flex>
     </Flex>

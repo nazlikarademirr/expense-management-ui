@@ -40,6 +40,10 @@ const expenseTypes = [
     value: ExpenseType.Transportation,
     label: t(Dictionary.Expense.TRANSPORTATION),
   },
+  {
+    value: ExpenseType.Other,
+    label: t(Dictionary.Common.OTHER),
+  },
 ];
 
 const currencyTypes = [

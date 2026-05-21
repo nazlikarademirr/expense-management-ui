@@ -15,7 +15,7 @@ import {
   TextInput,
   Title,
   Text,
-  Tooltip,
+  Badge,
 } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import expenseSchema, {
@@ -35,9 +35,7 @@ import EditExpenseModal from "./components/EditExpenseModal";
 import { useEffect, useMemo, useState } from "react";
 import { currencyTypes, expenseTypes } from "../../constants/static-data";
 import ExpenseType from "../../enums/expense-type";
-import { TiTick, TiTimes } from "react-icons/ti";
 import {
-  BOOLEAN_ICON_SIZE,
   PAGE_FLEX_HEIGHT,
   SEARCH_ICON_SIZE,
   TITLE_DIVIDER_MY,
@@ -56,6 +54,7 @@ import Dictionary from "../../helpers/translation/dictionary";
 import { OcrResult } from "../../types/ocr.types";
 import ReceiptUploader from "../../components/ReceiptUploader/ReceiptUploader";
 import normalizeText from "../../helpers/NormalizeText";
+import Role from "../../enums/role";
 const MIN_FLEX_HEIGHT = 110;
 const foodSelectorKeywords = ["yiyecek", "icecek", "KDV", "kdv"];
 const tripSelectorKeywords = [
@@ -132,7 +131,7 @@ function Expenses() {
       expenseDate: new Date(),
       totalPrice: 0,
       currency: null,
-      tripDescription: "",
+      description: "",
       outOfOffice: false,
       reportId: null,
       reportName: "",
@@ -172,6 +171,7 @@ function Expenses() {
           updateExpense={updateExpense}
           activeUserSelectData={activeUserSelectData}
           activeProjectSelectData={activeProjectSelectData}
+          reportSelectData={reportSelectData}
           unapprovedReportSelectData={unapprovedReportSelectData}
           checkIfExpenseIsValid={checkIfExpenseIsValid}
         />
@@ -334,7 +334,7 @@ function Expenses() {
       expenseDate: form.values.expenseDate,
       totalPrice: form.values.totalPrice,
       currency: Number(form.values.currency),
-      tripDescription: form.values.tripDescription,
+      description: form.values.description,
       outOfOffice: form.values.outOfOffice,
       reportId: form.values.reportId ?? "",
       overtimeMembers: form.values.overtimeMembers,
@@ -510,41 +510,49 @@ function Expenses() {
             <Table.Td>{currencyTypes[Number(x.currency)].label}</Table.Td>
             <Table.Td>
               {x.expenseType === ExpenseType.Transportation
-                ? x.tripDescription
+                ? x.description
                 : "-"}
             </Table.Td>
             <Table.Td>
-              {x.outOfOffice ? (
-                <TiTick size={BOOLEAN_ICON_SIZE} color="green" />
-              ) : (
-                <TiTimes size={BOOLEAN_ICON_SIZE} color="#BA1A1A" />
-              )}
+              <Badge
+                size="md"
+                color={x.outOfOffice ? "green" : "gray"}
+                variant="light"
+              >
+                {x.outOfOffice
+                  ? t(Dictionary.Common.YES)
+                  : t(Dictionary.Common.NO)}
+              </Badge>
             </Table.Td>
             <Table.Td>{x.reportId !== null ? x.reportName : "-"}</Table.Td>
             <Table.Td> {x.createUserFullName} </Table.Td>
             <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
             <Table.Td>
               <Flex justify="center" gap={5}>
-                <Tooltip label={t(Dictionary.Common.EDIT)} withArrow>
-                  <ActionIcon
-                    disabled={x.isApproved}
-                    onClick={() => openEditExpense(x)}
-                    variant="light"
-                    color="blue"
-                  >
-                    <IconEdit />
-                  </ActionIcon>
-                </Tooltip>
-                <Tooltip label={t(Dictionary.Expense.DELETE)} withArrow>
-                  <ActionIcon
-                    disabled={x.isApproved}
-                    onClick={() => openDeleteExpenseModal(x.id)}
-                    variant="light"
-                    color="red"
-                  >
-                    <IconTrash />
-                  </ActionIcon>
-                </Tooltip>
+                <Button
+                  disabled={
+                    auth.currentUser?.role === Role.User && x.isApproved
+                  }
+                  onClick={() => openEditExpense(x)}
+                  variant="light"
+                  radius={5}
+                  style={{ color: "#4f46e5", backgroundColor: "#f5f5ff" }}
+                  leftSection={<IconEdit size={18} />}
+                >
+                  {t(Dictionary.Common.EDIT)}
+                </Button>
+                <Button
+                  disabled={
+                    auth.currentUser?.role === Role.User && x.isApproved
+                  }
+                  onClick={() => openDeleteExpenseModal(x.id)}
+                  variant="light"
+                  radius={5}
+                  style={{ color: "red", backgroundColor: "#fff6f6" }}
+                  leftSection={<IconTrash size={18} />}
+                >
+                  {t(Dictionary.Common.DELETE)}
+                </Button>
               </Flex>
             </Table.Td>
           </Table.Tr>
@@ -625,7 +633,11 @@ function Expenses() {
               <Select
                 w="20%"
                 {...form.getInputProps("reportId")}
-                data={unapprovedReportSelectData}
+                data={
+                  auth.currentUser?.role === Role.User
+                    ? unapprovedReportSelectData
+                    : reportSelectData
+                }
                 searchable
                 label={t(Dictionary.Expense.REPORT_NAME)}
                 clearable
@@ -669,10 +681,11 @@ function Expenses() {
             <Flex gap="sm" style={{ flexGrow: 1, minHeight: MIN_FLEX_HEIGHT }}>
               <TextInput
                 w="20%"
-                {...form.getInputProps("tripDescription")}
-                label={t(Dictionary.Expense.TRIP_DESCRIPTION)}
+                {...form.getInputProps("description")}
+                label={t(Dictionary.Expense.DESCRIPTION)}
                 withAsterisk={
-                  form.values.expenseType === ExpenseType.Transportation
+                  form.values.expenseType === ExpenseType.Transportation ||
+                  form.values.expenseType === ExpenseType.Other
                 }
                 disabled={form.values.expenseType === ExpenseType.Food}
                 style={{ flexGrow: 1 }}
@@ -685,7 +698,6 @@ function Expenses() {
                 label={t(Dictionary.Expense.CURRENCY)}
                 style={{ flexGrow: 1 }}
               />
-
               <Checkbox
                 w="20%"
                 mt={30}
@@ -822,7 +834,7 @@ function Expenses() {
                 <Table.Th>{t(Dictionary.Expense.DATE)}</Table.Th>
                 <Table.Th>{t(Dictionary.Expense.TOTAL_PRICE)}</Table.Th>
                 <Table.Th>{t(Dictionary.Expense.CURRENCY)}</Table.Th>
-                <Table.Th>{t(Dictionary.Expense.TRIP_DESCRIPTION)}</Table.Th>
+                <Table.Th>{t(Dictionary.Expense.DESCRIPTION)}</Table.Th>
                 <Table.Th>{t(Dictionary.Expense.OUT_OF_OFFICE)}</Table.Th>
                 <Table.Th>{t(Dictionary.Expense.REPORT_NAME)}</Table.Th>
                 <Table.Th>{t(Dictionary.Common.CREATE_USER)}</Table.Th>

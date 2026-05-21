@@ -45,6 +45,7 @@ import { zod4Resolver } from "mantine-form-zod-resolver";
 import { useAuthentication } from "../../contexts/AuthenticationContext/AuthenticationProvider";
 import { useTranslation } from "react-i18next";
 import Dictionary from "../../helpers/translation/dictionary";
+import Role from "../../enums/role";
 
 function Reports() {
   const { reports, addReport, updateReport, deleteReport, replaceReports } =
@@ -305,51 +306,53 @@ function Reports() {
             <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
             <Table.Td>
               <Flex justify="center" gap={5}>
-                {x.isApproved ? (
-                  <Tooltip label={t(Dictionary.Report.DOWNLOAD)} withArrow>
+                <Tooltip label={t(Dictionary.Report.DOWNLOAD)} withArrow>
+                  <ActionIcon
+                    onClick={() => downloadReport(x)}
+                    variant="light"
+                    color="blue"
+                    loading={isLoading}
+                    disabled={!x.isApproved}
+                  >
+                    <IconDownload />
+                  </ActionIcon>
+                </Tooltip>
+                {auth.currentUser?.role !== Role.User && (
+                  <Tooltip label={t(Dictionary.Common.APPROVE)} withArrow>
                     <ActionIcon
-                      onClick={() => downloadReport(x)}
+                      disabled={x.isApproved}
+                      onClick={() => openApproveReportModal(x)}
                       variant="light"
-                      color="blue"
-                      loading={isLoading}
+                      color="green"
                     >
-                      <IconDownload />
+                      <HiCheck size={30} />
                     </ActionIcon>
                   </Tooltip>
-                ) : (
-                  <Flex>
-                    <Tooltip label={t(Dictionary.Common.APPROVE)} withArrow>
-                      <ActionIcon
-                        disabled={x.isApproved}
-                        onClick={() => openApproveReportModal(x)}
-                        variant="light"
-                        color="green"
-                      >
-                        <HiCheck size={30} />
-                      </ActionIcon>
-                    </Tooltip>
-                    <Tooltip label={t(Dictionary.Common.EDIT)} withArrow>
-                      <ActionIcon
-                        disabled={x.isApproved}
-                        onClick={() => openEditReport(x)}
-                        variant="light"
-                        color="blue"
-                      >
-                        <IconEdit />
-                      </ActionIcon>
-                    </Tooltip>
-                    <Tooltip label={t(Dictionary.Common.DELETE)} withArrow>
-                      <ActionIcon
-                        disabled={x.isApproved}
-                        onClick={() => openDeleteReportModal(x.id)}
-                        variant="light"
-                        color="red"
-                      >
-                        <IconTrash />
-                      </ActionIcon>
-                    </Tooltip>
-                  </Flex>
                 )}
+                <Tooltip label={t(Dictionary.Common.EDIT)} withArrow>
+                  <ActionIcon
+                    onClick={() => openEditReport(x)}
+                    disabled={
+                      auth.currentUser?.role === Role.User && x.isApproved
+                    }
+                    variant="light"
+                    color="blue"
+                  >
+                    <IconEdit />
+                  </ActionIcon>
+                </Tooltip>
+                <Tooltip label={t(Dictionary.Common.DELETE)} withArrow>
+                  <ActionIcon
+                    onClick={() => openDeleteReportModal(x.id)}
+                    disabled={
+                      auth.currentUser?.role === Role.User && x.isApproved
+                    }
+                    variant="light"
+                    color="red"
+                  >
+                    <IconTrash />
+                  </ActionIcon>
+                </Tooltip>
               </Flex>
             </Table.Td>
           </Table.Tr>

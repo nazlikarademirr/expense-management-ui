@@ -268,7 +268,7 @@ function Users() {
       size: "md",
       children: (
         <Flex direction="column" gap={20}>
-          <Badge size="xl" color="cyan" variant="dot">
+          <Badge size="xl" color="purple" variant="dot">
             {user.temporaryPassword}
           </Badge>
           <Flex direction="row">
@@ -328,8 +328,8 @@ function Users() {
                 <Tooltip
                   label={
                     x.isActive
-                      ? t(Dictionary.User.ACTIVATE)
-                      : t(Dictionary.User.DEACTIVATE)
+                      ? t(Dictionary.User.DEACTIVATE)
+                      : t(Dictionary.User.ACTIVATE)
                   }
                   withArrow
                 >

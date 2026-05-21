@@ -20,7 +20,16 @@
     "expenseManagement": "Expense Management",
     "status": "Status",
     "loading": "Loading..",
-    "unexpectedError": "An unexpected error occurred."
+    "unexpectedError": "An unexpected error occurred.",
+    "save": "Save",
+    "other": "Other",
+    "yes": "Yes",
+    "no": "No"
+  },
+
+  "authentication": {
+    "useAuthenticationRequired": "useAuthentication must be used within an AuthenticationProvider.",
+    "sessionExpired": "Your session has expired, please log in again."
   },
 
   "userMenu": {
@@ -81,7 +90,16 @@
     "passwordMinLength": "Password cannot be less than 8 characters.",
     "passwordMaxLength": "Password cannot exceed 32 characters.",
     "roleMustBeSelected": "Role must be selected.",
-    "updated": "User has been updated successfully."
+    "updated": "User has been updated successfully.",
+    "passwordsNotMatch": "The new password and the password confirmation do not match.",
+    "passwordSuccessfullyUpdated": "Your password has been successfully updated.",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "newPasswordAgain": "New Password Again",
+    "currentPasswordCannotBeEmpty": "Current password cannot be empty.",
+    "newPasswordCannotBeEmpty": "New password cannot be empty",
+    "newPasswordAgainCannotBeEmpty": "New password again cannot be empty.",
+    "problemOccurredWithUser": "A problem occurred with the user."
   },
 
   "team": {
@@ -134,7 +152,7 @@
     "date": "Expense Date",
     "totalPrice": "Total Price",
     "type": "Expense Type",
-    "tripDescription": "Trip Description",
+    "description": "Description",
     "currency": "Currency",
     "outOfOffice": "Out Of Office",
     "price": "Price",
@@ -157,7 +175,7 @@
     "totalPriceCannotBeZero": "Total price cannot be 0 or less.",
     "currencyMustBeSelected": "Currency must be selected.",
     "outOfOfficeCannotBeEmpty": "Out of office cannot be empty.",
-    "descriptionRule": "When the expense type is transportation, the description cannot be left blank.",
+    "descriptionRule": "When the expense type is transportation or other, the description cannot be left blank.",
     "priceCannotBeEmpty": "Price cannot be empty.",
     "priceCannotBeZero": "Price cannot be 0 or less.",
     "receiptUploader": "Drag the receipt or invoice here",

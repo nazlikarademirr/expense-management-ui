@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState } from "react";
 import { CurrentUser, TokenDataSchema } from "../../types/authentication.types";
 import { jwtDecode } from "jwt-decode";
+import { useTranslation } from "react-i18next";
+import Dictionary from "../../helpers/translation/dictionary";
 
 interface AuthenticationState {
   currentUser: CurrentUser | null;
@@ -11,12 +13,11 @@ interface AuthenticationState {
 const AuthenticationContext = createContext<AuthenticationState | null>(null);
 
 export const useAuthentication = () => {
+  const { t } = useTranslation();
   const context = useContext(AuthenticationContext);
 
   if (!context)
-    throw new Error(
-      "useAuthentication must be used within an AuthenticationProvider.",
-    );
+    throw new Error(t(Dictionary.Authentication.USE_AUTHENTICATION_REQUIRED));
 
   return context;
 };
