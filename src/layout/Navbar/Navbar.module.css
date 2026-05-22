@@ -1,74 +1,77 @@
 .navbar {
-    background: rgba(255, 255, 255, 0.4);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    height: 100vh;
-    width: 60px;
-    display: flex;
-    flex-direction: column;
-    border-right: 1px solid rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  height: 100vh;
+  width: 60px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid rgba(255, 255, 255, 0.6);
 }
 
 .wrapper {
-    display: flex;
-    flex: 1;
+  display: flex;
+  flex: 1;
 }
 
 .aside {
-    flex: 0 0 60px;
-    background-color: transparent;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    border-right: 1px solid rgba(255, 255, 255, 0.5);
+  flex: 0 0 60px;
+  background-color: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-right: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 .main {
-    flex: 1;
-    background-color: transparent;
+  flex: 1;
+  background-color: transparent;
 }
 
 .mainLink {
-    width: 44px;
-    height: 44px;
-    border-radius: var(--mantine-radius-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-0));
+  width: 44px;
+  height: 44px;
+  border-radius: var(--mantine-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-0));
 
+  &:hover {
+    background-color: light-dark(
+      var(--mantine-color-gray-0),
+      var(--mantine-color-dark-5)
+    );
+  }
+
+  &[data-active] {
+    &,
     &:hover {
-        background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-5));
+      background-color: #dae6f7;
+      color: #1b3d7a;
     }
-
-    &[data-active] {
-
-        &,
-        &:hover {
-            background-color: rgba(79, 70, 229, 0.15);
-            color: #4f46e5;
-        }
-    }
+  }
 }
 
 .title {
-    font-family:
-        Greycliff CF,
-        var(--mantine-font-family);
-    margin-bottom: var(--mantine-spacing-xl);
-    background-color: transparent;
-    padding: var(--mantine-spacing-md);
-    padding-top: 18px;
-    height: 60px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+  font-family:
+    Greycliff CF,
+    var(--mantine-font-family);
+  margin-bottom: var(--mantine-spacing-xl);
+  background-color: transparent;
+  padding: var(--mantine-spacing-md);
+  padding-top: 18px;
+  height: 60px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 .logo {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    height: 60px;
-    padding-top: var(--mantine-spacing-md);
-    border-bottom: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-7));
-    margin-bottom: var(--mantine-spacing-md);
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  height: 60px;
+  padding-top: var(--mantine-spacing-md);
+  border-bottom: 1px solid
+    light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-7));
+  margin-bottom: var(--mantine-spacing-md);
 }

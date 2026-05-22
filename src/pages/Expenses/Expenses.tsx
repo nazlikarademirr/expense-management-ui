@@ -52,6 +52,7 @@ import { useAuthentication } from "../../contexts/AuthenticationContext/Authenti
 import { useTranslation } from "react-i18next";
 import Dictionary from "../../helpers/translation/dictionary";
 import { OcrResult } from "../../types/ocr.types";
+import { PiPlusCircle } from "react-icons/pi";
 import ReceiptUploader from "../../components/ReceiptUploader/ReceiptUploader";
 import normalizeText from "../../helpers/NormalizeText";
 import Role from "../../enums/role";
@@ -536,7 +537,6 @@ function Expenses() {
                   onClick={() => openEditExpense(x)}
                   variant="light"
                   radius={5}
-                  style={{ color: "#4f46e5", backgroundColor: "#f5f5ff" }}
                   leftSection={<IconEdit size={18} />}
                 >
                   {t(Dictionary.Common.EDIT)}
@@ -548,7 +548,7 @@ function Expenses() {
                   onClick={() => openDeleteExpenseModal(x.id)}
                   variant="light"
                   radius={5}
-                  style={{ color: "red", backgroundColor: "#fff6f6" }}
+                  style={{ color: "red", backgroundColor: "#ffeeee" }}
                   leftSection={<IconTrash size={18} />}
                 >
                   {t(Dictionary.Common.DELETE)}
@@ -737,7 +737,12 @@ function Expenses() {
                   style={{ flexGrow: 1 }}
                 />
 
-                <Button onClick={saveOvertimeMember} variant="light" mt={25}>
+                <Button
+                  onClick={saveOvertimeMember}
+                  variant="light"
+                  mt={25}
+                  leftSection={<PiPlusCircle size={22} />}
+                >
                   {t(Dictionary.Expense.ADD_OVERTIME_MEMBER)}
                 </Button>
               </Flex>
@@ -769,6 +774,7 @@ function Expenses() {
           variant="light"
           mt={10}
           loading={isLoading}
+          leftSection={<PiPlusCircle size={22} />}
         >
           {t(Dictionary.Expense.ADD_NEW)}
         </Button>

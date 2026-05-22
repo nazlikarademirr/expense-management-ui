@@ -1,20 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");
 
-:root {
-  --mantine-font-family: "Plus Jakarta Sans", sans-serif;
-  --mantine-radius-default: 12px;
-  --mantine-color-primary-0: #eef2ff;
-  --mantine-color-primary-1: #e0e7ff;
-  --mantine-color-primary-2: #c7d2fe;
-  --mantine-color-primary-3: #a5b4fc;
-  --mantine-color-primary-4: #818cf8;
-  --mantine-color-primary-5: #6366f1;
-  --mantine-color-primary-6: #4f46e5;
-  --mantine-color-primary-7: #4338ca;
-  --mantine-color-primary-8: #3730a3;
-  --mantine-color-primary-9: #312e81;
-}
-
 body {
   background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
   background-attachment: fixed;
@@ -39,7 +24,6 @@ body {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.8);
-  box-shadow: 0 10px 40px rgba(16, 42, 67, 0.06);
   border-radius: 16px;
   transition:
     transform 0.25s ease,
@@ -54,30 +38,26 @@ body {
   border-radius: 10px;
   font-weight: 600;
   transition: all 0.25s ease;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   text-transform: capitalize;
   letter-spacing: 0.02em;
 }
 
 .mantine-Button-root {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 .mantine-Button-root[data-variant="light"] {
-  background: rgba(79, 70, 229, 0.1);
-  color: #4f46e5;
-}
-
-.mantine-Button-root[data-variant="light"] {
-  background: rgba(79, 70, 229, 0.15);
+  background-color: #dae6f7;
+  color: #1b3d7a;
+  box-shadow:
+    rgba(0, 0, 0, 0.1) 0px 1px 3px 0px,
+    rgba(0, 0, 0, 0.06) 0px 1px 2px 0px;
 }
 
 .mantine-Button-root:disabled,
 .mantine-Button-root[data-disabled="true"] {
   cursor: not-allowed !important;
   transform: none !important;
-  box-shadow: none !important;
   opacity: 0.45 !important;
   background-color: #e5e7eb !important;
   color: #9ca3af !important;
@@ -86,14 +66,12 @@ body {
 .mantine-Button-root:disabled:hover,
 .mantine-Button-root[data-disabled="true"]:hover {
   transform: none !important;
-  box-shadow: none !important;
 }
 
 .mantine-Table-root {
   border-radius: 16px;
   overflow: hidden;
   background: rgba(255, 255, 255, 0.8);
-  box-shadow: 0 4px 20px rgba(16, 42, 67, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
@@ -126,7 +104,7 @@ body {
   border: 1px solid rgba(188, 204, 220, 0.8);
   background: rgba(255, 255, 255, 0.7);
   transition: all 0.25s ease;
-  color: #102a43;
+  color: "black";
   font-family: "Plus Jakarta Sans", sans-serif;
 }
 
@@ -135,8 +113,7 @@ body {
 .mantine-PasswordInput-input:focus,
 .mantine-NumberInput-input:focus,
 .mantine-DateInput-input:focus {
-  border-color: #4f46e5;
-  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+  border-color: #1b3d7a;
   background: #ffffff;
 }
 
@@ -153,7 +130,7 @@ h6,
 }
 
 .mantine-Anchor-root {
-  color: #4f46e5;
+  color: #1b3d7a;
   font-weight: 500;
   text-decoration-thickness: 2px;
   text-underline-offset: 4px;
@@ -161,7 +138,7 @@ h6,
 }
 
 .mantine-Anchor-root {
-  color: #3730a3;
+  color: #1b3d7a;
   text-decoration-color: #a5b4fc;
 }
 
@@ -170,7 +147,6 @@ h6,
   border-radius: 8px;
   font-family: "Plus Jakarta Sans", sans-serif;
   font-weight: 500;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
 }
 
 .mantine-Modal-content {
@@ -178,7 +154,6 @@ h6,
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-radius: 20px;
-  box-shadow: 0 24px 60px rgba(16, 42, 67, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.8);
 }
 

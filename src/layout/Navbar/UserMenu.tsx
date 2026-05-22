@@ -25,7 +25,7 @@ function UserMenu() {
 
   const openChangePasswordModal = () => {
     modals.open({
-      title: <Title order={5}>Change Password</Title>,
+      title: <Title order={5}>{t(Dictionary.User.CHANGE_PASSWORD)}</Title>,
       size: "md",
       children: <ChangePasswordModal currentUserId={auth.currentUser?.id} />,
     });
@@ -45,7 +45,7 @@ function UserMenu() {
   return (
     <Menu shadow="md">
       <Menu.Target>
-        <Avatar ml={3} radius="xl" color="#3f38c8">
+        <Avatar ml={3} radius="xl" color="#1b3d7a">
           {currentUserName[0]}
           {currentUserSurname[0]}
         </Avatar>

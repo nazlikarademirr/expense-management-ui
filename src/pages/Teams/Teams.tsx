@@ -3,7 +3,7 @@ import teamSchema, { Team, TeamRequest } from "../../types/team.types";
 import { modals } from "@mantine/modals";
 import useTeams from "../../hooks/useTeams";
 import {
-  ActionIcon,
+  Badge,
   Button,
   Card,
   Checkbox,
@@ -13,7 +13,6 @@ import {
   Table,
   TextInput,
   Title,
-  Tooltip,
 } from "@mantine/core";
 import { IconEdit, IconSearch } from "@tabler/icons-react";
 import { useEffect, useMemo, useState } from "react";
@@ -26,9 +25,7 @@ import {
 import RequestType from "../../request-handler/request-type";
 import urls from "../../constants/urls";
 import useRequestHandler from "../../hooks/useRequestHandler";
-import { TiTick, TiTimes } from "react-icons/ti";
 import {
-  BOOLEAN_ICON_SIZE,
   PAGE_FLEX_HEIGHT,
   SEARCH_ICON_SIZE,
   TITLE_DIVIDER_MY,
@@ -40,6 +37,7 @@ import { zod4Resolver } from "mantine-form-zod-resolver";
 import { useAuthentication } from "../../contexts/AuthenticationContext/AuthenticationProvider";
 import { useTranslation } from "react-i18next";
 import Dictionary from "../../helpers/translation/dictionary";
+import { PiPlusCircle } from "react-icons/pi";
 
 function Teams() {
   const { teams, addTeam, updateTeam, replaceTeams } = useTeams();
@@ -201,6 +199,45 @@ function Teams() {
     setIsLoading(false);
   };
 
+  const openTeamActivityModal = (team: Team) => {
+    modals.open({
+      size: "md",
+      children: (
+        <Flex direction="column" gap={20}>
+          {team.isActive
+            ? t(Dictionary.Team.DEACTIVITY_QUESTION)
+            : t(Dictionary.Team.ACTIVITY_QUESTION)}
+          <Flex direction="row" gap={10} mt={10}>
+            <Button
+              loading={isLoading}
+              onClick={() => {
+                changeTeamActivity(team);
+                modals.closeAll();
+              }}
+              variant="light"
+              style={
+                team.isActive
+                  ? { flexGrow: 1, color: "red", backgroundColor: "#ffeeee" }
+                  : { flexGrow: 1, color: "green", backgroundColor: "#e7ffe0" }
+              }
+            >
+              {team.isActive
+                ? t(Dictionary.Team.DEACTIVATE)
+                : t(Dictionary.Team.ACTIVATE)}
+            </Button>
+            <Button
+              onClick={() => modals.closeAll()}
+              style={{ flexGrow: 1 }}
+              variant="light"
+            >
+              {t(Dictionary.Common.CANCEL)}
+            </Button>
+          </Flex>
+        </Flex>
+      ),
+    });
+  };
+
   const memoizedTeams = useMemo(
     () =>
       teams
@@ -212,49 +249,53 @@ function Teams() {
           <Table.Tr key={x.id}>
             <Table.Td> {x.name} </Table.Td>
             <Table.Td>
-              {x.isActive ? (
-                <TiTick size={BOOLEAN_ICON_SIZE} color="green" />
-              ) : (
-                <TiTimes size={BOOLEAN_ICON_SIZE} color="#BA1A1A" />
-              )}
+              <Badge
+                size="md"
+                color={x.isActive ? "green" : "gray"}
+                variant="light"
+              >
+                {x.isActive
+                  ? t(Dictionary.Common.ACTIVE)
+                  : t(Dictionary.Common.PASSIVE)}
+              </Badge>
             </Table.Td>
             <Table.Td> {x.createUserFullName} </Table.Td>
             <Table.Td>
               <Flex justify={"center"} gap={5}>
-                {x.isActive ? (
-                  <Tooltip label={t(Dictionary.Common.EDIT)} withArrow>
-                    <ActionIcon
+                <Flex justify="center" gap={10}>
+                  {x.isActive && (
+                    <Button
                       onClick={() => openEditTeam(x)}
-                      variant={"light"}
+                      variant="light"
                       color="blue"
+                      leftSection={<IconEdit />}
                     >
-                      <IconEdit />
-                    </ActionIcon>
-                  </Tooltip>
-                ) : (
-                  <div></div>
-                )}
-                <Tooltip
-                  label={
-                    x.isActive
-                      ? t(Dictionary.Team.DEACTIVATE)
-                      : t(Dictionary.Team.ACTIVATE)
-                  }
-                  withArrow
-                >
-                  <ActionIcon
-                    onClick={() => changeTeamActivity(x)}
-                    variant={"light"}
-                    color={x.isActive ? "red" : "green"}
+                      {t(Dictionary.Common.EDIT)}
+                    </Button>
+                  )}
+
+                  <Button
+                    onClick={() => openTeamActivityModal(x)}
+                    variant="light"
+                    style={
+                      x.isActive
+                        ? { color: "red", backgroundColor: "#ffeeee" }
+                        : { color: "green", backgroundColor: "#e7ffe0" }
+                    }
                     loading={isLoading}
+                    leftSection={
+                      x.isActive ? (
+                        <IoMdRemoveCircleOutline size={20} />
+                      ) : (
+                        <IoMdAddCircleOutline size={20} />
+                      )
+                    }
                   >
-                    {x.isActive ? (
-                      <IoMdRemoveCircleOutline size={22} />
-                    ) : (
-                      <IoMdAddCircleOutline size={22} />
-                    )}
-                  </ActionIcon>
-                </Tooltip>
+                    {x.isActive
+                      ? t(Dictionary.Team.DEACTIVATE)
+                      : t(Dictionary.Team.ACTIVATE)}
+                  </Button>
+                </Flex>
               </Flex>
             </Table.Td>
           </Table.Tr>
@@ -279,7 +320,12 @@ function Teams() {
             withAsterisk
             label={t(Dictionary.Team.NAME)}
           />
-          <Button onClick={handleSave} variant={"light"} loading={isLoading}>
+          <Button
+            onClick={handleSave}
+            variant={"light"}
+            loading={isLoading}
+            leftSection={<PiPlusCircle size={22} />}
+          >
             {t(Dictionary.Team.ADD_NEW)}
           </Button>
         </Flex>

@@ -7,7 +7,7 @@ import { modals } from "@mantine/modals";
 import useProjects from "../../hooks/useProjects";
 import { useEffect, useMemo, useState } from "react";
 import {
-  ActionIcon,
+  Badge,
   Button,
   Card,
   Checkbox,
@@ -17,7 +17,6 @@ import {
   Table,
   TextInput,
   Title,
-  Tooltip,
 } from "@mantine/core";
 import { IconEdit, IconSearch } from "@tabler/icons-react";
 import toast from "react-hot-toast";
@@ -29,9 +28,7 @@ import {
 import urls from "../../constants/urls";
 import RequestType from "../../request-handler/request-type";
 import useRequestHandler from "../../hooks/useRequestHandler";
-import { TiTick, TiTimes } from "react-icons/ti";
 import {
-  BOOLEAN_ICON_SIZE,
   PAGE_FLEX_HEIGHT,
   SEARCH_ICON_SIZE,
   TITLE_DIVIDER_MY,
@@ -41,6 +38,7 @@ import { zod4Resolver } from "mantine-form-zod-resolver";
 import { useAuthentication } from "../../contexts/AuthenticationContext/AuthenticationProvider";
 import Dictionary from "../../helpers/translation/dictionary";
 import { useTranslation } from "react-i18next";
+import { PiPlusCircle } from "react-icons/pi";
 
 function Projects() {
   const { projects, addProject, updateProject, replaceProjects } =
@@ -195,6 +193,45 @@ function Projects() {
     setIsLoading(false);
   };
 
+  const openProjectActivityModal = (project: Project) => {
+    modals.open({
+      size: "md",
+      children: (
+        <Flex direction="column" gap={20}>
+          {project.isActive
+            ? t(Dictionary.Project.DEACTIVITY_QUESTION)
+            : t(Dictionary.Project.ACTIVITY_QUESTION)}
+          <Flex direction="row" gap={10} mt={10}>
+            <Button
+              loading={isLoading}
+              onClick={() => {
+                changeProjectActivity(project);
+                modals.closeAll();
+              }}
+              variant="light"
+              style={
+                project.isActive
+                  ? { flexGrow: 1, color: "red", backgroundColor: "#ffeeee" }
+                  : { flexGrow: 1, color: "green", backgroundColor: "#e7ffe0" }
+              }
+            >
+              {project.isActive
+                ? t(Dictionary.Project.DEACTIVATE)
+                : t(Dictionary.Project.ACTIVATE)}
+            </Button>
+            <Button
+              onClick={() => modals.closeAll()}
+              style={{ flexGrow: 1 }}
+              variant="light"
+            >
+              {t(Dictionary.Common.CANCEL)}
+            </Button>
+          </Flex>
+        </Flex>
+      ),
+    });
+  };
+
   const memoizedProjects = useMemo(
     () =>
       projects
@@ -207,49 +244,51 @@ function Projects() {
             <Table.Td> {x.name} </Table.Td>
             <Table.Td> {x.code} </Table.Td>
             <Table.Td>
-              {x.isActive ? (
-                <TiTick size={BOOLEAN_ICON_SIZE} color="green" />
-              ) : (
-                <TiTimes size={BOOLEAN_ICON_SIZE} color="#BA1A1A" />
-              )}
+              <Badge
+                size="md"
+                color={x.isActive ? "green" : "gray"}
+                variant="light"
+              >
+                {x.isActive
+                  ? t(Dictionary.Common.ACTIVE)
+                  : t(Dictionary.Common.PASSIVE)}
+              </Badge>
             </Table.Td>
             <Table.Td> {x.createUserFullName} </Table.Td>
             <Table.Td>
               <Flex justify="center" gap={5}>
                 {x.isActive ? (
-                  <Tooltip label={t(Dictionary.Common.EDIT)} withArrow>
-                    <ActionIcon
-                      onClick={() => openEditProject(x)}
-                      variant="light"
-                      color="blue"
-                    >
-                      <IconEdit />
-                    </ActionIcon>
-                  </Tooltip>
+                  <Button
+                    onClick={() => openEditProject(x)}
+                    variant="light"
+                    leftSection={<IconEdit />}
+                    color="blue"
+                  >
+                    {t(Dictionary.Common.EDIT)}
+                  </Button>
                 ) : (
                   <div></div>
                 )}
-                <Tooltip
-                  label={
-                    x.isActive
-                      ? t(Dictionary.Project.DEACTIVATE)
-                      : t(Dictionary.Project.ACTIVATE)
-                  }
-                  withArrow
-                >
-                  <ActionIcon
-                    onClick={() => changeProjectActivity(x)}
-                    variant="light"
-                    loading={isLoading}
-                    color={x.isActive ? "red" : "green"}
-                  >
-                    {x.isActive ? (
+                <Button
+                  onClick={() => openProjectActivityModal(x)}
+                  variant="light"
+                  loading={isLoading}
+                  style={{
+                    color: x.isActive ? "red" : "green",
+                    backgroundColor: x.isActive ? "#ffeeee" : "#e7ffe0",
+                  }}
+                  leftSection={
+                    x.isActive ? (
                       <IoMdRemoveCircleOutline size={22} />
                     ) : (
                       <IoMdAddCircleOutline size={22} />
-                    )}
-                  </ActionIcon>
-                </Tooltip>
+                    )
+                  }
+                >
+                  {x.isActive
+                    ? t(Dictionary.Project.DEACTIVATE)
+                    : t(Dictionary.Project.ACTIVATE)}
+                </Button>
               </Flex>
             </Table.Td>
           </Table.Tr>
@@ -286,6 +325,7 @@ function Projects() {
           onClick={handleSave}
           variant="light"
           loading={isLoading}
+          leftSection={<PiPlusCircle size={22} />}
           style={{ flexGrow: 2, marginTop: "15px" }}
         >
           {t(Dictionary.Project.ADD_NEW)}
@@ -293,9 +333,9 @@ function Projects() {
       </Card>
 
       <Card
-        mt={"xs"}
+        mt="xs"
         withBorder
-        padding={"sm"}
+        padding="sm"
         style={{
           flex: 1,
           display: "flex",
@@ -303,7 +343,7 @@ function Projects() {
           minHeight: 0,
         }}
       >
-        <Flex gap={"xs"} mb="md" align="center">
+        <Flex gap="xs" mb="md" align="center">
           <TextInput
             size="xs"
             radius="xl"
