@@ -12,6 +12,7 @@ import {
   TextInput,
   Title,
   Text,
+  Badge,
 } from "@mantine/core";
 import {
   IconDownload,
@@ -24,10 +25,8 @@ import toast from "react-hot-toast";
 import { modals } from "@mantine/modals";
 import EditReportModal from "./components/EditReportModal";
 import useReports from "../../hooks/useReports";
-import { TiTick, TiTimes } from "react-icons/ti";
 import { HiCheck } from "react-icons/hi";
 import {
-  BOOLEAN_ICON_SIZE,
   PAGE_FLEX_HEIGHT,
   SEARCH_ICON_SIZE,
   TITLE_DIVIDER_MY,
@@ -296,11 +295,15 @@ function Reports() {
           <Table.Tr key={x.id}>
             <Table.Td> {x.name} </Table.Td>
             <Table.Td>
-              {x.isApproved ? (
-                <TiTick size={BOOLEAN_ICON_SIZE} color="green" />
-              ) : (
-                <TiTimes size={BOOLEAN_ICON_SIZE} color="#BA1A1A" />
-              )}
+              <Badge
+                size="md"
+                color={x.isApproved ? "green" : "gray"}
+                variant="light"
+              >
+                {x.isApproved
+                  ? t(Dictionary.Common.ACTIVE)
+                  : t(Dictionary.Common.PASSIVE)}
+              </Badge>
             </Table.Td>
             <Table.Td> {x.createUserFullName} </Table.Td>
             <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
