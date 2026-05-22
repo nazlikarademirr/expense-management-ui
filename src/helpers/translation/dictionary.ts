@@ -25,6 +25,8 @@ abstract class Dictionary {
     static readonly OTHER = "common.other";
     static readonly YES = "common.yes";
     static readonly NO = "common.no";
+    static readonly ACTIVE = "common.active";
+    static readonly PASSIVE = "common.passive";
   };
 
   static Authentication = class {
@@ -106,6 +108,9 @@ abstract class Dictionary {
     static readonly NEW_PASSWORD_AGAIN_CANNOT_BE_EMPTY =
       "user.newPasswordAgainCannotBeEmpty";
     static readonly PROBLEM_OCCURRED_WITH_USER = "user.problemOccurredWithUser";
+    static readonly CHANGE_PASSWORD = "user.changePassword";
+    static readonly ACTIVITY_QUESTION = "user.activityQuestion";
+    static readonly DEACTIVITY_QUESTION = "user.deactivityQuestion";
   };
 
   static Team = class {
@@ -123,6 +128,8 @@ abstract class Dictionary {
     static readonly NAME_MIN_LENGTH = "team.nameMinLength";
     static readonly NAME_MAX_LENGTH = "team.nameMaxLength";
     static readonly UPDATED = "team.updated";
+    static readonly ACTIVITY_QUESTION = "team.activityQuestion";
+    static readonly DEACTIVITY_QUESTION = "team.deactivityQuestion";
   };
 
   static Project = class {
@@ -143,6 +150,8 @@ abstract class Dictionary {
     static readonly NAME_MAX_LENGTH = "project.nameMaxLength";
     static readonly CODE_MIN_LENGTH = "project.codeMinLength";
     static readonly CODE_MAX_LENGTH = "project.codeMaxLength";
+    static readonly ACTIVITY_QUESTION = "project.activityQuestion";
+    static readonly DEACTIVITY_QUESTION = "project.deactivityQuestion";
   };
 
   static Expense = class {

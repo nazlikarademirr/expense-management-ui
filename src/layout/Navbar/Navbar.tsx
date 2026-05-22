@@ -92,7 +92,7 @@ export function Navbar() {
       <div className={classes.wrapper}>
         <div className={classes.aside}>
           <div className={classes.logo}>
-            <RiFileTextLine size={30} color="#3f38c8" />
+            <RiFileTextLine size={30} color="#1b3d7a" />
           </div>
           <Flex justify="center" direction="column">
             {mainLinks}

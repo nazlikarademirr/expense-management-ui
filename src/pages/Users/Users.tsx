@@ -5,7 +5,6 @@ import userSchema, {
 } from "../../types/user.types.ts";
 import EditUserModal from "./components/EditUserModal.tsx";
 import {
-  ActionIcon,
   Badge,
   Button,
   Card,
@@ -20,7 +19,6 @@ import {
   Table,
   TextInput,
   Title,
-  Tooltip,
 } from "@mantine/core";
 import { IconEdit, IconSearch } from "@tabler/icons-react";
 import { modals } from "@mantine/modals";
@@ -36,10 +34,8 @@ import useRequestHandler from "../../hooks/useRequestHandler.tsx";
 import urls from "../../constants/urls.ts";
 import RequestType from "../../request-handler/request-type.ts";
 import { useEffect, useMemo, useState } from "react";
-import { TiTick, TiTimes } from "react-icons/ti";
 import { IoMdAddCircleOutline, IoMdRemoveCircleOutline } from "react-icons/io";
 import {
-  BOOLEAN_ICON_SIZE,
   PAGE_FLEX_HEIGHT,
   SEARCH_ICON_SIZE,
   TITLE_DIVIDER_MY,
@@ -51,6 +47,7 @@ import { RiLockPasswordLine } from "react-icons/ri";
 import { useAuthentication } from "../../contexts/AuthenticationContext/AuthenticationProvider.tsx";
 import Dictionary from "../../helpers/translation/dictionary.ts";
 import { useTranslation } from "react-i18next";
+import { PiPlusCircle } from "react-icons/pi";
 
 const MIN_INPUT_HEIGHT = 80;
 const MIN_INPUT_WIDTH = 250;
@@ -286,6 +283,45 @@ function Users() {
     });
   };
 
+  const openUserActivityModal = (user: User) => {
+    modals.open({
+      size: "md",
+      children: (
+        <Flex direction="column" gap={20}>
+          {user.isActive
+            ? t(Dictionary.User.DEACTIVITY_QUESTION)
+            : t(Dictionary.User.ACTIVITY_QUESTION)}
+          <Flex direction="row" gap={10} mt={10}>
+            <Button
+              loading={isLoading}
+              onClick={() => {
+                changeUserActivity(user);
+                modals.closeAll();
+              }}
+              variant="light"
+              style={
+                user.isActive
+                  ? { flexGrow: 1, color: "red", backgroundColor: "#ffeeee" }
+                  : { flexGrow: 1, color: "green", backgroundColor: "#e7ffe0" }
+              }
+            >
+              {user.isActive
+                ? t(Dictionary.User.DEACTIVATE)
+                : t(Dictionary.User.ACTIVATE)}
+            </Button>
+            <Button
+              onClick={() => modals.closeAll()}
+              style={{ flexGrow: 1 }}
+              variant="light"
+            >
+              {t(Dictionary.Common.CANCEL)}
+            </Button>
+          </Flex>
+        </Flex>
+      ),
+    });
+  };
+
   const memoizedUsers = useMemo(
     () =>
       users
@@ -305,61 +341,62 @@ function Users() {
             <Table.Td> {x.email} </Table.Td>
             <Table.Td>{roles[Number(x.role)].label}</Table.Td>
             <Table.Td>
-              {x.isActive ? (
-                <TiTick size={BOOLEAN_ICON_SIZE} color="green" />
-              ) : (
-                <TiTimes size={BOOLEAN_ICON_SIZE} color="#BA1A1A" />
-              )}
+              <Badge
+                size="md"
+                color={x.isActive ? "green" : "gray"}
+                variant="light"
+              >
+                {x.isActive
+                  ? t(Dictionary.Common.ACTIVE)
+                  : t(Dictionary.Common.PASSIVE)}
+              </Badge>
             </Table.Td>
             <Table.Td>{x.createUserFullName}</Table.Td>
             <Table.Td>
-              <Flex justify="center" gap={5}>
+              <Flex justify="center" gap={10}>
                 {x.isActive && (
-                  <Tooltip label={t(Dictionary.Common.EDIT)} withArrow>
-                    <ActionIcon
-                      onClick={() => openEditUser(x)}
-                      variant="light"
-                      color="blue"
-                    >
-                      <IconEdit />
-                    </ActionIcon>
-                  </Tooltip>
-                )}
-                <Tooltip
-                  label={
-                    x.isActive
-                      ? t(Dictionary.User.DEACTIVATE)
-                      : t(Dictionary.User.ACTIVATE)
-                  }
-                  withArrow
-                >
-                  <ActionIcon
-                    onClick={() => changeUserActivity(x)}
+                  <Button
+                    onClick={() => openEditUser(x)}
                     variant="light"
-                    color={x.isActive ? "red" : "green"}
-                    loading={isLoading}
+                    color="blue"
+                    leftSection={<IconEdit />}
                   >
-                    {x.isActive ? (
-                      <IoMdRemoveCircleOutline size={22} />
+                    {t(Dictionary.Common.EDIT)}
+                  </Button>
+                )}
+
+                <Button
+                  onClick={() => openUserActivityModal(x)}
+                  variant="light"
+                  style={
+                    x.isActive
+                      ? { color: "red", backgroundColor: "#ffeeee" }
+                      : { color: "green", backgroundColor: "#e7ffe0" }
+                  }
+                  loading={isLoading}
+                  leftSection={
+                    x.isActive ? (
+                      <IoMdRemoveCircleOutline size={20} />
                     ) : (
-                      <IoMdAddCircleOutline size={22} />
-                    )}
-                  </ActionIcon>
-                </Tooltip>
+                      <IoMdAddCircleOutline size={20} />
+                    )
+                  }
+                >
+                  {x.isActive
+                    ? t(Dictionary.User.DEACTIVATE)
+                    : t(Dictionary.User.ACTIVATE)}
+                </Button>
+
                 {x.hasTemporaryPassword && (
-                  <Tooltip
-                    label={t(Dictionary.User.TEMPORARY_PASSWORD)}
-                    withArrow
+                  <Button
+                    onClick={() => openTemporaryPasswordModal(x)}
+                    variant="light"
+                    color="grape"
+                    loading={isLoading}
+                    leftSection={<RiLockPasswordLine size={22} />}
                   >
-                    <ActionIcon
-                      onClick={() => openTemporaryPasswordModal(x)}
-                      variant="light"
-                      color="grape"
-                      loading={isLoading}
-                    >
-                      <RiLockPasswordLine size={22} />
-                    </ActionIcon>
-                  </Tooltip>
+                    {t(Dictionary.User.TEMPORARY_PASSWORD)}
+                  </Button>
                 )}
               </Flex>
             </Table.Td>
@@ -498,6 +535,7 @@ function Users() {
           variant="light"
           style={{ flexGrow: 1, marginTop: 15 }}
           loading={isLoading}
+          leftSection={<PiPlusCircle size={22} />}
         >
           {t(Dictionary.User.ADD_NEW)}
         </Button>

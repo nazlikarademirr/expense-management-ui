@@ -24,7 +24,9 @@
     "save": "Save",
     "other": "Other",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "active": "Aktif",
+    "passive": "Pasif"
   },
 
   "authentication": {
@@ -99,7 +101,10 @@
     "currentPasswordCannotBeEmpty": "Current password cannot be empty.",
     "newPasswordCannotBeEmpty": "New password cannot be empty",
     "newPasswordAgainCannotBeEmpty": "New password again cannot be empty.",
-    "problemOccurredWithUser": "A problem occurred with the user."
+    "problemOccurredWithUser": "A problem occurred with the user.",
+    "changePassword": "Change Password",
+    "activityQuestion": "The user account will be activated, do you approve?",
+    "deactivityQuestion": "The user account will be deactivated, do you approve?"
   },
 
   "team": {
@@ -116,7 +121,9 @@
     "edit": "Edit Team",
     "nameMinLength": "Name must have at least 2 letters.",
     "nameMaxLength": "Name cannot exceed 128 characters.",
-    "updated": "Team has been updated successfully."
+    "updated": "Team has been updated successfully.",
+    "activityQuestion": "The team will be activated, do you approve?",
+    "deactivityQuestion": "The team will be deactivated, do you approve?"
   },
 
   "project": {
@@ -136,7 +143,9 @@
     "nameMinLength": "Name must have at least 2 letters.",
     "nameMaxLength": "Name cannot exceed 128 characters.",
     "codeMinLength": "Code must have at least 2 letters.",
-    "codeMaxLength": "Code cannot exceed 128 characters."
+    "codeMaxLength": "Code cannot exceed 128 characters.",
+    "activityQuestion": "The project will be activated, do you approve?",
+    "deactivityQuestion": "The project will be deactivated, do you approve?"
   },
 
   "expense": {

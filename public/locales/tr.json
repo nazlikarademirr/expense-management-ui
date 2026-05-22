@@ -24,7 +24,9 @@
     "save": "Kaydet",
     "other": "Diğer",
     "yes": "Evet",
-    "no": "Hayır"
+    "no": "Hayır",
+    "active": "Aktif",
+    "passive": "Pasif"
   },
 
   "authentication": {
@@ -99,7 +101,10 @@
     "currentPasswordCannotBeEmpty": "Mevcut parola boş olamaz.",
     "newPasswordCannotBeEmpty": "Yeni parola boş olamaz.",
     "newPasswordAgainCannotBeEmpty": "Yeni parola tekrarı boş olamaz.",
-    "problemOccurredWithUser": "Kullanıcıyla ilgili bir sorun oluştu."
+    "problemOccurredWithUser": "Kullanıcıyla ilgili bir sorun oluştu.",
+    "changePassword": "Şifre Değiştir",
+    "activityQuestion": "Kullanıcı hesabı etkinleştirilecek, onaylıyor musunuz?",
+    "deactivityQuestion": "Kullanıcı hesabı devre dışı bırakılacak, onaylıyor musunuz?"
   },
 
   "team": {
@@ -116,7 +121,9 @@
     "edit": "Ekibi Düzenle",
     "nameMinLength": "İsim en az 2 harften oluşmalıdır.",
     "nameMaxLength": "İsim 128 karakteri geçemez.",
-    "updated": "Ekip başarıyla güncellendi."
+    "updated": "Ekip başarıyla güncellendi.",
+    "activityQuestion": "Ekip etkinleştirilecek, onaylıyor musunuz?",
+    "deactivityQuestion": "Ekip devre dışı bırakılacak, onaylıyor musunuz?"
   },
 
   "project": {
@@ -136,7 +143,9 @@
     "nameMinLengtht": "İsim en az 2 harften oluşmalıdır.",
     "nameMaxLength": "İsim 128 karakteri geçemez.",
     "codeMinLength": "Kod en az 2 harften oluşmalıdır.",
-    "codeMaxLength": "Kod 128 karakteri geçemez."
+    "codeMaxLength": "Kod 128 karakteri geçemez.",
+    "activityQuestion": "Proje etkinleştirilecek, onaylıyor musunuz?",
+    "deactivityQuestion": "Proje devre dışı bırakılacak, onaylıyor musunuz?"
   },
 
   "expense": {
