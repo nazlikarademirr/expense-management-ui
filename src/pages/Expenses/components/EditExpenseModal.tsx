@@ -9,7 +9,6 @@ import {
   ActionIcon,
   Button,
   Card,
-  Checkbox,
   ComboboxItem,
   Flex,
   Group,
@@ -133,7 +132,6 @@ function EditExpenseModal({
       totalPrice: expenseForm.values.totalPrice,
       currency: Number(expenseForm.values.currency),
       description: expenseForm.values.description,
-      outOfOffice: expenseForm.values.outOfOffice,
       reportId: expenseForm.values.reportId ?? "",
       overtimeMembers: expenseForm.values.overtimeMembers,
     };
@@ -265,10 +263,10 @@ function EditExpenseModal({
   return (
     <Card shadow={"xs"} radius={"xs"} withBorder padding={10}>
       <Flex gap={"md"}>
-        <Flex direction={"column"} w={"60%"}>
-          <Flex gap={"sm"} style={{ flexGrow: 1, minHeight: MIN_FLEX_HEIGHT }}>
+        <Flex direction="column" w="60%">
+          <Flex gap="sm" style={{ flexGrow: 1, minHeight: MIN_FLEX_HEIGHT }}>
             <Select
-              w={"20%"}
+              w="20%"
               {...expenseForm.getInputProps("userId")}
               onChange={(_, option) => changeUser(option)}
               withAsterisk
@@ -277,7 +275,16 @@ function EditExpenseModal({
               label={t(Dictionary.Expense.USER_NAME)}
               style={{ flexGrow: 1 }}
             />
-
+            <DateInput
+              w="20%"
+              {...expenseForm.getInputProps("expenseDate")}
+              withAsterisk
+              valueFormat="DD MMMM YYYY"
+              label={t(Dictionary.Expense.DATE)}
+              style={{ flexGrow: 1 }}
+            />
+          </Flex>
+          <Flex gap="sm" style={{ flexGrow: 1, minHeight: MIN_FLEX_HEIGHT }}>
             <Select
               w={"20%"}
               {...expenseForm.getInputProps("projectId")}
@@ -288,8 +295,18 @@ function EditExpenseModal({
               style={{ flexGrow: 1 }}
             />
 
+            <NumberInput
+              w="20%"
+              {...expenseForm.getInputProps("totalPrice")}
+              withAsterisk
+              label={t(Dictionary.Expense.TOTAL_PRICE)}
+              hideControls
+              style={{ flexGrow: 1 }}
+            />
+          </Flex>
+          <Flex gap="sm" style={{ flexGrow: 1, minHeight: MIN_FLEX_HEIGHT }}>
             <Select
-              w={"20%"}
+              w="20%"
               {...expenseForm.getInputProps("reportId")}
               onChange={(_, option) => changeReport(option)}
               data={
@@ -303,26 +320,17 @@ function EditExpenseModal({
               style={{ flexGrow: 1 }}
               clearable
             />
+
+            <Select
+              w={"20%"}
+              {...expenseForm.getInputProps("currency")}
+              withAsterisk
+              data={currencyTypes}
+              label={t(Dictionary.Expense.CURRENCY)}
+              style={{ flexGrow: 1 }}
+            />
           </Flex>
           <Flex gap={"sm"} style={{ flexGrow: 1, minHeight: MIN_FLEX_HEIGHT }}>
-            <DateInput
-              w={"20%"}
-              {...expenseForm.getInputProps("expenseDate")}
-              withAsterisk
-              valueFormat="DD MMMM YYYY"
-              label={t(Dictionary.Expense.DATE)}
-              style={{ flexGrow: 1 }}
-            />
-
-            <NumberInput
-              w={"20%"}
-              {...expenseForm.getInputProps("totalPrice")}
-              withAsterisk
-              label={t(Dictionary.Expense.TOTAL_PRICE)}
-              hideControls
-              style={{ flexGrow: 1 }}
-            />
-
             <Radio.Group
               w={"20%"}
               label={t(Dictionary.Expense.TYPE)}
@@ -337,8 +345,6 @@ function EditExpenseModal({
                 ))}
               </Group>
             </Radio.Group>
-          </Flex>
-          <Flex gap={"sm"} style={{ flexGrow: 1, minHeight: MIN_FLEX_HEIGHT }}>
             <TextInput
               w={"20%"}
               {...expenseForm.getInputProps("description")}
@@ -348,25 +354,6 @@ function EditExpenseModal({
                 expenseForm.values.expenseType === ExpenseType.Other
               }
               disabled={expenseForm.values.expenseType === ExpenseType.Food}
-              style={{ flexGrow: 1 }}
-            />
-
-            <Select
-              w={"20%"}
-              {...expenseForm.getInputProps("currency")}
-              withAsterisk
-              data={currencyTypes}
-              label={t(Dictionary.Expense.CURRENCY)}
-              style={{ flexGrow: 1 }}
-            />
-
-            <Checkbox
-              mt={33}
-              w={"20%"}
-              label={t(Dictionary.Expense.OUT_OF_OFFICE)}
-              {...expenseForm.getInputProps("outOfOffice", {
-                type: "checkbox",
-              })}
               style={{ flexGrow: 1 }}
             />
           </Flex>

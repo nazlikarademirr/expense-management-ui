@@ -1,5 +1,4 @@
 import { z } from "zod/v4";
-import Gender from "../enums/gender";
 import Role from "../enums/role";
 import { t } from "i18next";
 import Dictionary from "../helpers/translation/dictionary";
@@ -10,8 +9,8 @@ type User = {
   surname: string;
   teamId: string | null;
   teamName: string;
-  gender: string;
-  cardNumber: string;
+  gender: string | null;
+  cardNumber: string | null;
   email: string;
   password: string;
   role: string;
@@ -28,8 +27,8 @@ type UserRequest = {
   name: string;
   surname: string;
   teamId: string;
-  gender: number;
-  cardNumber: string;
+  gender: number | null;
+  cardNumber: string | null;
   email: string;
   password: string;
   role: number;
@@ -44,8 +43,8 @@ type UserResponse = {
   surname: string;
   teamId: string;
   teamName: string;
-  gender: number;
-  cardNumber: string;
+  gender: number | null;
+  cardNumber: string | null;
   email: string;
   password: string;
   role: number;
@@ -70,12 +69,6 @@ const userSchema = z.object({
     .min(2, t(Dictionary.User.SURNAME_MIN_LENGTH))
     .max(128, t(Dictionary.User.SURNAME_MAX_LENGTH)),
   teamId: z.string().trim().min(1, t(Dictionary.User.TEAM_MUST_BE_SELECTED)),
-  gender: z.enum(Gender, t(Dictionary.User.GENDER_MUST_BE_SELECTED)),
-  cardNumber: z
-    .string()
-    .trim()
-    .min(1, t(Dictionary.User.CARD_NUMBER_CANNOT_BE_EMPTY))
-    .max(8, t(Dictionary.User.CARD_NUMBER_MAX_LENGTH)),
   email: z
     .email()
     .trim()

@@ -26,7 +26,9 @@
     "yes": "Evet",
     "no": "Hayır",
     "active": "Aktif",
-    "passive": "Pasif"
+    "passive": "Pasif",
+    "add": "Ekle",
+    "all": "Hepsi"
   },
 
   "authentication": {
@@ -104,7 +106,8 @@
     "problemOccurredWithUser": "Kullanıcıyla ilgili bir sorun oluştu.",
     "changePassword": "Şifre Değiştir",
     "activityQuestion": "Kullanıcı hesabı etkinleştirilecek, onaylıyor musunuz?",
-    "deactivityQuestion": "Kullanıcı hesabı devre dışı bırakılacak, onaylıyor musunuz?"
+    "deactivityQuestion": "Kullanıcı hesabı devre dışı bırakılacak, onaylıyor musunuz?",
+    "deactivityRule": "Kullanıcı kendisini pasifleyemez."
   },
 
   "team": {
@@ -163,7 +166,6 @@
     "type": "Masraf Tipi",
     "description": "Açıklama",
     "currency": "Para Birimi",
-    "outOfOffice": "Ofis Dışı",
     "price": "Fiyat",
     "addOvertimeMember": "Mesai Arkadaşı Ekle",
     "addNew": "Yeni Masraf Ekle",
@@ -183,7 +185,6 @@
     "totalPriceCannotBeEmpty": "Toplam fiyat boş olamaz.",
     "totalPriceCannotBeZero": "Toplam fiyat 0 veya daha az olamaz.",
     "currencyMustBeSelected": "Para birimi seçilmelidir.",
-    "outOfOfficeCannotBeEmpty": "Ofis dışı bilgisi boş olamaz.",
     "descriptionRule": "Gider türü ulaşım veya diğer olduğunda, açıklama kısmı boş bırakılamaz.",
     "priceCannotBeEmpty": "Fiyat boş olamaz.",
     "priceCannotBeZero": "Fiyat 0 veya daha az olamaz.",
@@ -216,6 +217,10 @@
     "successfullyApproved": "Rapor başarıyla onaylandı.",
     "updated": "Rapor başarıyla güncellendi.",
     "nameMinLength": "İsim en az 2 harften oluşmalıdır.",
-    "nameMaxLength": "İsim 128 karakteri geçemez."
+    "nameMaxLength": "İsim 128 karakteri geçemez.",
+    "deleteRule": "Bu rapora ait masraflar bulunuyor. Raporu silebilmek için öncelikle bu masrafları silin.",
+    "selectMessage": "Lütfen işlem yapmak için bir rapor seçiniz.",
+    "select": "İşlem yapmak istediğiniz raporu seçin veya yeni bir tane oluşturun.",
+    "allName": "'Hepsi' ismi ile bir rapor oluşturulamaz."
   }
 }

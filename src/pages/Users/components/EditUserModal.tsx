@@ -121,6 +121,11 @@ function EditUserModal({
     userForm.setFieldValue("teamName", team.label);
   };
 
+  const handleGenderDeselect = (selectItem: SelectItem) => {
+    if (userForm.values.gender === selectItem.value)
+      userForm.setFieldValue("gender", null);
+  };
+
   useEffect(() => {
     if (nameInputRef.current) {
       nameInputRef.current.focus();
@@ -154,20 +159,22 @@ function EditUserModal({
       />
       <Radio.Group
         label={t(Dictionary.User.GENDER)}
-        withAsterisk
         style={{ flexGrow: 1, minHeight: MIN_INPUT_HEIGHT }}
         {...userForm.getInputProps("gender")}
       >
         <Group mt="xs">
           {genders.map((x) => (
-            <Radio value={x.value} label={x.label}></Radio>
+            <Radio
+              value={x.value}
+              label={x.label}
+              onClick={() => handleGenderDeselect(x)}
+            ></Radio>
           ))}
         </Group>
       </Radio.Group>
       <TextInput
         {...userForm.getInputProps("cardNumber")}
         style={{ minHeight: MIN_INPUT_HEIGHT }}
-        withAsterisk
         label={t(Dictionary.User.CARD_NUMBER)}
       />
       <TextInput

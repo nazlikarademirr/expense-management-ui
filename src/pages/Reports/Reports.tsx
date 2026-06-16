@@ -44,6 +44,7 @@ import { useTranslation } from "react-i18next";
 import Dictionary from "../../helpers/translation/dictionary";
 import Role from "../../enums/role";
 import { PiPlusCircle } from "react-icons/pi";
+import { Expense } from "../../types/expense.types";
 
 function Reports() {
   const { reports, addReport, updateReport, deleteReport, replaceReports } =
@@ -54,6 +55,8 @@ function Reports() {
   const [showUnapprovedReports, setShowUnapprovedReports] = useState(false);
 
   const { handleDataRequest, downloadFile } = useRequestHandler();
+
+  const [expenses, setExpenses] = useState<Expense[]>([]);
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -174,6 +177,17 @@ function Reports() {
     });
   };
 
+  const getExpenses = async () => {
+    const response = await handleDataRequest<never, Expense[]>(
+      urls.expense,
+      RequestType.Get,
+    );
+
+    if (!response.isSuccess) return;
+
+    setExpenses(response.value);
+  };
+
   const getReports = async () => {
     const response = await handleDataRequest<never, Report[]>(
       urls.report,
@@ -192,6 +206,13 @@ function Reports() {
       )
     ) {
       toast.error(t(Dictionary.Report.SAME_NAME));
+      return false;
+    }
+
+    const reportName = report.name.trim().toUpperCase();
+
+    if (reportName === "HEPSI" || reportName === "ALL") {
+      toast.error(t(Dictionary.Report.ALL_NAME));
       return false;
     }
     return true;
@@ -244,6 +265,12 @@ function Reports() {
 
   const handleDelete = async (id: string) => {
     setIsLoading(true);
+
+    if (expenses.find((x) => x.reportId === id)) {
+      toast.error(t(Dictionary.Report.DELETE_RULE));
+      setIsLoading(false);
+      return;
+    }
 
     const response = await handleDataRequest<string, never>(
       urls.report,
@@ -301,8 +328,8 @@ function Reports() {
                 variant="light"
               >
                 {x.isApproved
-                  ? t(Dictionary.Common.ACTIVE)
-                  : t(Dictionary.Common.PASSIVE)}
+                  ? t(Dictionary.Common.YES)
+                  : t(Dictionary.Common.NO)}
               </Badge>
             </Table.Td>
             <Table.Td> {x.createUserFullName} </Table.Td>
@@ -364,6 +391,7 @@ function Reports() {
 
   useEffect(() => {
     getReports();
+    getExpenses();
   }, []);
 
   return (
