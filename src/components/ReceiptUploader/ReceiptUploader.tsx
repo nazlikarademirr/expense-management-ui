@@ -4,7 +4,6 @@ import { OcrResult } from "../../types/ocr.types";
 import styles from "./ReceiptDropzone.module.css";
 import useReceiptOcr from "../../hooks/useReceiptOcr";
 import ReceiptDropzone from "./ReceiptDropzone";
-import OcrStatusBanner from "./OcrStatusBanner";
 import { Flex } from "@mantine/core";
 import OcrFieldMapper from "./OcrFieldMapper";
 
@@ -28,8 +27,7 @@ function ReceiptUploader<TValues extends Record<string, unknown>>({
   onResetComplete,
   clearOnEmpty,
 }: Props<TValues>) {
-  const { status, result, error, previewUrl, processFile, reset } =
-    useReceiptOcr();
+  const { status, result, previewUrl, processFile, reset } = useReceiptOcr();
 
   const handleFile = useCallback(
     async (file: File) => {
@@ -56,8 +54,6 @@ function ReceiptUploader<TValues extends Record<string, unknown>>({
           previewUrl={previewUrl}
           onReset={handleReset}
         />
-
-        <OcrStatusBanner status={status} error={error} result={result} />
       </Flex>
 
       <OcrFieldMapper

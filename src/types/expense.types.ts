@@ -16,8 +16,7 @@ type Expense = {
   totalPrice: number;
   currency: string | null;
   description: string;
-  outOfOffice: boolean;
-  reportId: string | null;
+  reportId: string;
   reportName: string;
   isApproved: boolean;
   overtimeMembers: OvertimeMember[];
@@ -36,7 +35,6 @@ type ExpenseRequest = {
   totalPrice: number;
   currency: number;
   description: string;
-  outOfOffice: boolean;
   reportId: string;
   overtimeMembers: OvertimeMember[];
 };
@@ -52,7 +50,6 @@ type ExpenseResponse = {
   totalPrice: number;
   currency: number;
   description: string;
-  outOfOffice: boolean;
   reportId: string;
   reportName: string;
   isApproved: boolean;
@@ -81,7 +78,6 @@ const expenseSchema = z
       t(Dictionary.Expense.CURRENCY_MUST_BE_SELECTED),
     ),
     description: z.string().nullish(),
-    outOfOffice: z.boolean(t(Dictionary.Expense.OUT_OF_OFFICE_CANNOT_BE_EMPTY)),
   })
   .superRefine((data, ctx) => {
     if (

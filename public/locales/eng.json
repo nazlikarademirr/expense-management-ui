@@ -25,8 +25,10 @@
     "other": "Other",
     "yes": "Yes",
     "no": "No",
-    "active": "Aktif",
-    "passive": "Pasif"
+    "active": "Active",
+    "passive": "Passive",
+    "add": "Add",
+    "all": "All"
   },
 
   "authentication": {
@@ -104,7 +106,8 @@
     "problemOccurredWithUser": "A problem occurred with the user.",
     "changePassword": "Change Password",
     "activityQuestion": "The user account will be activated, do you approve?",
-    "deactivityQuestion": "The user account will be deactivated, do you approve?"
+    "deactivityQuestion": "The user account will be deactivated, do you approve?",
+    "deactivityRule": "The user cannot deactivate themselves."
   },
 
   "team": {
@@ -163,7 +166,6 @@
     "type": "Expense Type",
     "description": "Description",
     "currency": "Currency",
-    "outOfOffice": "Out Of Office",
     "price": "Price",
     "addOvertimeMember": "Add Overtime Member",
     "addNew": "Add New Expense",
@@ -183,7 +185,6 @@
     "totalPriceCannotBeEmpty": "Total price cannot be empty.",
     "totalPriceCannotBeZero": "Total price cannot be 0 or less.",
     "currencyMustBeSelected": "Currency must be selected.",
-    "outOfOfficeCannotBeEmpty": "Out of office cannot be empty.",
     "descriptionRule": "When the expense type is transportation or other, the description cannot be left blank.",
     "priceCannotBeEmpty": "Price cannot be empty.",
     "priceCannotBeZero": "Price cannot be 0 or less.",
@@ -216,6 +217,10 @@
     "successfullyApproved": "Report approved successfully.",
     "updated": "Report has been updated successfully.",
     "nameMinLength": "Name must have at least 2 letters.",
-    "nameMaxLength": "Name cannot exceed 128 characters."
+    "nameMaxLength": "Name cannot exceed 128 characters.",
+    "deleteRule": "This report has associated expenses. To delete the report, you must first remove these expenses.",
+    "selectMessage": "Please select a report to process.",
+    "select": "Select the report you want to work with, or create a new one.",
+    "allName": "A report cannot be created with the name 'all'."
   }
 }

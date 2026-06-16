@@ -27,6 +27,8 @@ abstract class Dictionary {
     static readonly NO = "common.no";
     static readonly ACTIVE = "common.active";
     static readonly PASSIVE = "common.passive";
+    static readonly ADD = "common.add";
+    static readonly ALL = "common.all";
   };
 
   static Authentication = class {
@@ -111,6 +113,7 @@ abstract class Dictionary {
     static readonly CHANGE_PASSWORD = "user.changePassword";
     static readonly ACTIVITY_QUESTION = "user.activityQuestion";
     static readonly DEACTIVITY_QUESTION = "user.deactivityQuestion";
+    static readonly DEACTIVITY_RULE = "user.deactivityRule";
   };
 
   static Team = class {
@@ -168,7 +171,6 @@ abstract class Dictionary {
     static readonly DATE = "expense.date";
     static readonly DESCRIPTION = "expense.description";
     static readonly CURRENCY = "expense.currency";
-    static readonly OUT_OF_OFFICE = "expense.outOfOffice";
     static readonly PRICE = "expense.price";
     static readonly ADD_OVERTIME_MEMBER = "expense.addOvertimeMember";
     static readonly ADD_NEW = "expense.addNew";
@@ -193,8 +195,6 @@ abstract class Dictionary {
       "expense.totalPriceCannotBeZero";
     static readonly CURRENCY_MUST_BE_SELECTED =
       "expense.currencyMustBeSelected";
-    static readonly OUT_OF_OFFICE_CANNOT_BE_EMPTY =
-      "expense.outOfOfficeCannotBeEmpty";
     static readonly DESCRIPTION_RULE = "expense.descriptionRule";
     static readonly PRICE_CANNOT_BE_EMPTY = "expense.priceCannotBeEmpty";
     static readonly PRICE_CANNOT_BE_ZERO = "expense.priceCannotBeZero";
@@ -228,6 +228,10 @@ abstract class Dictionary {
     static readonly UPDATED = "report.updated";
     static readonly NAME_MIN_LENGTH = "report.nameMinLength";
     static readonly NAME_MAX_LENGTH = "report.nameMaxLength";
+    static readonly DELETE_RULE = "report.deleteRule";
+    static readonly SELECT_MESSAGE = "report.selectMessage";
+    static readonly SELECT = "report.select";
+    static readonly ALL_NAME = "report.allName";
   };
 }
 

@@ -138,7 +138,7 @@ function Users() {
 
     const users: User[] = response.value.map((x) => ({
       ...x,
-      gender: x.gender.toString(),
+      gender: x.gender ? x.gender.toString() : null,
       role: x.role.toString(),
     }));
 
@@ -149,7 +149,7 @@ function Users() {
     if (
       users.some(
         (x) =>
-          x.id !== user.id && x.cardNumber.trim() === user.cardNumber.trim(),
+          x.id !== user.id && x.cardNumber?.trim() === user.cardNumber?.trim(),
       )
     ) {
       toast.error(t(Dictionary.User.SAME_CARD_NUMBER));
@@ -192,8 +192,8 @@ function Users() {
       name: form.values.name.trim(),
       surname: form.values.surname.trim(),
       teamId: form.values.teamId ?? "",
-      gender: Number(form.values.gender),
-      cardNumber: form.values.cardNumber,
+      gender: form.values.gender ? Number(form.values?.gender) : null,
+      cardNumber: form.values?.cardNumber,
       email: form.values.email.trim(),
       password: form.values.password,
       role: Number(form.values.role),
@@ -215,7 +215,7 @@ function Users() {
 
     addUser({
       ...response.value,
-      gender: response.value.gender.toString(),
+      gender: response.value.gender ? response.value.gender.toString() : null,
       role: response.value.role.toString(),
       createUserFullName: auth.currentUser
         ? `${auth.currentUser.name} ${auth.currentUser.surname}`
@@ -231,6 +231,12 @@ function Users() {
 
   const changeUserActivity = async (user: User) => {
     setIsLoading(true);
+
+    if (auth.currentUser?.id === user.id) {
+      toast.error(t(Dictionary.User.DEACTIVITY_RULE));
+      setIsLoading(false);
+      return;
+    }
 
     const patchDocument = createJsonPatchDocumentFromObject({
       isActive: !user.isActive,
@@ -336,8 +342,10 @@ function Users() {
             <Table.Td> {x.name} </Table.Td>
             <Table.Td> {x.surname} </Table.Td>
             <Table.Td>{x.teamName}</Table.Td>
-            <Table.Td>{genders[Number(x.gender)].label}</Table.Td>
-            <Table.Td> {x.cardNumber} </Table.Td>
+            <Table.Td>
+              {x.gender ? genders[Number(x.gender)].label : "-"}
+            </Table.Td>
+            <Table.Td> {x.cardNumber ? x.cardNumber : "-"} </Table.Td>
             <Table.Td> {x.email} </Table.Td>
             <Table.Td>{roles[Number(x.role)].label}</Table.Td>
             <Table.Td>
@@ -437,7 +445,6 @@ function Users() {
 
             <TextInput
               {...form.getInputProps("cardNumber")}
-              withAsterisk
               style={{
                 flexGrow: 1,
                 minHeight: MIN_INPUT_HEIGHT,
@@ -497,7 +504,6 @@ function Users() {
           <Flex gap="xl" direction="column" style={{ flexGrow: 1 }}>
             <Radio.Group
               label={t(Dictionary.User.GENDER)}
-              withAsterisk
               style={{
                 flexGrow: 1,
                 minHeight: MIN_INPUT_HEIGHT,
@@ -507,7 +513,15 @@ function Users() {
             >
               <Group mt="xs">
                 {genders.map((x) => (
-                  <Radio value={x.value} label={x.label}></Radio>
+                  <Radio
+                    value={x.value}
+                    label={x.label}
+                    onClick={() => {
+                      if (form.values.gender === x.value) {
+                        form.setFieldValue("gender", null);
+                      }
+                    }}
+                  ></Radio>
                 ))}
               </Group>
             </Radio.Group>

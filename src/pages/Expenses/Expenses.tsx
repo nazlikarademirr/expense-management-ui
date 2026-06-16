@@ -15,7 +15,9 @@ import {
   TextInput,
   Title,
   Text,
-  Badge,
+  Combobox,
+  useCombobox,
+  InputBase,
 } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import expenseSchema, {
@@ -46,7 +48,7 @@ import useRequestHandler from "../../hooks/useRequestHandler";
 import { SelectItem } from "../../types/select-item.types";
 import { User } from "../../types/user.types";
 import { Project } from "../../types/project.types";
-import { Report } from "../../types/report.types";
+import { Report, ReportRequest } from "../../types/report.types";
 import { zod4Resolver } from "mantine-form-zod-resolver";
 import { useAuthentication } from "../../contexts/AuthenticationContext/AuthenticationProvider";
 import { useTranslation } from "react-i18next";
@@ -56,7 +58,7 @@ import { PiPlusCircle } from "react-icons/pi";
 import ReceiptUploader from "../../components/ReceiptUploader/ReceiptUploader";
 import normalizeText from "../../helpers/NormalizeText";
 import Role from "../../enums/role";
-const MIN_FLEX_HEIGHT = 110;
+const MIN_FLEX_HEIGHT = 120;
 const foodSelectorKeywords = ["yiyecek", "icecek", "KDV", "kdv"];
 const tripSelectorKeywords = [
   "maliye",
@@ -66,6 +68,7 @@ const tripSelectorKeywords = [
   "sanatkarlari",
   "konfederasyonu",
 ];
+
 const tlCurrencySelectorKeywords = [
   "tl",
   "₺",
@@ -117,7 +120,11 @@ function Expenses() {
 
   const [selectedReport, setSelectedReport] = useState<string | null>(null);
 
+  const [newReportName, setNewReportName] = useState("");
+
   const [showUnapprovedExpenses, setShowUnapprovedExpenses] = useState(false);
+
+  const combobox = useCombobox();
 
   const auth = useAuthentication();
 
@@ -133,8 +140,7 @@ function Expenses() {
       totalPrice: 0,
       currency: null,
       description: "",
-      outOfOffice: false,
-      reportId: null,
+      reportId: "",
       reportName: "",
       isApproved: false,
       overtimeMembers: [],
@@ -189,22 +195,20 @@ function Expenses() {
           <Text>{t(Dictionary.Expense.DELETION_QUESTION)}</Text>
           <Flex direction="row" gap={10}>
             <Button
-              style={{ flexGrow: 1 }}
               loading={isLoading}
               onClick={() => {
                 handleDelete(id);
                 modals.closeAll();
               }}
               variant="light"
-              color="blue"
+              style={{ flex: 1, color: "red", backgroundColor: "#ffeeee" }}
             >
-              {t(Dictionary.Expense.DELETE)}
+              {t(Dictionary.Common.DELETE)}
             </Button>
             <Button
               onClick={() => modals.closeAll()}
-              style={{ flexGrow: 1 }}
+              style={{ flex: 1 }}
               variant="light"
-              color="red"
             >
               {t(Dictionary.Common.CANCEL)}
             </Button>
@@ -306,6 +310,12 @@ function Expenses() {
   const handleSave = async () => {
     setIsLoading(true);
 
+    if (!selectedReport) {
+      toast.error(t(Dictionary.Report.SELECT));
+      setIsLoading(false);
+      return;
+    }
+
     form.validate();
 
     if (!form.isValid()) {
@@ -336,8 +346,7 @@ function Expenses() {
       totalPrice: form.values.totalPrice,
       currency: Number(form.values.currency),
       description: form.values.description,
-      outOfOffice: form.values.outOfOffice,
-      reportId: form.values.reportId ?? "",
+      reportId: selectedReport,
       overtimeMembers: form.values.overtimeMembers,
     };
 
@@ -441,6 +450,118 @@ function Expenses() {
     form.setFieldValue("overtimeMembers", overtimeMembers);
   };
 
+  const addOvertimeMember = () => {
+    modals.open({
+      title: (
+        <Title order={5}>{t(Dictionary.Expense.ADD_OVERTIME_MEMBER)}</Title>
+      ),
+      size: "xl",
+      children: (
+        <Flex justify="center">
+          <Card
+            h="500px"
+            w="1000px"
+            shadow="xs"
+            radius="md"
+            withBorder
+            padding={10}
+          >
+            <Flex gap="sm" style={{ minHeight: 90 }}>
+              <Select
+                {...overtimeMemberForm.getInputProps("userId")}
+                withAsterisk
+                data={activeUserSelectData}
+                searchable
+                label={t(Dictionary.Expense.USER_NAME)}
+                style={{ flexGrow: 1 }}
+              />
+
+              <NumberInput
+                {...overtimeMemberForm.getInputProps("price")}
+                withAsterisk
+                label={t(Dictionary.Expense.PRICE)}
+                hideControls
+                style={{ flexGrow: 1 }}
+              />
+
+              <Button
+                onClick={saveOvertimeMember}
+                variant="light"
+                mt={25}
+                leftSection={<PiPlusCircle size={22} />}
+              >
+                {t(Dictionary.Common.ADD)}
+              </Button>
+            </Flex>
+            <ScrollArea style={{ flex: 1 }}>
+              <Table
+                striped
+                stickyHeader
+                highlightOnHover
+                withTableBorder
+                withColumnBorders
+              >
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th>{t(Dictionary.Expense.USER_NAME)}</Table.Th>
+                    <Table.Th>{t(Dictionary.Expense.PRICE)}</Table.Th>
+                    <Table.Th>{t(Dictionary.Common.CREATE_USER)}</Table.Th>
+                    <Table.Th>{t(Dictionary.Common.CREATE_DATE)}</Table.Th>
+                    <Table.Th></Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>{memoizedOvertimeMembers}</Table.Tbody>
+              </Table>
+            </ScrollArea>
+          </Card>
+        </Flex>
+      ),
+    });
+  };
+
+  const createNewReport = async (value: string) => {
+    setIsLoading(true);
+
+    if (!value) {
+      toast.error(t(Dictionary.Report.NAME_MIN_LENGTH));
+      setIsLoading(false);
+      return;
+    }
+
+    const request: ReportRequest = {
+      name: value.trim(),
+      isApproved: false,
+    };
+
+    const response = await handleDataRequest<ReportRequest, Report>(
+      urls.report,
+      RequestType.Post,
+      request,
+    );
+
+    if (!response.isSuccess) {
+      setIsLoading(false);
+      return;
+    }
+
+    setSelectedReport(response.value.id);
+    setNewReportName(response.value.name);
+    setReportSelectData([
+      ...reportSelectData,
+      { label: value, value: response.value.id },
+    ]);
+
+    combobox.closeDropdown();
+
+    toast.success(t(Dictionary.Report.ADDED));
+
+    setIsLoading(false);
+  };
+
+  const filteredReportSelectData = reportSelectData.filter((x) =>
+    x.label.includes(searchQuery.trim()),
+  );
+
   const setExpenseTypeFromOcr = (result: OcrResult) => {
     const text = normalizeText(result.rawText.join(" "));
 
@@ -492,7 +613,9 @@ function Expenses() {
         .filter((x) =>
           x.searchText.toLowerCase().includes(searchQuery.toLowerCase()),
         )
-        .filter((x) => (selectedReport ? x.reportId === selectedReport : true))
+        .filter((x) =>
+          selectedReport ? x.reportId === selectedReport : expenses,
+        )
         .filter((x) => (selectedUser ? x.userId === selectedUser : true))
         .filter(
           (x) => activeUserSelectData.find((y) => y.value === x.userId)?.label,
@@ -510,22 +633,10 @@ function Expenses() {
             <Table.Td> {x.totalPrice} </Table.Td>
             <Table.Td>{currencyTypes[Number(x.currency)].label}</Table.Td>
             <Table.Td>
-              {x.expenseType === ExpenseType.Transportation
-                ? x.description
-                : "-"}
+              {x.expenseType !== ExpenseType.Food ? x.description : "-"}
             </Table.Td>
-            <Table.Td>
-              <Badge
-                size="md"
-                color={x.outOfOffice ? "green" : "gray"}
-                variant="light"
-              >
-                {x.outOfOffice
-                  ? t(Dictionary.Common.YES)
-                  : t(Dictionary.Common.NO)}
-              </Badge>
-            </Table.Td>
-            <Table.Td>{x.reportId !== null ? x.reportName : "-"}</Table.Td>
+
+            <Table.Td>{x.reportName}</Table.Td>
             <Table.Td> {x.createUserFullName} </Table.Td>
             <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
             <Table.Td>
@@ -604,182 +715,187 @@ function Expenses() {
   }, []);
 
   return (
-    <Flex direction="column" h={PAGE_FLEX_HEIGHT}>
-      <Title order={3}>{t(Dictionary.Common.EXPENSES)}</Title>
-      <Divider my={TITLE_DIVIDER_MY} />
-      <Card shadow="xs" radius="xs" withBorder padding={10}>
-        <Flex gap="md" justify="center">
-          <Flex direction="column" w="60%" justify="center">
-            <Flex gap="sm" style={{ flexGrow: 1, minHeight: MIN_FLEX_HEIGHT }}>
-              <Select
-                w="20%"
-                {...form.getInputProps("userId")}
-                withAsterisk
-                data={activeUserSelectData}
-                searchable
-                label={t(Dictionary.Expense.USER_NAME)}
-                style={{ flexGrow: 1 }}
-              />
+    <Flex direction="column" h={PAGE_FLEX_HEIGHT} w="100%">
+      <Flex justify="space-between" align="center" gap={10}>
+        <Title order={3}>{t(Dictionary.Common.EXPENSES)}</Title>
+        <Combobox
+          store={combobox}
+          onOptionSubmit={(value) => {
+            setSearchQuery("");
+            if (value === "all") {
+              setSelectedReport(null);
+              setNewReportName(t(Dictionary.Common.ALL));
+              combobox.closeDropdown();
+              return;
+            }
+            const selected = reportSelectData.find((x) => x.value === value);
 
-              <Select
-                w="20%"
-                {...form.getInputProps("projectId")}
-                withAsterisk
-                data={activeProjectSelectData}
-                label={t(Dictionary.Expense.PROJECT_NAME)}
-                style={{ flexGrow: 1 }}
-              />
+            setSelectedReport(value);
+            setNewReportName(selected?.label ?? "");
 
-              <Select
-                w="20%"
-                {...form.getInputProps("reportId")}
-                data={
-                  auth.currentUser?.role === Role.User
-                    ? unapprovedReportSelectData
-                    : reportSelectData
-                }
-                searchable
-                label={t(Dictionary.Expense.REPORT_NAME)}
-                clearable
-                style={{ flexGrow: 1 }}
-              />
-            </Flex>
-            <Flex gap="sm" style={{ flexGrow: 1, minHeight: MIN_FLEX_HEIGHT }}>
-              <DateInput
-                w="20%"
-                {...form.getInputProps("expenseDate")}
-                withAsterisk
-                valueFormat="DD MMMM YYYY"
-                label={t(Dictionary.Expense.DATE)}
-                style={{ flexGrow: 1 }}
-              />
-
-              <NumberInput
-                w="20%"
-                {...form.getInputProps("totalPrice")}
-                withAsterisk
-                label={t(Dictionary.Expense.TOTAL_PRICE)}
-                hideControls
-                style={{ flexGrow: 1 }}
-              />
-
-              <Radio.Group
-                w="20%"
-                label={t(Dictionary.Expense.TYPE)}
-                withAsterisk
-                {...form.getInputProps("expenseType")}
-                display="center"
-                style={{ flexGrow: 1 }}
-              >
-                <Group mt="xs">
-                  {expenseTypes.map((x) => (
-                    <Radio value={x.value} label={x.label}></Radio>
-                  ))}
-                </Group>
-              </Radio.Group>
-            </Flex>
-            <Flex gap="sm" style={{ flexGrow: 1, minHeight: MIN_FLEX_HEIGHT }}>
-              <TextInput
-                w="20%"
-                {...form.getInputProps("description")}
-                label={t(Dictionary.Expense.DESCRIPTION)}
-                withAsterisk={
-                  form.values.expenseType === ExpenseType.Transportation ||
-                  form.values.expenseType === ExpenseType.Other
-                }
-                disabled={form.values.expenseType === ExpenseType.Food}
-                style={{ flexGrow: 1 }}
-              />
-              <Select
-                w="20%"
-                {...form.getInputProps("currency")}
-                withAsterisk
-                data={currencyTypes}
-                label={t(Dictionary.Expense.CURRENCY)}
-                style={{ flexGrow: 1 }}
-              />
-              <Checkbox
-                w="20%"
-                mt={30}
-                label={t(Dictionary.Expense.OUT_OF_OFFICE)}
-                {...form.getInputProps("outOfOffice", { type: "checkbox" })}
-                style={{ flexGrow: 1 }}
-              />
-            </Flex>
-          </Flex>
-          <Flex>
-            <ReceiptUploader<Expense>
-              form={form}
-              mapping={ocrMapping}
-              onOcrComplete={ocrComplete}
-              onResetComplete={() => {
-                form.reset();
+            combobox.closeDropdown();
+          }}
+        >
+          <Combobox.Target>
+            <InputBase
+              w="25%"
+              value={newReportName}
+              rightSection={<Combobox.Chevron />}
+              onClick={() => {
+                setSearchQuery("");
+                combobox.openDropdown();
               }}
-            />
-          </Flex>
-          <Flex w="40%" justify="center" h="320px">
-            <Card shadow="xs" radius="md" withBorder padding={10} w="100%">
-              <Flex gap="sm" style={{ minHeight: 90 }}>
+              onFocus={() => {
+                setSearchQuery("");
+                combobox.openDropdown();
+              }}
+              placeholder={t(Dictionary.Report.SELECT)}
+              onChange={(event) => {
+                setNewReportName(event.currentTarget.value);
+                setSearchQuery(event.currentTarget.value);
+                setSelectedReport(null);
+                combobox.openDropdown();
+              }}
+            ></InputBase>
+          </Combobox.Target>
+
+          <Combobox.Dropdown>
+            <Combobox.Options>
+              <Combobox.Option value="all">
+                {t(Dictionary.Common.ALL)}
+              </Combobox.Option>
+              {filteredReportSelectData.map((x) => (
+                <Combobox.Option key={x.value} value={x.value}>
+                  {x.label}
+                </Combobox.Option>
+              ))}
+            </Combobox.Options>
+            <Combobox.Footer>
+              <Button
+                variant="light"
+                fullWidth
+                leftSection={<PiPlusCircle size={22} />}
+                onClick={() => createNewReport(newReportName)}
+              >
+                {t(Dictionary.Report.ADD_NEW)}
+              </Button>
+            </Combobox.Footer>
+          </Combobox.Dropdown>
+        </Combobox>
+      </Flex>
+      <Divider my={TITLE_DIVIDER_MY} />
+      <Flex gap={10} w="100%">
+        <Card w="75%" shadow="xs" radius="xs" withBorder padding={10}>
+          <Flex gap="md" w="100%">
+            <Flex direction="column" w="100%">
+              <Flex
+                gap="sm"
+                style={{
+                  minHeight: MIN_FLEX_HEIGHT,
+                }}
+              >
                 <Select
-                  {...overtimeMemberForm.getInputProps("userId")}
+                  w="25%"
+                  {...form.getInputProps("userId")}
                   withAsterisk
                   data={activeUserSelectData}
                   searchable
                   label={t(Dictionary.Expense.USER_NAME)}
-                  style={{ flexGrow: 1 }}
                 />
 
-                <NumberInput
-                  {...overtimeMemberForm.getInputProps("price")}
+                <Select
+                  w="25%"
+                  {...form.getInputProps("projectId")}
                   withAsterisk
-                  label={t(Dictionary.Expense.PRICE)}
+                  data={activeProjectSelectData}
+                  label={t(Dictionary.Expense.PROJECT_NAME)}
+                />
+
+                <DateInput
+                  w="25%"
+                  {...form.getInputProps("expenseDate")}
+                  withAsterisk
+                  valueFormat="DD MMMM YYYY"
+                  label={t(Dictionary.Expense.DATE)}
+                />
+
+                <Radio.Group
+                  w="25%"
+                  label={t(Dictionary.Expense.TYPE)}
+                  withAsterisk
+                  {...form.getInputProps("expenseType")}
+                  display="center"
+                >
+                  <Group mt="xs">
+                    {expenseTypes.map((x) => (
+                      <Radio value={x.value} label={x.label}></Radio>
+                    ))}
+                  </Group>
+                </Radio.Group>
+              </Flex>
+              <Flex gap="sm" style={{ flex: 1, minHeight: MIN_FLEX_HEIGHT }}>
+                <NumberInput
+                  w="25%"
+                  {...form.getInputProps("totalPrice")}
+                  withAsterisk
+                  label={t(Dictionary.Expense.TOTAL_PRICE)}
                   hideControls
-                  style={{ flexGrow: 1 }}
+                />
+
+                <Select
+                  w="25%"
+                  {...form.getInputProps("currency")}
+                  withAsterisk
+                  data={currencyTypes}
+                  label={t(Dictionary.Expense.CURRENCY)}
+                />
+
+                <TextInput
+                  w="25%"
+                  {...form.getInputProps("description")}
+                  label={t(Dictionary.Expense.DESCRIPTION)}
+                  withAsterisk={
+                    form.values.expenseType === ExpenseType.Transportation ||
+                    form.values.expenseType === ExpenseType.Other
+                  }
+                  disabled={form.values.expenseType === ExpenseType.Food}
                 />
 
                 <Button
-                  onClick={saveOvertimeMember}
-                  variant="light"
+                  w="25%"
                   mt={25}
+                  variant="light"
+                  onClick={() => addOvertimeMember()}
                   leftSection={<PiPlusCircle size={22} />}
                 >
                   {t(Dictionary.Expense.ADD_OVERTIME_MEMBER)}
                 </Button>
               </Flex>
-              <ScrollArea style={{ flex: 1 }}>
-                <Table
-                  striped
-                  stickyHeader
-                  highlightOnHover
-                  withTableBorder
-                  withColumnBorders
-                >
-                  <Table.Thead>
-                    <Table.Tr>
-                      <Table.Th>{t(Dictionary.Expense.USER_NAME)}</Table.Th>
-                      <Table.Th>{t(Dictionary.Expense.PRICE)}</Table.Th>
-                      <Table.Th>{t(Dictionary.Common.CREATE_USER)}</Table.Th>
-                      <Table.Th>{t(Dictionary.Common.CREATE_DATE)}</Table.Th>
-                      <Table.Th></Table.Th>
-                    </Table.Tr>
-                  </Table.Thead>
-                  <Table.Tbody>{memoizedOvertimeMembers}</Table.Tbody>
-                </Table>
-              </ScrollArea>
-            </Card>
+            </Flex>
           </Flex>
-        </Flex>
-        <Button
-          onClick={handleSave}
-          variant="light"
-          mt={10}
-          loading={isLoading}
-          leftSection={<PiPlusCircle size={22} />}
-        >
-          {t(Dictionary.Expense.ADD_NEW)}
-        </Button>
-      </Card>
+          <Button
+            onClick={handleSave}
+            variant="light"
+            mt={10}
+            loading={isLoading}
+            leftSection={<PiPlusCircle size={22} />}
+          >
+            {t(Dictionary.Expense.ADD_NEW)}
+          </Button>
+        </Card>
+        <Card w="25%">
+          <ReceiptUploader<Expense>
+            form={form}
+            mapping={ocrMapping}
+            onOcrComplete={ocrComplete}
+            onResetComplete={() => {
+              form.reset();
+            }}
+          />
+        </Card>
+      </Flex>
       <Card
+        w="%100"
         mt="sm"
         withBorder
         padding="sm"
@@ -807,14 +923,6 @@ function Expenses() {
             clearable
             onChange={(e) => setSelectedUser(e)}
           />
-          <Select
-            data={reportSelectData}
-            searchable
-            placeholder={t(Dictionary.Expense.SELECT_REPORT)}
-            style={{ flexGrow: 1 }}
-            clearable
-            onChange={(e) => setSelectedReport(e)}
-          />
           <Checkbox
             labelPosition="left"
             label={t(Dictionary.Expense.SHOW_UNAPPROVED)}
@@ -841,7 +949,6 @@ function Expenses() {
                 <Table.Th>{t(Dictionary.Expense.TOTAL_PRICE)}</Table.Th>
                 <Table.Th>{t(Dictionary.Expense.CURRENCY)}</Table.Th>
                 <Table.Th>{t(Dictionary.Expense.DESCRIPTION)}</Table.Th>
-                <Table.Th>{t(Dictionary.Expense.OUT_OF_OFFICE)}</Table.Th>
                 <Table.Th>{t(Dictionary.Expense.REPORT_NAME)}</Table.Th>
                 <Table.Th>{t(Dictionary.Common.CREATE_USER)}</Table.Th>
                 <Table.Th>{t(Dictionary.Common.CREATE_DATE)}</Table.Th>
