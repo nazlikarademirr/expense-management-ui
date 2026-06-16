@@ -420,6 +420,12 @@ function Users() {
     ],
   );
 
+  const handleGenderDeselect = (selectItem: SelectItem) => {
+    if (form.values.gender === selectItem.value) {
+      form.setFieldValue("gender", null);
+    }
+  };
+
   useEffect(() => {
     getUsers();
     getActiveTeamsSelectData();
@@ -516,11 +522,7 @@ function Users() {
                   <Radio
                     value={x.value}
                     label={x.label}
-                    onClick={() => {
-                      if (form.values.gender === x.value) {
-                        form.setFieldValue("gender", null);
-                      }
-                    }}
+                    onClick={() => handleGenderDeselect(x)}
                   ></Radio>
                 ))}
               </Group>

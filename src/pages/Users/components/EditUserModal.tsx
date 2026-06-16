@@ -121,6 +121,11 @@ function EditUserModal({
     userForm.setFieldValue("teamName", team.label);
   };
 
+  const handleGenderDeselect = (selectItem: SelectItem) => {
+    if (userForm.values.gender === selectItem.value)
+      userForm.setFieldValue("gender", null);
+  };
+
   useEffect(() => {
     if (nameInputRef.current) {
       nameInputRef.current.focus();
@@ -162,11 +167,7 @@ function EditUserModal({
             <Radio
               value={x.value}
               label={x.label}
-              onClick={() => {
-                if (userForm.values.gender === x.value) {
-                  userForm.setFieldValue("gender", null);
-                }
-              }}
+              onClick={() => handleGenderDeselect(x)}
             ></Radio>
           ))}
         </Group>

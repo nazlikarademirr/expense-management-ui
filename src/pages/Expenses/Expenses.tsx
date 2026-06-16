@@ -34,7 +34,7 @@ import overtimeMemberSchema, {
   OvertimeMember,
 } from "../../types/overtime-member.types";
 import EditExpenseModal from "./components/EditExpenseModal";
-import { useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { currencyTypes, expenseTypes } from "../../constants/static-data";
 import ExpenseType from "../../enums/expense-type";
 import {
@@ -707,6 +707,34 @@ function Expenses() {
     [],
   );
 
+  const handleReportSelect = (value: string) => {
+    setSearchQuery("");
+    if (value === "all") {
+      setSelectedReport(null);
+      setNewReportName(t(Dictionary.Common.ALL));
+      combobox.closeDropdown();
+      return;
+    }
+    const selected = reportSelectData.find((x) => x.value === value);
+
+    setSelectedReport(value);
+    setNewReportName(selected?.label ?? "");
+
+    combobox.closeDropdown();
+  };
+
+  const handleReportNameChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setNewReportName(event.currentTarget.value);
+    setSearchQuery(event.currentTarget.value);
+    setSelectedReport(null);
+    combobox.openDropdown();
+  };
+
+  const handleOpenReportDropdown = () => {
+    setSearchQuery("");
+    combobox.openDropdown();
+  };
+
   useEffect(() => {
     getActiveUsers();
     getActiveProjects();
@@ -718,44 +746,16 @@ function Expenses() {
     <Flex direction="column" h={PAGE_FLEX_HEIGHT} w="100%">
       <Flex justify="space-between" align="center" gap={10}>
         <Title order={3}>{t(Dictionary.Common.EXPENSES)}</Title>
-        <Combobox
-          store={combobox}
-          onOptionSubmit={(value) => {
-            setSearchQuery("");
-            if (value === "all") {
-              setSelectedReport(null);
-              setNewReportName(t(Dictionary.Common.ALL));
-              combobox.closeDropdown();
-              return;
-            }
-            const selected = reportSelectData.find((x) => x.value === value);
-
-            setSelectedReport(value);
-            setNewReportName(selected?.label ?? "");
-
-            combobox.closeDropdown();
-          }}
-        >
+        <Combobox store={combobox} onOptionSubmit={handleReportSelect}>
           <Combobox.Target>
             <InputBase
               w="25%"
               value={newReportName}
               rightSection={<Combobox.Chevron />}
-              onClick={() => {
-                setSearchQuery("");
-                combobox.openDropdown();
-              }}
-              onFocus={() => {
-                setSearchQuery("");
-                combobox.openDropdown();
-              }}
+              onClick={handleOpenReportDropdown}
+              onFocus={handleOpenReportDropdown}
               placeholder={t(Dictionary.Report.SELECT)}
-              onChange={(event) => {
-                setNewReportName(event.currentTarget.value);
-                setSearchQuery(event.currentTarget.value);
-                setSelectedReport(null);
-                combobox.openDropdown();
-              }}
+              onChange={handleReportNameChange}
             ></InputBase>
           </Combobox.Target>
 

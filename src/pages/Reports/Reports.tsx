@@ -209,10 +209,9 @@ function Reports() {
       return false;
     }
 
-    if (
-      report.name.trim().toUpperCase() === "HEPSI" ||
-      report.name.trim().toUpperCase() === "ALL"
-    ) {
+    const reportName = report.name.trim().toUpperCase();
+
+    if (reportName === "HEPSI" || reportName === "ALL") {
       toast.error(t(Dictionary.Report.ALL_NAME));
       return false;
     }
