@@ -232,6 +232,33 @@ abstract class Dictionary {
     static readonly SELECT_MESSAGE = "report.selectMessage";
     static readonly SELECT = "report.select";
     static readonly ALL_NAME = "report.allName";
+    static readonly ABROAD = "report.abroad";
+  };
+
+  static AbroadReport = class {
+    static readonly TITLE = "abroadReport.title";
+    static readonly DEPARTMENT = "abroadReport.department";
+    static readonly REQUESTED_ADVANCE_AMOUNT =
+      "abroadReport.requestedAdvanceAmount";
+    static readonly TRAVEL_PLACE = "abroadReport.travelPlace";
+    static readonly DEPARTURE_AND_RETURN_DATES =
+      "abroadReport.departureAndReturnDates";
+    static readonly PURPOSE_OF_TRAVEL = "abroadReport.purposeOfTravel";
+    static readonly ADVANCE_RECEIVED_AMOUNT =
+      "abroadReport.advanceReceivedAmount";
+    static readonly ADVANCE_RECEIVED_AMOUNT_CURRENCY =
+      "abroadReport.advanceReceivedAmountCurrency";
+    static readonly AMOUNT_TO_BE_REFUNDED = "abroadReport.amountToBeRefunded";
+    static readonly AMOUNT_TO_BE_REFUNDED_CURRENCY =
+      "abroadReport.amountToBeRefundedCurrency";
+    static readonly AMOUNT_TO_BE_PAID = "abroadReport.amountToBePaid";
+    static readonly AMOUNT_TO_BE_PAID_CURRENY =
+      "abroadReport.amountToBePaidCurrency";
+    static readonly DECLARANT = "abroadReport.declarant";
+    static readonly DEPARTMENT_MANAGER = "abroadReport.departmentManager";
+    static readonly DEPARTMENT_HEAD = "abroadReport.departmentHead";
+    static readonly FINANCE_OFFICER = "abroadReport.financeOfficer";
+    static readonly CREATE = "abroadReport.create";
   };
 }
 

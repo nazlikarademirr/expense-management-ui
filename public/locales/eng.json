@@ -221,6 +221,27 @@
     "deleteRule": "This report has associated expenses. To delete the report, you must first remove these expenses.",
     "selectMessage": "Please select a report to process.",
     "select": "Select the report you want to work with, or create a new one.",
-    "allName": "A report cannot be created with the name 'all'."
+    "allName": "A report cannot be created with the name 'all'.",
+    "abroad": "Abroad Report"
+  },
+
+  "abroadReport": {
+    "title": "Title",
+    "department": "Department",
+    "requestedAdvanceAmount": "Requested Advance Amount",
+    "travelPlace": "Travel Place",
+    "departureAndReturnDates": "Departure and Return Dates",
+    "purposeOfTravel": "Purpose Of Travel",
+    "advanceReceivedAmount": "Advance Received Amount",
+    "advanceReceivedAmountCurrency": "Advance Received Amount Currency",
+    "amountToBeRefunded": "Amount To Be Refunded",
+    "amountToBeRefundedCurrency": "Amount To Be Refunded Currency",
+    "amountToBePaid": "Amount To Be Paid",
+    "amountToBePaidCurrency": "Amount To Be Paid Currency",
+    "declarant": "Declarant",
+    "departmentManager": "Department Manager",
+    "departmentHead": "Department Head",
+    "financeOfficer": "Finance Officer",
+    "create": "Abroad Report Create"
   }
 }

@@ -221,6 +221,27 @@
     "deleteRule": "Bu rapora ait masraflar bulunuyor. Raporu silebilmek için öncelikle bu masrafları silin.",
     "selectMessage": "Lütfen işlem yapmak için bir rapor seçiniz.",
     "select": "İşlem yapmak istediğiniz raporu seçin veya yeni bir tane oluşturun.",
-    "allName": "'Hepsi' ismi ile bir rapor oluşturulamaz."
+    "allName": "'Hepsi' ismi ile bir rapor oluşturulamaz.",
+    "abroad": "Yurtdışı Raporu"
+  },
+
+  "abroadReport": {
+    "title": "Görevi",
+    "department": "Bölümü",
+    "requestedAdvanceAmount": "Talep Edilen Avans Tutarı",
+    "travelPlace": "Seyahat Yeri",
+    "departureAndReturnDates": "Gidiş Dönüş Tarihi",
+    "purposeOfTravel": "Seyahat Amacı",
+    "advanceReceivedAmount": "Alınan Avans",
+    "advanceReceivedAmountCurrency": "Alınan Avans Para Birimi",
+    "amountToBeRefunded": "İade Edilecek Tutar",
+    "amountToBeRefundedCurrency": "İade Edilecek Tutar Para Birimi",
+    "amountToBePaid": "Ödenecek Tutar",
+    "amountToBePaidCurrency": "Ödenecek Tutar Para Birimi",
+    "declarant": "Beyan Eden",
+    "departmentManager": "Bölüm Yöneticisi",
+    "departmentHead": "Bölüm Üst Yöneticisi",
+    "financeOfficer": "Mali İşler",
+    "create": "Yurtdışı Raporu Oluştur"
   }
 }

@@ -58,6 +58,8 @@ import { PiPlusCircle } from "react-icons/pi";
 import ReceiptUploader from "../../components/ReceiptUploader/ReceiptUploader";
 import normalizeText from "../../helpers/NormalizeText";
 import Role from "../../enums/role";
+import { FaPlaneDeparture } from "react-icons/fa";
+import CreateAbroadReportModal from "../Reports/components/CreateAbroadReportModal";
 const MIN_FLEX_HEIGHT = 120;
 const foodSelectorKeywords = ["yiyecek", "icecek", "KDV", "kdv"];
 const tripSelectorKeywords = [
@@ -216,6 +218,35 @@ function Expenses() {
         </Flex>
       ),
     });
+  };
+
+  const openCreateAbroadReportModal = () => {
+    modals.open({
+      title: <Title order={4}>{t(Dictionary.Report.ABROAD)}</Title>,
+      size: "60%",
+      children: (
+        <CreateAbroadReportModal checkIfReportIsValid={checkIfReportIsValid} />
+      ),
+    });
+  };
+
+  const checkIfReportIsValid = (report: Report) => {
+    if (
+      reportSelectData.some(
+        (x) => x.value !== report.id && x.label.trim() === report.name.trim(),
+      )
+    ) {
+      toast.error(t(Dictionary.Report.SAME_NAME));
+      return false;
+    }
+
+    const reportName = report.name.trim().toUpperCase();
+
+    if (reportName === "HEPSI" || reportName === "ALL") {
+      toast.error(t(Dictionary.Report.ALL_NAME));
+      return false;
+    }
+    return true;
   };
 
   const getActiveUsers = async () => {
@@ -531,6 +562,7 @@ function Expenses() {
     const request: ReportRequest = {
       name: value.trim(),
       isApproved: false,
+      isAbroadReport: false,
     };
 
     const response = await handleDataRequest<ReportRequest, Report>(
@@ -735,6 +767,11 @@ function Expenses() {
     combobox.openDropdown();
   };
 
+  const handleCreateAbroadReport = () => {
+    openCreateAbroadReportModal();
+    combobox.closeDropdown();
+  };
+
   useEffect(() => {
     getActiveUsers();
     getActiveProjects();
@@ -772,12 +809,22 @@ function Expenses() {
             </Combobox.Options>
             <Combobox.Footer>
               <Button
+                mt={3}
                 variant="light"
                 fullWidth
                 leftSection={<PiPlusCircle size={22} />}
                 onClick={() => createNewReport(newReportName)}
               >
                 {t(Dictionary.Report.ADD_NEW)}
+              </Button>
+              <Button
+                mt={10}
+                variant="light"
+                fullWidth
+                leftSection={<FaPlaneDeparture />}
+                onClick={handleCreateAbroadReport}
+              >
+                {t(Dictionary.AbroadReport.CREATE)}
               </Button>
             </Combobox.Footer>
           </Combobox.Dropdown>
