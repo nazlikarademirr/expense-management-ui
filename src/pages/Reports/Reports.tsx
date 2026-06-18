@@ -45,6 +45,8 @@ import Dictionary from "../../helpers/translation/dictionary";
 import Role from "../../enums/role";
 import { PiPlusCircle } from "react-icons/pi";
 import { Expense } from "../../types/expense.types";
+import { FaPlaneDeparture } from "react-icons/fa";
+import CreateAbroadReportModal from "./components/CreateAbroadReportModal";
 
 function Reports() {
   const { reports, addReport, updateReport, deleteReport, replaceReports } =
@@ -69,6 +71,23 @@ function Reports() {
       id: crypto.randomUUID(),
       name: "",
       isApproved: false,
+      isAbroadReport: true,
+      title: "",
+      department: "",
+      requestedAdvanceAmount: "",
+      travelPlace: "",
+      departureAndReturnDates: "",
+      purposeOfTravel: "",
+      advanceReceivedAmount: null,
+      advanceReceivedAmountCurrency: null,
+      amountToBeRefunded: null,
+      amountToBeRefundedCurrency: null,
+      amountToBePaid: null,
+      amountToBePaidCurrency: null,
+      declarant: "",
+      departmentManager: "",
+      departmentHead: "",
+      financeOfficer: "",
       searchText: "",
       createUserId: "",
       createUserFullName: "",
@@ -87,6 +106,16 @@ function Reports() {
           updateReport={updateReport}
           checkIfReportIsValid={checkIfReportIsValid}
         />
+      ),
+    });
+  };
+
+  const openCreateAbroadReportModal = () => {
+    modals.open({
+      title: <Title order={4}>{t(Dictionary.Report.ABROAD)}</Title>,
+      size: "60%",
+      children: (
+        <CreateAbroadReportModal checkIfReportIsValid={checkIfReportIsValid} />
       ),
     });
   };
@@ -236,6 +265,7 @@ function Reports() {
     const request: ReportRequest = {
       name: form.values.name.trim(),
       isApproved: form.values.isApproved,
+      isAbroadReport: false,
     };
 
     const response = await handleDataRequest<ReportRequest, Report>(
@@ -399,22 +429,34 @@ function Reports() {
       <Title order={3}>{t(Dictionary.Common.REPORTS)}</Title>
       <Divider my={TITLE_DIVIDER_MY} />
       <Card shadow="xs" radius="md" withBorder>
-        <Flex gap="md" direction="column">
-          <TextInput
-            {...form.getInputProps("name")}
-            withAsterisk
-            placeholder={format(new Date(), "dd/MM/yyyy")}
-            label={t(Dictionary.Report.NAME)}
-            style={{ minHeight: 80 }}
-          />
-          <Button
-            onClick={handleSave}
-            variant="light"
-            loading={isLoading}
-            leftSection={<PiPlusCircle size={22} />}
-          >
-            {t(Dictionary.Report.ADD_NEW)}
-          </Button>
+        <Flex gap={20}>
+          <Flex gap="md" direction="column" w="100%">
+            <TextInput
+              {...form.getInputProps("name")}
+              withAsterisk
+              placeholder={format(new Date(), "dd/MM/yyyy")}
+              label={t(Dictionary.Report.NAME)}
+              style={{ minHeight: 80 }}
+            />
+            <Button
+              onClick={handleSave}
+              variant="light"
+              loading={isLoading}
+              leftSection={<PiPlusCircle size={22} />}
+            >
+              {t(Dictionary.Report.ADD_NEW)}
+            </Button>
+          </Flex>
+          <Divider orientation="vertical" />
+          <Flex align="center">
+            <Button
+              variant="light"
+              leftSection={<FaPlaneDeparture />}
+              onClick={openCreateAbroadReportModal}
+            >
+              {t(Dictionary.AbroadReport.CREATE)}
+            </Button>
+          </Flex>
         </Flex>
       </Card>
       <Card

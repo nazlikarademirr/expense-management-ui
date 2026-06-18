@@ -6,6 +6,23 @@ type Report = {
   id: string;
   name: string;
   isApproved: boolean;
+  isAbroadReport: boolean;
+  title?: string;
+  department?: string;
+  requestedAdvanceAmount?: string;
+  travelPlace?: string;
+  departureAndReturnDates?: string;
+  purposeOfTravel?: string;
+  advanceReceivedAmount?: number | null;
+  advanceReceivedAmountCurrency?: string | null;
+  amountToBeRefunded?: number | null;
+  amountToBeRefundedCurrency?: string | null;
+  amountToBePaid?: number | null;
+  amountToBePaidCurrency?: string | null;
+  declarant?: string;
+  departmentManager?: string;
+  departmentHead?: string;
+  financeOfficer?: string;
   searchText: string;
   createUserId: string;
   createUserFullName: string;
@@ -15,6 +32,23 @@ type Report = {
 type ReportRequest = {
   name: string;
   isApproved: boolean;
+  isAbroadReport: boolean;
+  title?: string;
+  department?: string;
+  requestedAdvanceAmount?: string;
+  travelPlace?: string;
+  departureAndReturnDates?: string;
+  purposeOfTravel?: string;
+  advanceReceivedAmount?: number | null;
+  advanceReceivedAmountCurrency?: string | null;
+  amountToBeRefunded?: number | null;
+  amountToBeRefundedCurrency?: string | null;
+  amountToBePaid?: number | null;
+  amountToBePaidCurrency?: string | null;
+  declarant?: string;
+  departmentManager?: string;
+  departmentHead?: string;
+  financeOfficer?: string;
 };
 
 const reportSchema = z.object({
@@ -22,7 +56,7 @@ const reportSchema = z.object({
     .string()
     .trim()
     .min(2, t(Dictionary.Report.NAME_MIN_LENGTH))
-    .max(128, t(Dictionary.Project.NAME_MAX_LENGTH)),
+    .max(128, t(Dictionary.Report.NAME_MAX_LENGTH)),
 });
 
 export default reportSchema;
