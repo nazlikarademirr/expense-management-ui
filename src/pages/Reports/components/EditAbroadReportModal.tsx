@@ -17,6 +17,7 @@ import {
 import toast from "react-hot-toast";
 import { modals } from "@mantine/modals";
 import { SelectItem } from "../../../types/select-item.types";
+import CurrencyType from "../../../enums/currency-type";
 
 const TEXT_INPUT_MIN_HEIGHT = 90;
 
@@ -143,7 +144,7 @@ function EditAbroadReportModal({
           >
             <Group>
               {currencyTypes
-                .filter((x) => x.label !== "MalaysianRinggit")
+                .filter((x) => x.value !== CurrencyType.MalaysianRinggit)
                 .map((x) => (
                   <Radio
                     value={x.value}
@@ -175,7 +176,7 @@ function EditAbroadReportModal({
           >
             <Group>
               {currencyTypes
-                .filter((x) => x.label !== "MalaysianRinggit")
+                .filter((x) => x.value !== CurrencyType.MalaysianRinggit)
                 .map((x) => (
                   <Radio
                     value={x.value}
@@ -205,7 +206,7 @@ function EditAbroadReportModal({
           >
             <Group>
               {currencyTypes
-                .filter((x) => x.label !== "MalaysianRinggit")
+                .filter((x) => x.value !== CurrencyType.MalaysianRinggit)
                 .map((x) => (
                   <Radio
                     value={x.value}

@@ -16,6 +16,7 @@ import useRequestHandler from "../../../hooks/useRequestHandler";
 import { useState } from "react";
 import useReports from "../../../hooks/useReports";
 import toast from "react-hot-toast";
+import CurrencyType from "../../../enums/currency-type";
 
 const TEXT_INPUT_MIN_HEIGHT = 90;
 
@@ -167,7 +168,7 @@ function CreateAbroadReportModal({
           >
             <Group>
               {currencyTypes
-                .filter((x) => x.label !== "MalaysianRinggit")
+                .filter((x) => x.value !== CurrencyType.MalaysianRinggit)
                 .map((x) => (
                   <Radio
                     value={x.value}
@@ -199,7 +200,7 @@ function CreateAbroadReportModal({
           >
             <Group>
               {currencyTypes
-                .filter((x) => x.label !== "MalaysianRinggit")
+                .filter((x) => x.value !== CurrencyType.MalaysianRinggit)
                 .map((x) => (
                   <Radio
                     value={x.value}
@@ -229,7 +230,7 @@ function CreateAbroadReportModal({
           >
             <Group>
               {currencyTypes
-                .filter((x) => x.label !== "MalaysianRinggit")
+                .filter((x) => x.value !== CurrencyType.MalaysianRinggit)
                 .map((x) => (
                   <Radio
                     value={x.value}
