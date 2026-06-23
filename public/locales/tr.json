@@ -28,7 +28,10 @@
     "active": "Aktif",
     "passive": "Pasif",
     "add": "Ekle",
-    "all": "Hepsi"
+    "all": "Hepsi",
+    "tl": "TL",
+    "euro": "Euro",
+    "dollar": "Dollar"
   },
 
   "authentication": {
@@ -222,7 +225,8 @@
     "selectMessage": "Lütfen işlem yapmak için bir rapor seçiniz.",
     "select": "İşlem yapmak istediğiniz raporu seçin veya yeni bir tane oluşturun.",
     "allName": "'Hepsi' ismi ile bir rapor oluşturulamaz.",
-    "abroad": "Yurtdışı Raporu"
+    "abroad": "Yurtdışı Raporu",
+    "showAbroad": "Yurtdışı Raporlarını Göster"
   },
 
   "abroadReport": {

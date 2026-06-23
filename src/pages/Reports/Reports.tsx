@@ -47,12 +47,15 @@ import { PiPlusCircle } from "react-icons/pi";
 import { Expense } from "../../types/expense.types";
 import { FaPlaneDeparture } from "react-icons/fa";
 import CreateAbroadReportModal from "./components/CreateAbroadReportModal";
+import EditAbroadReportModal from "./components/EditAbroadReportModal";
 
 function Reports() {
   const { reports, addReport, updateReport, deleteReport, replaceReports } =
     useReports();
 
   const [searchQuery, setSearchQuery] = useState("");
+
+  const [showAbroadReports, setShowAbroadReports] = useState(false);
 
   const [showUnapprovedReports, setShowUnapprovedReports] = useState(false);
 
@@ -71,7 +74,7 @@ function Reports() {
       id: crypto.randomUUID(),
       name: "",
       isApproved: false,
-      isAbroadReport: true,
+      isAbroad: true,
       title: "",
       department: "",
       requestedAdvanceAmount: "",
@@ -99,8 +102,14 @@ function Reports() {
   const openEditReport = (report: Report) => {
     modals.open({
       title: <Title order={4}>{t(Dictionary.Report.EDIT)}</Title>,
-      size: "xl",
-      children: (
+      size: report.isAbroad ? "60%" : "lg",
+      children: report.isAbroad ? (
+        <EditAbroadReportModal
+          report={report}
+          updateReport={updateReport}
+          checkIfReportIsValid={checkIfReportIsValid}
+        />
+      ) : (
         <EditReportModal
           report={report}
           updateReport={updateReport}
@@ -265,7 +274,7 @@ function Reports() {
     const request: ReportRequest = {
       name: form.values.name.trim(),
       isApproved: form.values.isApproved,
-      isAbroadReport: false,
+      isAbroad: false,
     };
 
     const response = await handleDataRequest<ReportRequest, Report>(
@@ -330,6 +339,7 @@ function Reports() {
       undefined,
       {
         reportId: report.id,
+        isAbroad: report.isAbroad,
       },
     );
 
@@ -344,6 +354,7 @@ function Reports() {
   const memoizedReports = useMemo(
     () =>
       reports
+        .filter((x) => (showAbroadReports === true ? x.isAbroad : x))
         .filter((x) => (showUnapprovedReports === true ? !x.isApproved : x))
         .filter((x) =>
           x.searchText.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -351,6 +362,17 @@ function Reports() {
         .map((x: Report) => (
           <Table.Tr key={x.id}>
             <Table.Td> {x.name} </Table.Td>
+            <Table.Td>
+              <Badge
+                size="md"
+                color={x.isAbroad ? "green" : "gray"}
+                variant="light"
+              >
+                {x.isAbroad
+                  ? t(Dictionary.Common.YES)
+                  : t(Dictionary.Common.NO)}
+              </Badge>
+            </Table.Td>
             <Table.Td>
               <Badge
                 size="md"
@@ -416,7 +438,7 @@ function Reports() {
             </Table.Td>
           </Table.Tr>
         )),
-    [reports, showUnapprovedReports, searchQuery, isLoading],
+    [reports, showAbroadReports, showUnapprovedReports, searchQuery, isLoading],
   );
 
   useEffect(() => {
@@ -483,6 +505,14 @@ function Reports() {
           />
           <Checkbox
             labelPosition="left"
+            label={t(Dictionary.Report.SHOW_ABROAD)}
+            style={{ marginLeft: "10px" }}
+            checked={showUnapprovedReports}
+            onChange={() => setShowAbroadReports(!showAbroadReports)}
+            type="checkbox"
+          />
+          <Checkbox
+            labelPosition="left"
             label={t(Dictionary.Report.SHOW_UNAPPROVED)}
             style={{ marginLeft: "10px" }}
             checked={showUnapprovedReports}
@@ -502,6 +532,9 @@ function Reports() {
             <Table.Thead>
               <Table.Tr>
                 <Table.Th>{t(Dictionary.Report.NAME)}</Table.Th>
+                <Table.Th style={{ width: "150px" }}>
+                  {t(Dictionary.Report.ABROAD)}
+                </Table.Th>
                 <Table.Th style={{ width: "150px" }}>
                   {t(Dictionary.Report.APPROVED)}
                 </Table.Th>

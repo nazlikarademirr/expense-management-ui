@@ -61,7 +61,7 @@ const currencyTypes = [
   },
   {
     value: CurrencyType.MalaysianRinggit,
-    label: "MalaysianRinggit",
+    label: "Malaysian Ringgit",
   },
 ];
 

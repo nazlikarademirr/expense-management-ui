@@ -40,7 +40,7 @@ function CreateAbroadReportModal({
       id: crypto.randomUUID(),
       name: "",
       isApproved: false,
-      isAbroadReport: true,
+      isAbroad: true,
       title: "",
       department: "",
       requestedAdvanceAmount: "",
@@ -83,7 +83,7 @@ function CreateAbroadReportModal({
     const request: ReportRequest = {
       name: form.values.name.trim(),
       isApproved: form.values.isApproved,
-      isAbroadReport: true,
+      isAbroad: true,
       title: form.values.title,
       department: form.values.department,
       requestedAdvanceAmount: form.values.requestedAdvanceAmount,
@@ -271,6 +271,8 @@ function CreateAbroadReportModal({
         <TextInput
           label={t(Dictionary.AbroadReport.DEPARTURE_AND_RETURN_DATES)}
           style={{ flex: 1, minHeight: TEXT_INPUT_MIN_HEIGHT }}
+          placeholder="10.12.2026-21.12.2026"
+          maxLength={21}
           {...form.getInputProps("departureAndReturnDates")}
         />
         <TextInput

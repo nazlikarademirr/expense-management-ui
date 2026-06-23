@@ -6,7 +6,6 @@ import reportSchema, { Report } from "../../../types/report.types";
 import { zod4Resolver } from "mantine-form-zod-resolver";
 import { currencyTypes } from "../../../constants/static-data";
 import { useEffect, useRef, useState } from "react";
-import { PiPlusCircle } from "react-icons/pi";
 import urls from "../../../constants/urls";
 import RequestType from "../../../request-handler/request-type";
 import useRequestHandler from "../../../hooks/useRequestHandler";
@@ -267,13 +266,8 @@ function EditAbroadReportModal({
           {...reportForm.getInputProps("financeOfficer")}
         />
       </Flex>
-      <Button
-        variant="light"
-        loading={isLoading}
-        onClick={handleSave}
-        leftSection={<PiPlusCircle size={22} />}
-      >
-        {t(Dictionary.Report.ADD_NEW)}
+      <Button variant="light" loading={isLoading} onClick={handleSave}>
+        {t(Dictionary.Common.EDIT)}
       </Button>
     </Flex>
   );

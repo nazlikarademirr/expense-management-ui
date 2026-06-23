@@ -6,7 +6,7 @@ type Report = {
   id: string;
   name: string;
   isApproved: boolean;
-  isAbroadReport: boolean;
+  isAbroad: boolean;
   title?: string;
   department?: string;
   requestedAdvanceAmount?: string;
@@ -32,7 +32,7 @@ type Report = {
 type ReportRequest = {
   name: string;
   isApproved: boolean;
-  isAbroadReport: boolean;
+  isAbroad: boolean;
   title?: string;
   department?: string;
   requestedAdvanceAmount?: string;
