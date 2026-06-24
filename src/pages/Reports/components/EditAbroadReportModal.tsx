@@ -6,7 +6,6 @@ import reportSchema, { Report } from "../../../types/report.types";
 import { zod4Resolver } from "mantine-form-zod-resolver";
 import { currencyTypes } from "../../../constants/static-data";
 import { useEffect, useRef, useState } from "react";
-import { PiPlusCircle } from "react-icons/pi";
 import urls from "../../../constants/urls";
 import RequestType from "../../../request-handler/request-type";
 import useRequestHandler from "../../../hooks/useRequestHandler";
@@ -18,6 +17,7 @@ import toast from "react-hot-toast";
 import { modals } from "@mantine/modals";
 import { SelectItem } from "../../../types/select-item.types";
 import CurrencyType from "../../../enums/currency-type";
+import { format, subDays } from "date-fns";
 
 const TEXT_INPUT_MIN_HEIGHT = 90;
 
@@ -247,6 +247,7 @@ function EditAbroadReportModal({
         <TextInput
           label={t(Dictionary.AbroadReport.DEPARTURE_AND_RETURN_DATES)}
           style={{ flex: 1, minHeight: TEXT_INPUT_MIN_HEIGHT }}
+          placeholder={`${format(subDays(new Date(), 10), "dd.MM.yyyy")} - ${format(new Date(), "dd.MM.yyyy")}`}
           {...reportForm.getInputProps("departureAndReturnDates")}
         />
         <TextInput
@@ -267,13 +268,8 @@ function EditAbroadReportModal({
           {...reportForm.getInputProps("financeOfficer")}
         />
       </Flex>
-      <Button
-        variant="light"
-        loading={isLoading}
-        onClick={handleSave}
-        leftSection={<PiPlusCircle size={22} />}
-      >
-        {t(Dictionary.Report.ADD_NEW)}
+      <Button variant="light" loading={isLoading} onClick={handleSave}>
+        {t(Dictionary.Common.EDIT)}
       </Button>
     </Flex>
   );

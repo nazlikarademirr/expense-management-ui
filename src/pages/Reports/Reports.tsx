@@ -47,12 +47,15 @@ import { PiPlusCircle } from "react-icons/pi";
 import { Expense } from "../../types/expense.types";
 import { FaPlaneDeparture } from "react-icons/fa";
 import CreateAbroadReportModal from "./components/CreateAbroadReportModal";
+import EditAbroadReportModal from "./components/EditAbroadReportModal";
 
 function Reports() {
   const { reports, addReport, updateReport, deleteReport, replaceReports } =
     useReports();
 
   const [searchQuery, setSearchQuery] = useState("");
+
+  const [showAbroadReports, setShowAbroadReports] = useState(false);
 
   const [showUnapprovedReports, setShowUnapprovedReports] = useState(false);
 
@@ -71,7 +74,7 @@ function Reports() {
       id: crypto.randomUUID(),
       name: "",
       isApproved: false,
-      isAbroadReport: true,
+      isAbroad: true,
       title: "",
       department: "",
       requestedAdvanceAmount: "",
@@ -99,8 +102,14 @@ function Reports() {
   const openEditReport = (report: Report) => {
     modals.open({
       title: <Title order={4}>{t(Dictionary.Report.EDIT)}</Title>,
-      size: "xl",
-      children: (
+      size: report.isAbroad ? "60%" : "40%",
+      children: report.isAbroad ? (
+        <EditAbroadReportModal
+          report={report}
+          updateReport={updateReport}
+          checkIfReportIsValid={checkIfReportIsValid}
+        />
+      ) : (
         <EditReportModal
           report={report}
           updateReport={updateReport}
@@ -265,7 +274,7 @@ function Reports() {
     const request: ReportRequest = {
       name: form.values.name.trim(),
       isApproved: form.values.isApproved,
-      isAbroadReport: false,
+      isAbroad: false,
     };
 
     const response = await handleDataRequest<ReportRequest, Report>(
@@ -330,6 +339,7 @@ function Reports() {
       undefined,
       {
         reportId: report.id,
+        isAbroad: report.isAbroad,
       },
     );
 
@@ -344,6 +354,7 @@ function Reports() {
   const memoizedReports = useMemo(
     () =>
       reports
+        .filter((x) => (showAbroadReports === true ? x.isAbroad : x))
         .filter((x) => (showUnapprovedReports === true ? !x.isApproved : x))
         .filter((x) =>
           x.searchText.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -351,6 +362,17 @@ function Reports() {
         .map((x: Report) => (
           <Table.Tr key={x.id}>
             <Table.Td> {x.name} </Table.Td>
+            <Table.Td>
+              <Badge
+                size="md"
+                color={x.isAbroad ? "green" : "gray"}
+                variant="light"
+              >
+                {x.isAbroad
+                  ? t(Dictionary.Common.YES)
+                  : t(Dictionary.Common.NO)}
+              </Badge>
+            </Table.Td>
             <Table.Td>
               <Badge
                 size="md"
@@ -416,7 +438,7 @@ function Reports() {
             </Table.Td>
           </Table.Tr>
         )),
-    [reports, showUnapprovedReports, searchQuery, isLoading],
+    [reports, showAbroadReports, showUnapprovedReports, searchQuery, isLoading],
   );
 
   useEffect(() => {
@@ -434,7 +456,7 @@ function Reports() {
             <TextInput
               {...form.getInputProps("name")}
               withAsterisk
-              placeholder={format(new Date(), "dd/MM/yyyy")}
+              placeholder={format(new Date(), "dd.MM.yyyy")}
               label={t(Dictionary.Report.NAME)}
               style={{ minHeight: 80 }}
             />
@@ -482,6 +504,14 @@ function Reports() {
             onChange={(e) => setSearchQuery(e.currentTarget.value)}
           />
           <Checkbox
+            ml="10px"
+            labelPosition="left"
+            label={t(Dictionary.Report.SHOW_ABROAD)}
+            checked={showUnapprovedReports}
+            onChange={() => setShowAbroadReports(!showAbroadReports)}
+            type="checkbox"
+          />
+          <Checkbox
             labelPosition="left"
             label={t(Dictionary.Report.SHOW_UNAPPROVED)}
             style={{ marginLeft: "10px" }}
@@ -502,11 +532,10 @@ function Reports() {
             <Table.Thead>
               <Table.Tr>
                 <Table.Th>{t(Dictionary.Report.NAME)}</Table.Th>
-                <Table.Th style={{ width: "150px" }}>
-                  {t(Dictionary.Report.APPROVED)}
-                </Table.Th>
+                <Table.Th w="150px">{t(Dictionary.Report.ABROAD)}</Table.Th>
+                <Table.Th w="150px">{t(Dictionary.Report.APPROVED)}</Table.Th>
                 <Table.Th>{t(Dictionary.Common.CREATE_USER)}</Table.Th>
-                <Table.Th style={{ width: "200px" }}>
+                <Table.Th w="200px">
                   {t(Dictionary.Common.CREATE_DATE)}
                 </Table.Th>
                 <Table.Th></Table.Th>

@@ -562,7 +562,7 @@ function Expenses() {
     const request: ReportRequest = {
       name: value.trim(),
       isApproved: false,
-      isAbroadReport: false,
+      isAbroad: false,
     };
 
     const response = await handleDataRequest<ReportRequest, Report>(

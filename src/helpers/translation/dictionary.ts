@@ -29,6 +29,10 @@ abstract class Dictionary {
     static readonly PASSIVE = "common.passive";
     static readonly ADD = "common.add";
     static readonly ALL = "common.all";
+    static readonly TL = "common.tl";
+    static readonly EURO = "common.euro";
+    static readonly DOLLAR = "common.dollar";
+    static readonly MALAYSIAN_RINGGIT = "common.malaysianRinggit";
   };
 
   static Authentication = class {
@@ -233,6 +237,7 @@ abstract class Dictionary {
     static readonly SELECT = "report.select";
     static readonly ALL_NAME = "report.allName";
     static readonly ABROAD = "report.abroad";
+    static readonly SHOW_ABROAD = "report.showAbroad";
   };
 
   static AbroadReport = class {

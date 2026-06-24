@@ -222,7 +222,8 @@
     "selectMessage": "Please select a report to process.",
     "select": "Select the report you want to work with, or create a new one.",
     "allName": "A report cannot be created with the name 'all'.",
-    "abroad": "Abroad Report"
+    "abroad": "Abroad Report",
+    "showAbroad": "Show Abroad Reports"
   },
 
   "abroadReport": {

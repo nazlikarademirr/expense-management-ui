@@ -17,6 +17,7 @@ import { useState } from "react";
 import useReports from "../../../hooks/useReports";
 import toast from "react-hot-toast";
 import CurrencyType from "../../../enums/currency-type";
+import { format, subDays } from "date-fns";
 
 const TEXT_INPUT_MIN_HEIGHT = 90;
 
@@ -40,7 +41,7 @@ function CreateAbroadReportModal({
       id: crypto.randomUUID(),
       name: "",
       isApproved: false,
-      isAbroadReport: true,
+      isAbroad: true,
       title: "",
       department: "",
       requestedAdvanceAmount: "",
@@ -83,7 +84,7 @@ function CreateAbroadReportModal({
     const request: ReportRequest = {
       name: form.values.name.trim(),
       isApproved: form.values.isApproved,
-      isAbroadReport: true,
+      isAbroad: true,
       title: form.values.title,
       department: form.values.department,
       requestedAdvanceAmount: form.values.requestedAdvanceAmount,
@@ -271,6 +272,8 @@ function CreateAbroadReportModal({
         <TextInput
           label={t(Dictionary.AbroadReport.DEPARTURE_AND_RETURN_DATES)}
           style={{ flex: 1, minHeight: TEXT_INPUT_MIN_HEIGHT }}
+          placeholder={`${format(subDays(new Date(), 10), "dd.MM.yyyy")} - ${format(new Date(), "dd.MM.yyyy")}`}
+          maxLength={21}
           {...form.getInputProps("departureAndReturnDates")}
         />
         <TextInput
