@@ -102,7 +102,7 @@ function Reports() {
   const openEditReport = (report: Report) => {
     modals.open({
       title: <Title order={4}>{t(Dictionary.Report.EDIT)}</Title>,
-      size: report.isAbroad ? "60%" : "lg",
+      size: report.isAbroad ? "60%" : "40%",
       children: report.isAbroad ? (
         <EditAbroadReportModal
           report={report}
@@ -456,7 +456,7 @@ function Reports() {
             <TextInput
               {...form.getInputProps("name")}
               withAsterisk
-              placeholder={format(new Date(), "dd/MM/yyyy")}
+              placeholder={format(new Date(), "dd.MM.yyyy")}
               label={t(Dictionary.Report.NAME)}
               style={{ minHeight: 80 }}
             />
@@ -504,9 +504,9 @@ function Reports() {
             onChange={(e) => setSearchQuery(e.currentTarget.value)}
           />
           <Checkbox
+            ml="10px"
             labelPosition="left"
             label={t(Dictionary.Report.SHOW_ABROAD)}
-            style={{ marginLeft: "10px" }}
             checked={showUnapprovedReports}
             onChange={() => setShowAbroadReports(!showAbroadReports)}
             type="checkbox"
@@ -532,14 +532,10 @@ function Reports() {
             <Table.Thead>
               <Table.Tr>
                 <Table.Th>{t(Dictionary.Report.NAME)}</Table.Th>
-                <Table.Th style={{ width: "150px" }}>
-                  {t(Dictionary.Report.ABROAD)}
-                </Table.Th>
-                <Table.Th style={{ width: "150px" }}>
-                  {t(Dictionary.Report.APPROVED)}
-                </Table.Th>
+                <Table.Th w="150px">{t(Dictionary.Report.ABROAD)}</Table.Th>
+                <Table.Th w="150px">{t(Dictionary.Report.APPROVED)}</Table.Th>
                 <Table.Th>{t(Dictionary.Common.CREATE_USER)}</Table.Th>
-                <Table.Th style={{ width: "200px" }}>
+                <Table.Th w="200px">
                   {t(Dictionary.Common.CREATE_DATE)}
                 </Table.Th>
                 <Table.Th></Table.Th>

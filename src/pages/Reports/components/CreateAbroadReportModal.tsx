@@ -17,6 +17,7 @@ import { useState } from "react";
 import useReports from "../../../hooks/useReports";
 import toast from "react-hot-toast";
 import CurrencyType from "../../../enums/currency-type";
+import { format, subDays } from "date-fns";
 
 const TEXT_INPUT_MIN_HEIGHT = 90;
 
@@ -271,7 +272,7 @@ function CreateAbroadReportModal({
         <TextInput
           label={t(Dictionary.AbroadReport.DEPARTURE_AND_RETURN_DATES)}
           style={{ flex: 1, minHeight: TEXT_INPUT_MIN_HEIGHT }}
-          placeholder="10.12.2026-21.12.2026"
+          placeholder={`${format(subDays(new Date(), 10), "dd.MM.yyyy")} - ${format(new Date(), "dd.MM.yyyy")}`}
           maxLength={21}
           {...form.getInputProps("departureAndReturnDates")}
         />

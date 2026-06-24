@@ -17,6 +17,7 @@ import toast from "react-hot-toast";
 import { modals } from "@mantine/modals";
 import { SelectItem } from "../../../types/select-item.types";
 import CurrencyType from "../../../enums/currency-type";
+import { format, subDays } from "date-fns";
 
 const TEXT_INPUT_MIN_HEIGHT = 90;
 
@@ -246,6 +247,7 @@ function EditAbroadReportModal({
         <TextInput
           label={t(Dictionary.AbroadReport.DEPARTURE_AND_RETURN_DATES)}
           style={{ flex: 1, minHeight: TEXT_INPUT_MIN_HEIGHT }}
+          placeholder={`${format(subDays(new Date(), 10), "dd.MM.yyyy")} - ${format(new Date(), "dd.MM.yyyy")}`}
           {...reportForm.getInputProps("departureAndReturnDates")}
         />
         <TextInput
