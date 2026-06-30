@@ -65,6 +65,14 @@ function EditReportModal({
       reportForm.values,
     );
 
+    if (report.isApproved) {
+      patchDocument.push({
+        path: "/isApproved",
+        value: "false",
+      });
+      reportForm.values.isApproved = false;
+    }
+
     const response = await handleDataRequest<JsonPatchKeyValuePair[], Report>(
       `${urls.report}/${report.id}`,
       RequestType.Patch,

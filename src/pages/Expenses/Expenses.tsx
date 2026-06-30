@@ -424,6 +424,16 @@ function Expenses() {
       return;
     }
 
+    const expense = expenses.find((x) => x.id === id);
+
+    if (expense?.isApproved) {
+      await handleDataRequest(
+        `${urls.report}/${expense.reportId}`,
+        RequestType.Patch,
+        [{ path: "/isApproved", value: "false" }],
+      );
+    }
+
     deleteExpense(id);
 
     toast.success(t(Dictionary.Expense.DELETED));
