@@ -49,19 +49,19 @@ const expenseTypes = [
 const currencyTypes = [
   {
     value: CurrencyType.TL,
-    label: "TL",
+    label: t(Dictionary.Common.TL),
   },
   {
     value: CurrencyType.Euro,
-    label: "Euro",
+    label: t(Dictionary.Common.EURO),
   },
   {
     value: CurrencyType.Dollar,
-    label: "Dollar",
+    label: t(Dictionary.Common.DOLLAR),
   },
   {
     value: CurrencyType.MalaysianRinggit,
-    label: "Malaysian Ringgit",
+    label: t(Dictionary.Common.MALAYSIAN_RINGGIT),
   },
 ];
 

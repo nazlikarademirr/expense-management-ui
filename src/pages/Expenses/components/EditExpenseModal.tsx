@@ -147,6 +147,15 @@ function EditExpenseModal({
       return;
     }
 
+    if (expense.isApproved) {
+      await handleDataRequest(
+        `${urls.report}/${expense.reportId}`,
+        RequestType.Patch,
+        [{ op: "replace", path: "/isApproved", value: "false" }],
+      );
+      expenseForm.values.isApproved = false;
+    }
+
     initialValues.current = {
       ...expenseForm.values,
     };

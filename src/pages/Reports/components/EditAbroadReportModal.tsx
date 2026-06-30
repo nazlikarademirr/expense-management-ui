@@ -72,6 +72,14 @@ function EditAbroadReportModal({
       reportForm.values,
     );
 
+    if (report.isApproved) {
+      patchDocument.push({
+        path: "/isApproved",
+        value: "false",
+      });
+      reportForm.values.isApproved = false;
+    }
+
     const response = await handleDataRequest<JsonPatchKeyValuePair[], Report>(
       `${urls.report}/${report.id}`,
       RequestType.Patch,
@@ -268,7 +276,12 @@ function EditAbroadReportModal({
           {...reportForm.getInputProps("financeOfficer")}
         />
       </Flex>
-      <Button variant="light" loading={isLoading} onClick={handleSave}>
+      <Button
+        variant="light"
+        loading={isLoading}
+        onClick={handleSave}
+        disabled={!reportForm.isDirty()}
+      >
         {t(Dictionary.Common.EDIT)}
       </Button>
     </Flex>

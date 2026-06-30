@@ -1,6 +1,6 @@
 import { useForm } from "@mantine/form";
 import reportSchema, { Report, ReportRequest } from "../../types/report.types";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, Fragment } from "react";
 import {
   Button,
   Card,
@@ -13,6 +13,7 @@ import {
   Title,
   Text,
   Badge,
+  Collapse,
 } from "@mantine/core";
 import {
   IconDownload,
@@ -48,6 +49,8 @@ import { Expense } from "../../types/expense.types";
 import { FaPlaneDeparture } from "react-icons/fa";
 import CreateAbroadReportModal from "./components/CreateAbroadReportModal";
 import EditAbroadReportModal from "./components/EditAbroadReportModal";
+import { currencyTypes, expenseTypes } from "../../constants/static-data";
+import ExpenseType from "../../enums/expense-type";
 
 function Reports() {
   const { reports, addReport, updateReport, deleteReport, replaceReports } =
@@ -68,6 +71,14 @@ function Reports() {
   const auth = useAuthentication();
 
   const { t } = useTranslation();
+
+  const [expandedReportIds, setExpandedReportIds] = useState<string[]>([]);
+
+  const toggleRow = (id: string) => {
+    setExpandedReportIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
 
   const form = useForm<Report>({
     initialValues: {
@@ -359,86 +370,168 @@ function Reports() {
         .filter((x) =>
           x.searchText.toLowerCase().includes(searchQuery.toLowerCase()),
         )
-        .map((x: Report) => (
-          <Table.Tr key={x.id}>
-            <Table.Td> {x.name} </Table.Td>
-            <Table.Td>
-              <Badge
-                size="md"
-                color={x.isAbroad ? "green" : "gray"}
-                variant="light"
-              >
-                {x.isAbroad
-                  ? t(Dictionary.Common.YES)
-                  : t(Dictionary.Common.NO)}
-              </Badge>
-            </Table.Td>
-            <Table.Td>
-              <Badge
-                size="md"
-                color={x.isApproved ? "green" : "gray"}
-                variant="light"
-              >
-                {x.isApproved
-                  ? t(Dictionary.Common.YES)
-                  : t(Dictionary.Common.NO)}
-              </Badge>
-            </Table.Td>
-            <Table.Td> {x.createUserFullName} </Table.Td>
-            <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
-            <Table.Td>
-              <Flex justify="center" gap={5} align="center">
-                <Button
-                  size="xs"
-                  onClick={() => downloadReport(x)}
-                  variant="light"
-                  color="blue"
-                  loading={isLoading}
-                  disabled={!x.isApproved}
-                  leftSection={<IconDownload size={16} />}
-                >
-                  {t(Dictionary.Report.DOWNLOAD)}
-                </Button>
-                {auth.currentUser?.role !== Role.User && (
-                  <Button
-                    size="xs"
-                    disabled={x.isApproved}
-                    onClick={() => openApproveReportModal(x)}
+        .map((x: Report) => {
+          const isExpanded = expandedReportIds.includes(x.id);
+          const reportExpenses = expenses.filter((e) => e.reportId === x.id);
+
+          return (
+            <Fragment key={x.id}>
+              <Table.Tr onClick={() => toggleRow(x.id)}>
+                <Table.Td> {x.name} </Table.Td>
+                <Table.Td>
+                  <Badge
+                    size="md"
+                    color={x.isAbroad ? "green" : "gray"}
                     variant="light"
-                    style={{ color: "green", backgroundColor: "#e7ffe0" }}
-                    leftSection={<HiCheck size={18} />}
                   >
-                    {t(Dictionary.Common.APPROVE)}
-                  </Button>
-                )}
-                <Button
-                  size="xs"
-                  onClick={() => openEditReport(x)}
-                  disabled={
-                    auth.currentUser?.role === Role.User && x.isApproved
-                  }
-                  variant="light"
-                  leftSection={<IconEdit size={16} />}
-                >
-                  {t(Dictionary.Common.EDIT)}
-                </Button>
-                <Button
-                  size="xs"
-                  onClick={() => openDeleteReportModal(x.id)}
-                  disabled={
-                    auth.currentUser?.role === Role.User && x.isApproved
-                  }
-                  variant="light"
-                  leftSection={<IconTrash size={16} />}
-                  style={{ color: "red", backgroundColor: "#ffeeee" }}
-                >
-                  {t(Dictionary.Common.DELETE)}
-                </Button>
-              </Flex>
-            </Table.Td>
-          </Table.Tr>
-        )),
-    [reports, showAbroadReports, showUnapprovedReports, searchQuery, isLoading],
+                    {x.isAbroad
+                      ? t(Dictionary.Common.YES)
+                      : t(Dictionary.Common.NO)}
+                  </Badge>
+                </Table.Td>
+                <Table.Td>
+                  <Badge
+                    size="md"
+                    color={x.isApproved ? "green" : "gray"}
+                    variant="light"
+                  >
+                    {x.isApproved
+                      ? t(Dictionary.Common.YES)
+                      : t(Dictionary.Common.NO)}
+                  </Badge>
+                </Table.Td>
+                <Table.Td> {x.createUserFullName} </Table.Td>
+                <Table.Td>
+                  {format(x.createDate, "dd/MM/yyyy - HH.mm")}
+                </Table.Td>
+                <Table.Td onClick={(e) => e.stopPropagation()}>
+                  <Flex justify="center" gap={5} align="center">
+                    <Button
+                      size="xs"
+                      onClick={() => downloadReport(x)}
+                      variant="light"
+                      color="blue"
+                      loading={isLoading}
+                      disabled={!x.isApproved}
+                      leftSection={<IconDownload size={16} />}
+                    >
+                      {t(Dictionary.Report.DOWNLOAD)}
+                    </Button>
+                    {auth.currentUser?.role !== Role.User && (
+                      <Button
+                        size="xs"
+                        disabled={x.isApproved}
+                        onClick={() => openApproveReportModal(x)}
+                        variant="light"
+                        style={{ color: "green", backgroundColor: "#e7ffe0" }}
+                        leftSection={<HiCheck size={18} />}
+                      >
+                        {t(Dictionary.Common.APPROVE)}
+                      </Button>
+                    )}
+                    <Button
+                      size="xs"
+                      onClick={() => openEditReport(x)}
+                      disabled={
+                        auth.currentUser?.role === Role.User && x.isApproved
+                      }
+                      variant="light"
+                      leftSection={<IconEdit size={16} />}
+                    >
+                      {t(Dictionary.Common.EDIT)}
+                    </Button>
+                    <Button
+                      size="xs"
+                      onClick={() => openDeleteReportModal(x.id)}
+                      disabled={
+                        auth.currentUser?.role === Role.User && x.isApproved
+                      }
+                      variant="light"
+                      leftSection={<IconTrash size={16} />}
+                      style={{ color: "red", backgroundColor: "#ffeeee" }}
+                    >
+                      {t(Dictionary.Common.DELETE)}
+                    </Button>
+                  </Flex>
+                </Table.Td>
+              </Table.Tr>
+              <Table.Tr>
+                <Table.Td colSpan={6} p={0}>
+                  <Collapse in={isExpanded} transitionDuration={200}>
+                    <Card
+                      style={{
+                        borderRadius: 0,
+                        boxShadow: "none",
+                      }}
+                    >
+                      {reportExpenses.length > 0 ? (
+                        <Table striped highlightOnHover withColumnBorders>
+                          <Table.Thead>
+                            <Table.Tr>
+                              <Table.Th>
+                                {t(Dictionary.Expense.USER_NAME)}
+                              </Table.Th>
+                              <Table.Th>{t(Dictionary.Expense.TYPE)}</Table.Th>
+                              <Table.Th>{t(Dictionary.Expense.DATE)}</Table.Th>
+                              <Table.Th>
+                                {t(Dictionary.Expense.TOTAL_PRICE)}
+                              </Table.Th>
+                              <Table.Th>
+                                {t(Dictionary.Expense.CURRENCY)}
+                              </Table.Th>
+                              <Table.Th>
+                                {t(Dictionary.Expense.DESCRIPTION)}
+                              </Table.Th>
+                            </Table.Tr>
+                          </Table.Thead>
+                          <Table.Tbody>
+                            {reportExpenses.map((e) => (
+                              <Table.Tr key={e.id}>
+                                <Table.Td>{e.userFullName}</Table.Td>
+                                <Table.Td>
+                                  {expenseTypes[Number(e.expenseType)]?.label}
+                                </Table.Td>
+                                <Table.Td>
+                                  {format(
+                                    new Date(e.expenseDate),
+                                    "dd/MM/yyyy",
+                                  )}
+                                </Table.Td>
+                                <Table.Td>{e.totalPrice}</Table.Td>
+                                <Table.Td>
+                                  {currencyTypes[Number(e.currency)]?.label}
+                                </Table.Td>
+                                <Table.Td>
+                                  {Number(e.expenseType) !==
+                                  Number(ExpenseType.Food)
+                                    ? e.description
+                                    : "-"}
+                                </Table.Td>
+                              </Table.Tr>
+                            ))}
+                          </Table.Tbody>
+                        </Table>
+                      ) : (
+                        <Text size="sm" c="dimmed" ta="center">
+                          {t(Dictionary.Expense.NO_FOUND)}
+                        </Text>
+                      )}
+                    </Card>
+                  </Collapse>
+                </Table.Td>
+              </Table.Tr>
+            </Fragment>
+          );
+        }),
+    [
+      reports,
+      showAbroadReports,
+      showUnapprovedReports,
+      searchQuery,
+      isLoading,
+      expandedReportIds,
+      expenses,
+    ],
   );
 
   useEffect(() => {
@@ -507,7 +600,7 @@ function Reports() {
             ml="10px"
             labelPosition="left"
             label={t(Dictionary.Report.SHOW_ABROAD)}
-            checked={showUnapprovedReports}
+            checked={showAbroadReports}
             onChange={() => setShowAbroadReports(!showAbroadReports)}
             type="checkbox"
           />
