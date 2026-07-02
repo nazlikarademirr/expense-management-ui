@@ -213,6 +213,8 @@ abstract class Dictionary {
     static readonly OCR_REQUEST_TIMED_OUT = "expense.ocrRequestTimedOut";
     static readonly FILE_SIZE = "expense.fileSize";
     static readonly NO_FOUND = "expense.noFound";
+    static readonly TEXT_COULD_NOT_BE_DETECTED =
+      "expense.textCouldNotBeDetected";
   };
 
   static Report = class {

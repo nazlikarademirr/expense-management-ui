@@ -202,7 +202,8 @@
     "fileUploadRule": "Only JPG, PNG, or WebP files can be uploaded.",
     "ocrRequestTimedOut": "The OCR request timed out. Please try again.",
     "fileSize": "The file size must be less than {{fileSize}}MB.",
-    "noFound": "No expenses found."
+    "noFound": "No expenses found.",
+    "textCouldNotBeDetected": "Text could not be detected."
   },
 
   "report": {

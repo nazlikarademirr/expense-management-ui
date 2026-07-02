@@ -81,8 +81,9 @@ const expenseSchema = z
   })
   .superRefine((data, ctx) => {
     if (
-      data.expenseType === ExpenseType.Transportation ||
-      (data.expenseType === ExpenseType.Other && !data.description)
+      (data.expenseType === ExpenseType.Transportation ||
+        data.expenseType === ExpenseType.Other) &&
+      !data.description
     ) {
       ctx.addIssue({
         code: "custom",

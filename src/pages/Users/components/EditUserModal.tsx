@@ -80,7 +80,8 @@ function EditUserModal({
       name: userForm.values.name,
       surname: userForm.values.surname,
       teamId: userForm.values.teamId ? userForm.values.teamId : "",
-      gender: Number(userForm.values.gender),
+      gender:
+        userForm.values.gender !== null ? Number(userForm.values.gender) : null,
       cardNumber: userForm.values.cardNumber,
       email: userForm.values.email,
       password: initialValues.current.password,

@@ -254,14 +254,13 @@ function Projects() {
                   : t(Dictionary.Common.PASSIVE)}
               </Badge>
             </Table.Td>
-            <Table.Td> {x.createUserFullName} </Table.Td>
             <Table.Td>
               <Flex justify="center" gap={5}>
                 {x.isActive ? (
                   <Button
                     onClick={() => openEditProject(x)}
                     variant="light"
-                    leftSection={<IconEdit />}
+                    leftSection={<IconEdit size={18} />}
                     color="blue"
                   >
                     {t(Dictionary.Common.EDIT)}
@@ -279,9 +278,9 @@ function Projects() {
                   }}
                   leftSection={
                     x.isActive ? (
-                      <IoMdRemoveCircleOutline size={22} />
+                      <IoMdRemoveCircleOutline size={20} />
                     ) : (
-                      <IoMdAddCircleOutline size={22} />
+                      <IoMdAddCircleOutline size={20} />
                     )
                   }
                 >
@@ -375,7 +374,6 @@ function Projects() {
                 <Table.Th>{t(Dictionary.Project.NAME)}</Table.Th>
                 <Table.Th>{t(Dictionary.Project.CODE)}</Table.Th>
                 <Table.Th>{t(Dictionary.Common.STATUS)}</Table.Th>
-                <Table.Th>{t(Dictionary.Common.CREATE_USER)}</Table.Th>
                 <Table.Th></Table.Th>
               </Table.Tr>
             </Table.Thead>

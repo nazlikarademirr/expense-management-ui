@@ -7,27 +7,27 @@ import Dictionary from "../helpers/translation/dictionary";
 
 const genders = [
   {
-    value: Gender.Male,
-    label: t(Dictionary.Common.MALE),
-  },
-  {
     value: Gender.Female,
     label: t(Dictionary.Common.FEMALE),
+  },
+  {
+    value: Gender.Male,
+    label: t(Dictionary.Common.MALE),
   },
 ];
 
 const roles = [
   {
-    value: Role.Admin,
-    label: t(Dictionary.Common.ADMIN),
+    value: Role.User,
+    label: t(Dictionary.Common.USER),
   },
   {
     value: Role.Manager,
     label: t(Dictionary.Common.MANAGER),
   },
   {
-    value: Role.User,
-    label: t(Dictionary.Common.USER),
+    value: Role.Admin,
+    label: t(Dictionary.Common.ADMIN),
   },
 ];
 

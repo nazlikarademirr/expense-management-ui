@@ -1,6 +1,5 @@
 import { useForm } from "@mantine/form";
 import {
-  ActionIcon,
   Button,
   Card,
   Checkbox,
@@ -30,10 +29,8 @@ import { IconEdit, IconSearch, IconTrash } from "@tabler/icons-react";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import { DateInput } from "@mantine/dates";
-import overtimeMemberSchema, {
-  OvertimeMember,
-} from "../../types/overtime-member.types";
 import EditExpenseModal from "./components/EditExpenseModal";
+import AddOvertimeMemberModal from "./components/AddOvertimeMemberModal";
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { currencyTypes, expenseTypes } from "../../constants/static-data";
 import ExpenseType from "../../enums/expense-type";
@@ -153,20 +150,6 @@ function Expenses() {
       createDate: new Date(),
     },
     validate: zod4Resolver(expenseSchema),
-  });
-
-  const overtimeMemberForm = useForm<OvertimeMember>({
-    initialValues: {
-      id: crypto.randomUUID(),
-      userId: null,
-      userFullName: "",
-      expenseId: form.values.id,
-      price: 0,
-      createUserId: "",
-      createUserFullName: "",
-      createDate: new Date(),
-    },
-    validate: zod4Resolver(overtimeMemberSchema),
   });
 
   const openEditExpense = (expense: Expense) => {
@@ -402,7 +385,6 @@ function Expenses() {
     });
 
     form.reset();
-    overtimeMemberForm.reset();
 
     toast.success(t(Dictionary.Expense.ADDED));
 
@@ -441,56 +423,6 @@ function Expenses() {
     setIsLoading(false);
   };
 
-  const saveOvertimeMember = async () => {
-    overtimeMemberForm.validate();
-
-    if (!overtimeMemberForm.isValid()) return;
-
-    if (
-      form.values.overtimeMembers.some(
-        (x) => x.userId === overtimeMemberForm.values.userId,
-      )
-    ) {
-      return toast.error(t(Dictionary.Expense.OVERTIME_MEMBER_VALID));
-    }
-
-    if (form.values.userId === overtimeMemberForm.values.userId) {
-      return toast.error(
-        t(Dictionary.Expense.YOU_CAN_NOT_ADD_YOURSELF_AS_OVERTIME_MEMBER),
-      );
-    }
-
-    const overtimeMemberFullName = activeUserSelectData.find(
-      (x) => x.value === overtimeMemberForm.values.userId,
-    )?.label;
-
-    const overtimeMember: OvertimeMember = {
-      ...overtimeMemberForm.values,
-      userFullName: overtimeMemberFullName ?? "",
-      createUserFullName: auth.currentUser
-        ? `${auth.currentUser.name} ${auth.currentUser.surname}`
-        : "",
-    };
-
-    form.setFieldValue("overtimeMembers", [
-      ...form.values.overtimeMembers,
-      overtimeMember,
-    ]);
-
-    overtimeMemberForm.setFieldValue("id", crypto.randomUUID());
-    overtimeMemberForm.setFieldValue("createDate", new Date());
-    overtimeMemberForm.setFieldValue("userId", null);
-    overtimeMemberForm.setFieldValue("price", 0);
-  };
-
-  const deleteOvertimeMember = (id: string) => {
-    const overtimeMembers = form.values.overtimeMembers.filter(
-      (x) => x.id !== id,
-    );
-
-    form.setFieldValue("overtimeMembers", overtimeMembers);
-  };
-
   const addOvertimeMember = () => {
     modals.open({
       title: (
@@ -498,64 +430,11 @@ function Expenses() {
       ),
       size: "xl",
       children: (
-        <Flex justify="center">
-          <Card
-            h="500px"
-            w="1000px"
-            shadow="xs"
-            radius="md"
-            withBorder
-            padding={10}
-          >
-            <Flex gap="sm" style={{ minHeight: 90 }}>
-              <Select
-                {...overtimeMemberForm.getInputProps("userId")}
-                withAsterisk
-                data={activeUserSelectData}
-                searchable
-                label={t(Dictionary.Expense.USER_NAME)}
-                style={{ flexGrow: 1 }}
-              />
-
-              <NumberInput
-                {...overtimeMemberForm.getInputProps("price")}
-                withAsterisk
-                label={t(Dictionary.Expense.PRICE)}
-                hideControls
-                style={{ flexGrow: 1 }}
-              />
-
-              <Button
-                onClick={saveOvertimeMember}
-                variant="light"
-                mt={25}
-                leftSection={<PiPlusCircle size={22} />}
-              >
-                {t(Dictionary.Common.ADD)}
-              </Button>
-            </Flex>
-            <ScrollArea style={{ flex: 1 }}>
-              <Table
-                striped
-                stickyHeader
-                highlightOnHover
-                withTableBorder
-                withColumnBorders
-              >
-                <Table.Thead>
-                  <Table.Tr>
-                    <Table.Th>{t(Dictionary.Expense.USER_NAME)}</Table.Th>
-                    <Table.Th>{t(Dictionary.Expense.PRICE)}</Table.Th>
-                    <Table.Th>{t(Dictionary.Common.CREATE_USER)}</Table.Th>
-                    <Table.Th>{t(Dictionary.Common.CREATE_DATE)}</Table.Th>
-                    <Table.Th></Table.Th>
-                  </Table.Tr>
-                </Table.Thead>
-                <Table.Tbody>{memoizedOvertimeMembers}</Table.Tbody>
-              </Table>
-            </ScrollArea>
-          </Card>
-        </Flex>
+        <AddOvertimeMemberModal
+          expenseForm={form}
+          activeUserSelectData={activeUserSelectData}
+          currentUser={auth.currentUser}
+        />
       ),
     });
   };
@@ -717,29 +596,6 @@ function Expenses() {
       selectedReport,
       showUnapprovedExpenses,
     ],
-  );
-
-  const memoizedOvertimeMembers = useMemo(
-    () =>
-      form.values.overtimeMembers.map((x: OvertimeMember) => (
-        <Table.Tr key={x.id}>
-          <Table.Td>{x.userFullName}</Table.Td>
-          <Table.Td>{x.price}</Table.Td>
-          <Table.Td>{x.createUserFullName}</Table.Td>
-          <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
-          <Table.Td>
-            <Flex justify="center" gap={5}>
-              <ActionIcon variant="light" color="red">
-                <IconTrash
-                  onClick={() => deleteOvertimeMember(x.id)}
-                  color="red"
-                />
-              </ActionIcon>
-            </Flex>
-          </Table.Td>
-        </Table.Tr>
-      )),
-    [form.values.overtimeMembers],
   );
 
   const ocrMapping = useMemo(

@@ -45,6 +45,11 @@ function ReceiptUploader<TValues extends Record<string, unknown>>({
     onResetComplete?.();
   }, [reset, onResetComplete]);
 
+  const isUnreadable =
+    status === "success" &&
+    result &&
+    (result.confidence < 0.7 || (!result.date && !result.totalPrice));
+
   return (
     <Flex direction="column">
       <Flex className={styles.wrapper} direction="column">
@@ -53,6 +58,7 @@ function ReceiptUploader<TValues extends Record<string, unknown>>({
           onFileSelect={handleFile}
           previewUrl={previewUrl}
           onReset={handleReset}
+          isUnreadable={!!isUnreadable}
         />
       </Flex>
 

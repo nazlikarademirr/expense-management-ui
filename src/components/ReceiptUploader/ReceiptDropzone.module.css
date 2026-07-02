@@ -29,7 +29,7 @@
 
 .dropzone:hover:not(.hasPreview) {
   border-color: #1b3d7a;
-  background: #f5f3ff;
+  background: #ebf3fb;
 }
 
 .dropzone:focus-visible {
@@ -83,7 +83,7 @@
   position: absolute;
   inset: 0;
   z-index: 10;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -109,7 +109,7 @@
   top: 8px;
   right: 8px;
   z-index: 20;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.3);
   color: #fff;
   border: none;
   border-radius: 50%;
@@ -131,4 +131,26 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+.unreadableOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.unreadableText {
+  color: #f0f0f0;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+  letter-spacing: 1px;
+  padding: 8px 16px;
+  text-align: center;
 }

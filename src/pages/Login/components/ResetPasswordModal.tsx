@@ -48,7 +48,9 @@ function ResetPasswordModal({ email }: ResetPasswordModalProps) {
     if (!response.isSuccess) return;
 
     modals.closeAll();
+
     form.reset();
+
     toast.success(t(Dictionary.Login.PASSWORD_RESETED));
   };
 
