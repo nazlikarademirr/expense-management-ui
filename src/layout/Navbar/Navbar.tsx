@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   IconUser,
   Icon,
@@ -10,7 +10,7 @@ import {
 } from "@tabler/icons-react";
 import { Flex, Tooltip, UnstyledButton } from "@mantine/core";
 import classes from "./Navbar.module.css";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import routes from "../../constants/routes";
 import { RiFileTextLine } from "react-icons/ri";
 import UserMenu from "./UserMenu";
@@ -50,16 +50,12 @@ const mainLinksMockdata: Link[] = [
 ];
 
 export function Navbar() {
-  const [active, setActive] = useState("Releases");
   const auth = useAuthentication();
-
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLinkClick = (e: React.MouseEvent, link: Link) => {
     e.preventDefault();
-
-    setActive(link.label);
-
     navigate(link.route);
   };
 
@@ -80,7 +76,7 @@ export function Navbar() {
         <UnstyledButton
           onClick={(e) => handleLinkClick(e, link)}
           className={classes.mainLink}
-          data-active={link.label === active || undefined}
+          data-active={location.pathname === link.route || undefined}
         >
           <link.icon size={25} stroke={1.7} />
         </UnstyledButton>

@@ -91,6 +91,7 @@ function ChangePasswordModal({ currentUserId }: ChangePasswordModalProps) {
     }
 
     modals.closeAll();
+
     toast.success(t(Dictionary.User.PASSWORD_SUCCESSFULLY_UPDATED));
 
     setIsLoading(false);

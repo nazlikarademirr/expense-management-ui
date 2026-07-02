@@ -147,7 +147,7 @@
     "addNew": "Yeni Proje Ekle",
     "showActive": "Aktif Projeleri Göster",
     "updated": "Proje başarıyla güncellendi.",
-    "nameMinLengtht": "İsim en az 2 harften oluşmalıdır.",
+    "nameMinLength": "İsim en az 2 harften oluşmalıdır.",
     "nameMaxLength": "İsim 128 karakteri geçemez.",
     "codeMinLength": "Kod en az 2 harften oluşmalıdır.",
     "codeMaxLength": "Kod 128 karakteri geçemez.",
@@ -157,7 +157,7 @@
 
   "expense": {
     "dateValid": "Gelecek tarih için masraf girişi yapılamaz.",
-    "totalPriceValid": "Toplam tutar, kişisel tutarların toplamından fazla olamaz.",
+    "totalPriceValid": "Toplam tutar, kişisel tutarların toplamından az olamaz.",
     "youCanNotAddYourselfAsOvertimeMember": "Kendinizi mesai arkadaşı olarak ekleyemezsiniz.",
     "added": "Masraf başarıyla eklendi.",
     "updated": "Masraf başarıyla güncellendi.",
@@ -202,7 +202,8 @@
     "fileUploadRule": "Sadece JPG, PNG veya WebP dosyaları yüklenebilir.",
     "ocrRequestTimedOut": "OCR isteği zaman aşımına uğradı. Lütfen tekrar deneyin.",
     "fileSize": "Dosya boyutu {{fileSize}}MB'dan küçük olmalıdır.",
-    "noFound": "Masraf bulunamadı."
+    "noFound": "Masraf bulunamadı.",
+    "textCouldNotBeDetected": "Metin algılanamadı."
   },
 
   "report": {

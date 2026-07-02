@@ -72,7 +72,6 @@ function Users() {
   const { handleDataRequest } = useRequestHandler();
 
   const auth = useAuthentication();
-
   const { t } = useTranslation();
 
   const form = useForm<User>({
@@ -82,8 +81,8 @@ function Users() {
       surname: "",
       teamId: null,
       teamName: "",
-      gender: "",
-      cardNumber: "",
+      gender: null,
+      cardNumber: null,
       email: "",
       password: "",
       role: "",
@@ -138,7 +137,7 @@ function Users() {
 
     const users: User[] = response.value.map((x) => ({
       ...x,
-      gender: x.gender ? x.gender.toString() : null,
+      gender: x.gender !== null ? x.gender.toString() : null,
       role: x.role.toString(),
     }));
 
@@ -192,8 +191,8 @@ function Users() {
       name: form.values.name.trim(),
       surname: form.values.surname.trim(),
       teamId: form.values.teamId ?? "",
-      gender: form.values.gender ? Number(form.values?.gender) : null,
-      cardNumber: form.values?.cardNumber,
+      gender: form.values.gender !== null ? Number(form.values.gender) : null,
+      cardNumber: form.values.cardNumber,
       email: form.values.email.trim(),
       password: form.values.password,
       role: Number(form.values.role),
@@ -215,7 +214,8 @@ function Users() {
 
     addUser({
       ...response.value,
-      gender: response.value.gender ? response.value.gender.toString() : null,
+      gender: form.values.gender,
+      cardNumber: form.values.cardNumber,
       role: response.value.role.toString(),
       createUserFullName: auth.currentUser
         ? `${auth.currentUser.name} ${auth.currentUser.surname}`
@@ -275,12 +275,7 @@ function Users() {
             {user.temporaryPassword}
           </Badge>
           <Flex direction="row">
-            <Button
-              onClick={() => modals.closeAll()}
-              variant="light"
-              color="cyan"
-              fullWidth
-            >
+            <Button onClick={() => modals.closeAll()} variant="light" fullWidth>
               {t(Dictionary.Common.CLOSE)}
             </Button>
           </Flex>
@@ -291,6 +286,11 @@ function Users() {
 
   const openUserActivityModal = (user: User) => {
     modals.open({
+      title: user.isActive ? (
+        <Title order={4}>{t(Dictionary.User.DEACTIVATE)}</Title>
+      ) : (
+        <Title order={4}>{t(Dictionary.User.ACTIVATE)}</Title>
+      ),
       size: "md",
       children: (
         <Flex direction="column" gap={20}>
@@ -343,7 +343,7 @@ function Users() {
             <Table.Td> {x.surname} </Table.Td>
             <Table.Td>{x.teamName}</Table.Td>
             <Table.Td>
-              {x.gender ? genders[Number(x.gender)].label : "-"}
+              {x.gender !== null ? genders[Number(x.gender)]?.label : "-"}
             </Table.Td>
             <Table.Td> {x.cardNumber ? x.cardNumber : "-"} </Table.Td>
             <Table.Td> {x.email} </Table.Td>
@@ -359,7 +359,6 @@ function Users() {
                   : t(Dictionary.Common.PASSIVE)}
               </Badge>
             </Table.Td>
-            <Table.Td>{x.createUserFullName}</Table.Td>
             <Table.Td>
               <Flex justify="center" gap={10}>
                 {x.isActive && (
@@ -367,7 +366,7 @@ function Users() {
                     onClick={() => openEditUser(x)}
                     variant="light"
                     color="blue"
-                    leftSection={<IconEdit />}
+                    leftSection={<IconEdit size={18} />}
                   >
                     {t(Dictionary.Common.EDIT)}
                   </Button>
@@ -399,8 +398,8 @@ function Users() {
                   <Button
                     onClick={() => openTemporaryPasswordModal(x)}
                     variant="light"
-                    color="grape"
                     loading={isLoading}
+                    style={{ color: "#5f3dc4", backgroundColor: "#e7e2fa" }}
                     leftSection={<RiLockPasswordLine size={22} />}
                   >
                     {t(Dictionary.User.TEMPORARY_PASSWORD)}
@@ -621,7 +620,6 @@ function Users() {
                 <Table.Th>{t(Dictionary.User.EMAIL)}</Table.Th>
                 <Table.Th>{t(Dictionary.User.ROLE)}</Table.Th>
                 <Table.Th>{t(Dictionary.Common.STATUS)}</Table.Th>
-                <Table.Th>{t(Dictionary.Common.CREATE_USER)}</Table.Th>
                 <Table.Th></Table.Th>
               </Table.Tr>
             </Table.Thead>

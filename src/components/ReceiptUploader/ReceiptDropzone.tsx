@@ -13,9 +13,16 @@ interface Props {
   onFileSelect: (file: File) => void;
   previewUrl: string | null;
   onReset: () => void;
+  isUnreadable?: boolean;
 }
 
-function ReceiptDropzone({ status, onFileSelect, previewUrl, onReset }: Props) {
+function ReceiptDropzone({
+  status,
+  onFileSelect,
+  previewUrl,
+  onReset,
+  isUnreadable,
+}: Props) {
   const { t } = useTranslation();
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -64,6 +71,14 @@ function ReceiptDropzone({ status, onFileSelect, previewUrl, onReset }: Props) {
       {previewUrl ? (
         <Flex className={styles.previewContainer} pos="relative">
           <Image src={previewUrl} className={styles.preview} />
+
+          {isUnreadable && (
+            <div className={styles.unreadableOverlay}>
+              <Text fw={500} size="md" className={styles.unreadableText}>
+                {t(Dictionary.Expense.TEXT_COULD_NOT_BE_DETECTED)}
+              </Text>
+            </div>
+          )}
 
           {isLoading && (
             <Flex

@@ -68,7 +68,12 @@ const userSchema = z.object({
     .trim()
     .min(2, t(Dictionary.User.SURNAME_MIN_LENGTH))
     .max(128, t(Dictionary.User.SURNAME_MAX_LENGTH)),
-  teamId: z.string().trim().min(1, t(Dictionary.User.TEAM_MUST_BE_SELECTED)),
+  teamId: z
+    .string()
+    .nullable()
+    .refine((value) => value !== null, {
+      message: t(Dictionary.User.TEAM_MUST_BE_SELECTED),
+    }),
   email: z
     .email()
     .trim()

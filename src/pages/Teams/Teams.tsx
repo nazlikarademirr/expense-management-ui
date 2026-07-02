@@ -259,7 +259,6 @@ function Teams() {
                   : t(Dictionary.Common.PASSIVE)}
               </Badge>
             </Table.Td>
-            <Table.Td> {x.createUserFullName} </Table.Td>
             <Table.Td>
               <Flex justify={"center"} gap={5}>
                 <Flex justify="center" gap={10}>
@@ -268,7 +267,7 @@ function Teams() {
                       onClick={() => openEditTeam(x)}
                       variant="light"
                       color="blue"
-                      leftSection={<IconEdit />}
+                      leftSection={<IconEdit size={18} />}
                     >
                       {t(Dictionary.Common.EDIT)}
                     </Button>
@@ -375,7 +374,6 @@ function Teams() {
                 <Table.Tr>
                   <Table.Th>{t(Dictionary.Team.NAME)}</Table.Th>
                   <Table.Th>{t(Dictionary.Common.STATUS)}</Table.Th>
-                  <Table.Th>{t(Dictionary.Common.CREATE_USER)}</Table.Th>
                   <Table.Th></Table.Th>
                 </Table.Tr>
               </Table.Thead>
