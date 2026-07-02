@@ -7,6 +7,8 @@ import ReceiptDropzone from "./ReceiptDropzone";
 import { Flex } from "@mantine/core";
 import OcrFieldMapper from "./OcrFieldMapper";
 
+const THRESHOLD = 0.7;
+
 interface FieldMapping<TValues> {
   date?: keyof TValues;
   totalPrice?: keyof TValues;
@@ -48,7 +50,7 @@ function ReceiptUploader<TValues extends Record<string, unknown>>({
   const isUnreadable =
     status === "success" &&
     result &&
-    (result.confidence < 0.7 || (!result.date && !result.totalPrice));
+    (result.confidence < THRESHOLD || (!result.date && !result.totalPrice));
 
   return (
     <Flex direction="column">
