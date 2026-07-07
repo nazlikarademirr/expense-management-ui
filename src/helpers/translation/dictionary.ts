@@ -241,6 +241,7 @@ abstract class Dictionary {
     static readonly ALL_NAME = "report.allName";
     static readonly ABROAD = "report.abroad";
     static readonly SHOW_ABROAD = "report.showAbroad";
+    static readonly ERROR_MESSAGE = "report.errorMessage";
   };
 
   static AbroadReport = class {

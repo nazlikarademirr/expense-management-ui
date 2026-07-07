@@ -16,7 +16,6 @@ import { useNavigate } from "react-router";
 import routes from "../../constants/routes";
 import {
   AuthenticationRequest,
-  authenticationRequestSchema,
   AuthenticationResponse,
 } from "../../types/authentication.types";
 import { useState } from "react";
@@ -27,6 +26,7 @@ import ResetPasswordModal from "./components/ResetPasswordModal";
 import ChangePasswordModal from "../Users/components/ChangePasswordModal";
 import Dictionary from "../../helpers/translation/dictionary";
 import { useTranslation } from "react-i18next";
+import z from "zod/v4";
 
 function Login() {
   const auth = useAuthentication();
@@ -40,7 +40,21 @@ function Login() {
 
   const form = useForm<AuthenticationRequest>({
     initialValues: { email: "", password: "" },
-    validate: zod4Resolver(authenticationRequestSchema),
+    validate: zod4Resolver(
+      z.object({
+        email: z
+          .email()
+          .trim()
+          .min(1, t(Dictionary.Login.EMAIL_CANNOT_BE_EMPTY))
+          .refine((v) => v.includes("@acibadem.com"), {
+            message: t(Dictionary.Login.EMAIL_VALID),
+          }),
+        password: z
+          .string()
+          .trim()
+          .min(1, t(Dictionary.Login.PASSWORD_CANNOT_BE_EMPTY)),
+      }),
+    ),
   });
 
   const openPasswordResetModal = () => {
@@ -104,7 +118,7 @@ function Login() {
   };
 
   return (
-    <Flex direction="column" align="center" px="md" mt={220}>
+    <Flex direction="column" align="center" justify="center" pt={200} h="100vh">
       <Title order={1} mb={30} ta="center">
         {t(Dictionary.Common.EXPENSE_MANAGEMENT)}
       </Title>

@@ -134,7 +134,7 @@ function EditUserModal({
   }, []);
 
   return (
-    <Flex direction={"column"} gap={10}>
+    <Flex direction="column" gap={10}>
       <TextInput
         ref={nameInputRef}
         {...userForm.getInputProps("name")}

@@ -78,6 +78,7 @@ const AddOvertimeMemberModal = ({
 
     const overtimeMember: OvertimeMember = {
       ...overtimeMemberForm.values,
+      id: crypto.randomUUID(),
       userFullName: overtimeMemberFullName ?? "",
       createUserFullName: currentUser
         ? `${currentUser.name} ${currentUser.surname}`
@@ -87,7 +88,6 @@ const AddOvertimeMemberModal = ({
     const newMembers = [...overtimeMembers, overtimeMember];
     setOvertimeMembers(newMembers);
     expenseForm.setFieldValue("overtimeMembers", newMembers);
-
     overtimeMemberForm.reset();
   };
 

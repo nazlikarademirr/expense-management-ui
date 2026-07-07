@@ -82,25 +82,8 @@ function CreateAbroadReportModal({
     }
 
     const request: ReportRequest = {
+      ...form.values,
       name: form.values.name.trim(),
-      isApproved: form.values.isApproved,
-      isAbroad: true,
-      title: form.values.title,
-      department: form.values.department,
-      requestedAdvanceAmount: form.values.requestedAdvanceAmount,
-      travelPlace: form.values.travelPlace,
-      departureAndReturnDates: form.values.departureAndReturnDates,
-      purposeOfTravel: form.values.purposeOfTravel,
-      advanceReceivedAmount: form.values.advanceReceivedAmount,
-      advanceReceivedAmountCurrency: form.values.advanceReceivedAmountCurrency,
-      amountToBeRefunded: form.values.amountToBeRefunded,
-      amountToBeRefundedCurrency: form.values.amountToBeRefundedCurrency,
-      amountToBePaid: form.values.amountToBePaid,
-      amountToBePaidCurrency: form.values.amountToBePaidCurrency,
-      declarant: form.values.declarant,
-      departmentManager: form.values.departmentManager,
-      departmentHead: form.values.departmentHead,
-      financeOfficer: form.values.financeOfficer,
     };
 
     const response = await handleDataRequest<ReportRequest, Report>(
@@ -150,20 +133,22 @@ function CreateAbroadReportModal({
       <Flex gap={20}>
         <TextInput
           label={t(Dictionary.Report.NAME)}
-          style={{ flex: 2, minHeight: TEXT_INPUT_MIN_HEIGHT }}
+          flex={2}
+          mih={TEXT_INPUT_MIN_HEIGHT}
           withAsterisk
           {...form.getInputProps("name")}
         />
         <Flex gap={20} style={{ flex: 2 }}>
           <TextInput
             label={t(Dictionary.AbroadReport.ADVANCE_RECEIVED_AMOUNT)}
-            style={{ flex: 1, minHeight: TEXT_INPUT_MIN_HEIGHT }}
+            flex={1}
+            mih={TEXT_INPUT_MIN_HEIGHT}
             {...form.getInputProps("advanceReceivedAmount")}
           />
           <Radio.Group
             style={{
               flex: 1,
-              marginTop: 32,
+              marginTop: 25,
             }}
             {...form.getInputProps("advanceReceivedAmountCurrency")}
           >
@@ -196,7 +181,7 @@ function CreateAbroadReportModal({
             {...form.getInputProps("amountToBeRefunded")}
           />
           <Radio.Group
-            style={{ flex: 1, marginTop: 32 }}
+            style={{ flex: 1, marginTop: 25 }}
             {...form.getInputProps("amountToBeRefundedCurrency")}
           >
             <Group>
@@ -226,7 +211,7 @@ function CreateAbroadReportModal({
             {...form.getInputProps("amountToBePaid")}
           />
           <Radio.Group
-            style={{ flex: 1, marginTop: 32 }}
+            style={{ flex: 1, marginTop: 25 }}
             {...form.getInputProps("amountToBePaidCurrency")}
           >
             <Group>

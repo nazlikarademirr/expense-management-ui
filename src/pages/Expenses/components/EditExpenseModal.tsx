@@ -267,7 +267,11 @@ function EditExpenseModal({
     if (nameInputRef.current) {
       nameInputRef.current.focus();
     }
-  }, []);
+
+    if (expenseForm.values.expenseType === ExpenseType.Food) {
+      expenseForm.setFieldValue("description", "");
+    }
+  }, [expenseForm.values.expenseType]);
 
   return (
     <Card shadow={"xs"} radius={"xs"} withBorder padding={10}>
@@ -324,24 +328,26 @@ function EditExpenseModal({
                   : reportSelectData
               }
               placeholder={t(Dictionary.Expense.SELECT_REPORT)}
+              withAsterisk
               searchable
               label={t(Dictionary.Expense.REPORT_NAME)}
               style={{ flexGrow: 1 }}
-              clearable
+              allowDeselect={false}
             />
 
             <Select
-              w={"20%"}
+              w="20%"
               {...expenseForm.getInputProps("currency")}
               withAsterisk
               data={currencyTypes}
               label={t(Dictionary.Expense.CURRENCY)}
               style={{ flexGrow: 1 }}
+              allowDeselect={false}
             />
           </Flex>
           <Flex gap={"sm"} style={{ flexGrow: 1, minHeight: MIN_FLEX_HEIGHT }}>
             <Radio.Group
-              w={"20%"}
+              w="20%"
               label={t(Dictionary.Expense.TYPE)}
               withAsterisk
               {...expenseForm.getInputProps("expenseType")}
@@ -378,6 +384,7 @@ function EditExpenseModal({
                 searchable
                 label={t(Dictionary.Expense.USER_NAME)}
                 style={{ flexGrow: 1 }}
+                allowDeselect={false}
               />
 
               <NumberInput
@@ -400,6 +407,7 @@ function EditExpenseModal({
               withTableBorder
               withColumnBorders
               mt={15}
+              h="100%"
             >
               <ScrollArea h={250}>
                 <Table.Thead>
