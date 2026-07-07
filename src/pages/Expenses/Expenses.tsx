@@ -679,11 +679,14 @@ function Expenses() {
 
   useEffect(() => {
     clearDescriptionIfFoodExpense();
+  }, [form.values.expenseType]);
+
+  useEffect(() => {
     getActiveUsers();
     getActiveProjects();
     getReports();
     getExpenses();
-  }, [form.values.expenseType]);
+  }, []);
 
   return (
     <Flex direction="column" h={PAGE_FLEX_HEIGHT} w="100%">

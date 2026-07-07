@@ -84,6 +84,7 @@ function CreateAbroadReportModal({
     const request: ReportRequest = {
       ...form.values,
       name: form.values.name.trim(),
+      isAbroad: true,
     };
 
     const response = await handleDataRequest<ReportRequest, Report>(

@@ -264,14 +264,16 @@ function EditExpenseModal({
   );
 
   useEffect(() => {
-    if (nameInputRef.current) {
-      nameInputRef.current.focus();
-    }
-
     if (expenseForm.values.expenseType === ExpenseType.Food) {
       expenseForm.setFieldValue("description", "");
     }
   }, [expenseForm.values.expenseType]);
+
+  useEffect(() => {
+    if (nameInputRef.current) {
+      nameInputRef.current.focus();
+    }
+  }, []);
 
   return (
     <Card shadow={"xs"} radius={"xs"} withBorder padding={10}>
