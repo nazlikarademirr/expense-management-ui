@@ -229,7 +229,8 @@
     "select": "İşlem yapmak istediğiniz raporu seçin veya yeni bir tane oluşturun.",
     "allName": "'Hepsi' ismi ile bir rapor oluşturulamaz.",
     "abroad": "Yurtdışı Raporu",
-    "showAbroad": "Yurtdışı Raporlarını Göster"
+    "showAbroad": "Yurtdışı Raporlarını Göster",
+    "errorMessage": "Onaylanmış bir rapora masraf ekleyemezsiniz."
   },
 
   "abroadReport": {

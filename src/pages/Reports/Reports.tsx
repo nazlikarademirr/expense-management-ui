@@ -114,6 +114,11 @@ function Reports() {
     modals.open({
       title: <Title order={4}>{t(Dictionary.Report.EDIT)}</Title>,
       size: report.isAbroad ? "60%" : "40%",
+      styles: {
+        content: {
+          minHeight: report.isAbroad ? "102vh" : "20vh",
+        },
+      },
       children: report.isAbroad ? (
         <EditAbroadReportModal
           report={report}
@@ -134,6 +139,11 @@ function Reports() {
     modals.open({
       title: <Title order={4}>{t(Dictionary.Report.ABROAD)}</Title>,
       size: "60%",
+      styles: {
+        content: {
+          minHeight: "102vh",
+        },
+      },
       children: (
         <CreateAbroadReportModal checkIfReportIsValid={checkIfReportIsValid} />
       ),
@@ -574,18 +584,7 @@ function Reports() {
           </Flex>
         </Flex>
       </Card>
-      <Card
-        mt="sm"
-        radius="md"
-        withBorder
-        padding="sm"
-        style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          minHeight: 0,
-        }}
-      >
+      <Card mt="sm" radius="md" withBorder padding="sm" flex={1}>
         <Flex gap="xs" mb="md" align="center">
           <TextInput
             size="xs"

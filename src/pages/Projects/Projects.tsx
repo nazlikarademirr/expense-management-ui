@@ -195,6 +195,11 @@ function Projects() {
 
   const openProjectActivityModal = (project: Project) => {
     modals.open({
+      title: project.isActive ? (
+        <Title order={4}>{t(Dictionary.Project.DEACTIVATE)}</Title>
+      ) : (
+        <Title order={4}>{t(Dictionary.Project.ACTIVATE)}</Title>
+      ),
       size: "md",
       children: (
         <Flex direction="column" gap={20}>
@@ -331,17 +336,7 @@ function Projects() {
         </Button>
       </Card>
 
-      <Card
-        mt="xs"
-        withBorder
-        padding="sm"
-        style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          minHeight: 0,
-        }}
-      >
+      <Card mt="xs" withBorder padding="sm" flex={1}>
         <Flex gap="xs" mb="md" align="center">
           <TextInput
             size="xs"

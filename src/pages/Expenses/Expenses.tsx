@@ -17,6 +17,7 @@ import {
   Combobox,
   useCombobox,
   InputBase,
+  Box,
 } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import expenseSchema, {
@@ -25,7 +26,12 @@ import expenseSchema, {
   ExpenseResponse,
 } from "../../types/expense.types";
 import useExpenses from "./hooks/useExpenses";
-import { IconEdit, IconSearch, IconTrash } from "@tabler/icons-react";
+import {
+  IconEdit,
+  IconSearch,
+  IconTrash,
+  IconCheck,
+} from "@tabler/icons-react";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import { DateInput } from "@mantine/dates";
@@ -34,11 +40,7 @@ import AddOvertimeMemberModal from "./components/AddOvertimeMemberModal";
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { currencyTypes, expenseTypes } from "../../constants/static-data";
 import ExpenseType from "../../enums/expense-type";
-import {
-  PAGE_FLEX_HEIGHT,
-  SEARCH_ICON_SIZE,
-  TITLE_DIVIDER_MY,
-} from "../../constants/constants";
+import { PAGE_FLEX_HEIGHT, SEARCH_ICON_SIZE } from "../../constants/constants";
 import urls from "../../constants/urls";
 import RequestType from "../../request-handler/request-type";
 import useRequestHandler from "../../hooks/useRequestHandler";
@@ -107,7 +109,9 @@ function Expenses() {
     SelectItem[]
   >([]);
 
-  const [reportSelectData, setReportSelectData] = useState<SelectItem[]>([]);
+  const [reportSelectData, setReportSelectData] = useState<
+    (SelectItem & { isApproved: boolean })[]
+  >([]);
 
   const [unapprovedReportSelectData, setUnapprovedReportSelectData] = useState<
     SelectItem[]
@@ -207,6 +211,12 @@ function Expenses() {
     modals.open({
       title: <Title order={4}>{t(Dictionary.Report.ABROAD)}</Title>,
       size: "60%",
+      styles: {
+        content: {
+          minHeight: "102vh",
+        },
+      },
+      returnFocus: false,
       children: (
         <CreateAbroadReportModal checkIfReportIsValid={checkIfReportIsValid} />
       ),
@@ -274,7 +284,11 @@ function Expenses() {
     if (!response.isSuccess) return;
 
     setReportSelectData(
-      response.value.map((x) => ({ value: x.id, label: x.name })),
+      response.value.map((x) => ({
+        value: x.id,
+        label: x.name,
+        isApproved: x.isApproved,
+      })),
     );
 
     setUnapprovedReportSelectData(
@@ -352,16 +366,23 @@ function Expenses() {
       return;
     }
 
+    const isSelectedReportApproved = !unapprovedReportSelectData.some(
+      (x) => x.value === selectedReport,
+    );
+
+    if (isSelectedReportApproved && auth.currentUser?.role === Role.User) {
+      toast.error(t(Dictionary.Report.ERROR_MESSAGE));
+      setIsLoading(false);
+      return;
+    }
+
     const expenseRequest: ExpenseRequest = {
+      ...form.values,
       userId: form.values.userId ?? "",
       projectId: form.values.projectId ?? "",
       expenseType: Number(form.values.expenseType),
-      expenseDate: form.values.expenseDate,
-      totalPrice: form.values.totalPrice,
       currency: Number(form.values.currency),
-      description: form.values.description,
       reportId: selectedReport,
-      overtimeMembers: form.values.overtimeMembers,
     };
 
     const response = await handleDataRequest<ExpenseRequest, ExpenseResponse>(
@@ -373,6 +394,14 @@ function Expenses() {
     if (!response.isSuccess) {
       setIsLoading(false);
       return;
+    }
+
+    if (isSelectedReportApproved) {
+      await handleDataRequest(
+        `${urls.report}/${selectedReport}`,
+        RequestType.Patch,
+        [{ path: "/isApproved", value: "false" }],
+      );
     }
 
     addExpense({
@@ -422,7 +451,6 @@ function Expenses() {
 
     setIsLoading(false);
   };
-
   const addOvertimeMember = () => {
     modals.open({
       title: (
@@ -467,10 +495,16 @@ function Expenses() {
 
     setSelectedReport(response.value.id);
     setNewReportName(response.value.name);
-    setReportSelectData([
-      ...reportSelectData,
-      { label: value, value: response.value.id },
-    ]);
+
+    const newReport = {
+      label: response.value.name,
+      value: response.value.id,
+      isApproved: false,
+    };
+
+    setReportSelectData([...reportSelectData, newReport]);
+
+    setUnapprovedReportSelectData([...unapprovedReportSelectData, newReport]);
 
     combobox.closeDropdown();
 
@@ -629,7 +663,6 @@ function Expenses() {
   };
 
   const handleOpenReportDropdown = () => {
-    setSearchQuery("");
     combobox.openDropdown();
   };
 
@@ -637,6 +670,16 @@ function Expenses() {
     openCreateAbroadReportModal();
     combobox.closeDropdown();
   };
+
+  const clearDescriptionIfFoodExpense = () => {
+    if (form.values.expenseType === ExpenseType.Food) {
+      form.setFieldValue("description", "");
+    }
+  };
+
+  useEffect(() => {
+    clearDescriptionIfFoodExpense();
+  }, [form.values.expenseType]);
 
   useEffect(() => {
     getActiveUsers();
@@ -648,55 +691,66 @@ function Expenses() {
   return (
     <Flex direction="column" h={PAGE_FLEX_HEIGHT} w="100%">
       <Flex justify="space-between" align="center" gap={10}>
-        <Title order={3}>{t(Dictionary.Common.EXPENSES)}</Title>
-        <Combobox store={combobox} onOptionSubmit={handleReportSelect}>
-          <Combobox.Target>
-            <InputBase
-              w="25%"
-              value={newReportName}
-              rightSection={<Combobox.Chevron />}
-              onClick={handleOpenReportDropdown}
-              onFocus={handleOpenReportDropdown}
-              placeholder={t(Dictionary.Report.SELECT)}
-              onChange={handleReportNameChange}
-            ></InputBase>
-          </Combobox.Target>
+        <Title order={3} mb={5}>
+          {t(Dictionary.Common.EXPENSES)}
+        </Title>
+        <Box w="25%" pos="relative">
+          <Combobox
+            store={combobox}
+            onOptionSubmit={handleReportSelect}
+            withinPortal={false}
+          >
+            <Combobox.Target>
+              <InputBase
+                w="100%"
+                value={newReportName}
+                rightSection={<Combobox.Chevron />}
+                onClick={handleOpenReportDropdown}
+                onFocus={handleOpenReportDropdown}
+                placeholder={t(Dictionary.Report.SELECT)}
+                onChange={handleReportNameChange}
+              ></InputBase>
+            </Combobox.Target>
 
-          <Combobox.Dropdown>
-            <Combobox.Options>
-              <Combobox.Option value="all">
-                {t(Dictionary.Common.ALL)}
-              </Combobox.Option>
-              {filteredReportSelectData.map((x) => (
-                <Combobox.Option key={x.value} value={x.value}>
-                  {x.label}
+            <Combobox.Dropdown>
+              <Combobox.Options>
+                <Combobox.Option value="all">
+                  {t(Dictionary.Common.ALL)}
                 </Combobox.Option>
-              ))}
-            </Combobox.Options>
-            <Combobox.Footer>
-              <Button
-                mt={3}
-                variant="light"
-                fullWidth
-                leftSection={<PiPlusCircle size={22} />}
-                onClick={() => createNewReport(newReportName)}
-              >
-                {t(Dictionary.Report.ADD_NEW)}
-              </Button>
-              <Button
-                mt={10}
-                variant="light"
-                fullWidth
-                leftSection={<FaPlaneDeparture />}
-                onClick={handleCreateAbroadReport}
-              >
-                {t(Dictionary.AbroadReport.CREATE)}
-              </Button>
-            </Combobox.Footer>
-          </Combobox.Dropdown>
-        </Combobox>
+                {filteredReportSelectData.map((x) => (
+                  <Combobox.Option key={x.value} value={x.value}>
+                    <Group justify="space-between">
+                      <Text>{x.label}</Text>
+                      {x.isApproved && <IconCheck size={20} color="green" />}
+                    </Group>
+                  </Combobox.Option>
+                ))}
+              </Combobox.Options>
+              <Combobox.Footer>
+                <Button
+                  mt={3}
+                  variant="light"
+                  fullWidth
+                  leftSection={<PiPlusCircle size={22} />}
+                  onClick={() => createNewReport(newReportName)}
+                >
+                  {t(Dictionary.Report.ADD_NEW)}
+                </Button>
+                <Button
+                  mt={10}
+                  variant="light"
+                  fullWidth
+                  leftSection={<FaPlaneDeparture />}
+                  onClick={handleCreateAbroadReport}
+                >
+                  {t(Dictionary.AbroadReport.CREATE)}
+                </Button>
+              </Combobox.Footer>
+            </Combobox.Dropdown>
+          </Combobox>
+        </Box>
       </Flex>
-      <Divider my={TITLE_DIVIDER_MY} />
+      <Divider mt={7} mb={12} />
       <Flex gap={10} w="100%">
         <Card w="75%" shadow="xs" radius="xs" withBorder padding={10}>
           <Flex gap="md" w="100%">
@@ -714,6 +768,7 @@ function Expenses() {
                   data={activeUserSelectData}
                   searchable
                   label={t(Dictionary.Expense.USER_NAME)}
+                  comboboxProps={{ withinPortal: false }}
                 />
 
                 <Select
@@ -722,6 +777,7 @@ function Expenses() {
                   withAsterisk
                   data={activeProjectSelectData}
                   label={t(Dictionary.Expense.PROJECT_NAME)}
+                  comboboxProps={{ withinPortal: false }}
                 />
 
                 <DateInput
@@ -761,6 +817,10 @@ function Expenses() {
                   withAsterisk
                   data={currencyTypes}
                   label={t(Dictionary.Expense.CURRENCY)}
+                  comboboxProps={{
+                    withinPortal: false,
+                    middlewares: { flip: false },
+                  }}
                 />
 
                 <TextInput
@@ -807,18 +867,7 @@ function Expenses() {
           />
         </Card>
       </Flex>
-      <Card
-        w="%100"
-        mt="sm"
-        withBorder
-        padding="sm"
-        style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          minHeight: 0,
-        }}
-      >
+      <Card w="100%" mt="sm" withBorder padding="sm" flex={1}>
         <Flex gap="xs" align="center" mb="md">
           <TextInput
             size="xs"
@@ -835,6 +884,7 @@ function Expenses() {
             style={{ flexGrow: 1 }}
             clearable
             onChange={(e) => setSelectedUser(e)}
+            comboboxProps={{ withinPortal: false }}
           />
           <Checkbox
             labelPosition="left"

@@ -97,10 +97,15 @@ function Users() {
     validate: zod4Resolver(userSchema),
   });
 
-  const openEditUser = (user: User) => {
+  const openEditUserModal = (user: User) => {
     modals.open({
       title: <Title order={4}>{t(Dictionary.User.EDIT)}</Title>,
       size: "xl",
+      styles: {
+        content: {
+          minHeight: "102vh",
+        },
+      },
       children: (
         <EditUserModal
           user={user}
@@ -363,7 +368,7 @@ function Users() {
               <Flex justify="center" gap={10}>
                 {x.isActive && (
                   <Button
-                    onClick={() => openEditUser(x)}
+                    onClick={() => openEditUserModal(x)}
                     variant="light"
                     color="blue"
                     leftSection={<IconEdit size={18} />}
@@ -416,6 +421,7 @@ function Users() {
       selectedTeam,
       selectedRole,
       isLoading,
+      activeTeamSelectData,
     ],
   );
 
@@ -487,6 +493,7 @@ function Users() {
               withAsterisk
               data={activeTeamSelectData}
               searchable
+              comboboxProps={{ withinPortal: false }}
               style={{
                 flexGrow: 1,
                 minHeight: MIN_INPUT_HEIGHT,
@@ -555,18 +562,7 @@ function Users() {
           {t(Dictionary.User.ADD_NEW)}
         </Button>
       </Card>
-      <Card
-        mt="xs"
-        withBorder
-        radius="md"
-        padding="sm"
-        style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          minHeight: 0,
-        }}
-      >
+      <Card mt="xs" withBorder radius="md" padding="sm" flex={1}>
         <Flex gap="xs" align="center" mb="md">
           <TextInput
             size="xs"
@@ -580,6 +576,7 @@ function Users() {
           <Select
             data={activeTeamSelectData}
             searchable
+            comboboxProps={{ withinPortal: false }}
             placeholder={t(Dictionary.User.SELECT_TEAM)}
             style={{ flexGrow: 1 }}
             clearable
@@ -588,6 +585,7 @@ function Users() {
           <Select
             data={roles}
             searchable
+            comboboxProps={{ withinPortal: false }}
             placeholder={t(Dictionary.User.SELECT_ROLE)}
             style={{ flexGrow: 1 }}
             clearable

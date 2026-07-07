@@ -70,6 +70,7 @@ export function Navbar() {
         label={link.label}
         position="right"
         withArrow
+        withinPortal={false}
         transitionProps={{ duration: 0 }}
         key={link.label}
       >

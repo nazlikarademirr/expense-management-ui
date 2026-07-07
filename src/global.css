@@ -9,14 +9,23 @@ body {
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
   padding: 0;
+  zoom: 0.75;
+  min-height: 133vh;
 }
 
 .mantine-AppShell-root {
   background: transparent;
+  min-height: 133vh;
+}
+
+.mantine-AppShell-navbar {
+  height: 133vh !important;
+  min-height: 133vh !important;
 }
 
 .mantine-AppShell-main {
   background: transparent;
+  min-height: 133vh !important;
 }
 
 .mantine-Card-root {

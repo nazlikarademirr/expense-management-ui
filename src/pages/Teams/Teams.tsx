@@ -201,6 +201,11 @@ function Teams() {
 
   const openTeamActivityModal = (team: Team) => {
     modals.open({
+      title: team.isActive ? (
+        <Title order={4}>{t(Dictionary.Team.DEACTIVATE)}</Title>
+      ) : (
+        <Title order={4}>{t(Dictionary.Team.ACTIVATE)}</Title>
+      ),
       size: "md",
       children: (
         <Flex direction="column" gap={20}>
@@ -299,7 +304,7 @@ function Teams() {
             </Table.Td>
           </Table.Tr>
         )),
-    [teams, showActiveTeams, searchQuery, isLoading],
+    [teams, showActiveTeams, searchQuery, isLoading, users],
   );
 
   useEffect(() => {
@@ -329,18 +334,7 @@ function Teams() {
           </Button>
         </Flex>
       </Card>
-      <Card
-        mt={"xs"}
-        withBorder
-        radius={"md"}
-        padding={"sm"}
-        style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          minHeight: 0,
-        }}
-      >
+      <Card mt="xs" withBorder radius="md" padding="sm" flex={1}>
         <Flex gap={"xs"} mb="md" align="center">
           <TextInput
             size="xs"
