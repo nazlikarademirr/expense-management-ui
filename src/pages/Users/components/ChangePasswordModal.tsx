@@ -103,19 +103,19 @@ function ChangePasswordModal({ currentUserId }: ChangePasswordModalProps) {
         {...form.getInputProps("currentPassword")}
         label={t(Dictionary.User.CURRENT_PASSWORD)}
         withAsterisk
-        style={{ minHeight: 80 }}
+        mih={80}
       />
       <PasswordInput
         {...form.getInputProps("newPassword")}
         label={t(Dictionary.User.NEW_PASSWORD)}
         withAsterisk
-        style={{ minHeight: 80 }}
+        mih={80}
       />
       <PasswordInput
         {...form.getInputProps("newPasswordAgain")}
         label={t(Dictionary.User.NEW_PASSWORD_AGAIN)}
         withAsterisk
-        style={{ minHeight: 80 }}
+        mih={80}
       />
       <Flex direction="row">
         <Button

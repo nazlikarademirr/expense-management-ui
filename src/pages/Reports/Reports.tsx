@@ -26,16 +26,11 @@ import toast from "react-hot-toast";
 import { modals } from "@mantine/modals";
 import EditReportModal from "./components/EditReportModal";
 import useReports from "../../hooks/useReports";
-import { HiCheck } from "react-icons/hi";
 import {
   PAGE_FLEX_HEIGHT,
   SEARCH_ICON_SIZE,
   TITLE_DIVIDER_MY,
 } from "../../constants/constants";
-import {
-  createJsonPatchDocumentFromObject,
-  JsonPatchKeyValuePair,
-} from "../../types/json-patch-document";
 import urls from "../../constants/urls";
 import RequestType from "../../request-handler/request-type";
 import useRequestHandler from "../../hooks/useRequestHandler";
@@ -43,7 +38,6 @@ import { zod4Resolver } from "mantine-form-zod-resolver";
 import { useAuthentication } from "../../contexts/AuthenticationContext/AuthenticationProvider";
 import { useTranslation } from "react-i18next";
 import Dictionary from "../../helpers/translation/dictionary";
-import Role from "../../enums/role";
 import { PiPlusCircle } from "react-icons/pi";
 import { Expense } from "../../types/expense.types";
 import { FaPlaneDeparture } from "react-icons/fa";
@@ -60,8 +54,6 @@ function Reports() {
 
   const [showAbroadReports, setShowAbroadReports] = useState(false);
 
-  const [showUnapprovedReports, setShowUnapprovedReports] = useState(false);
-
   const { handleDataRequest, downloadFile } = useRequestHandler();
 
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -70,7 +62,13 @@ function Reports() {
 
   const auth = useAuthentication();
 
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+
+  const currentMonth = new Intl.DateTimeFormat(i18n.language, {
+    month: "long",
+  }).format(new Date());
+  const currentYear = new Date().getFullYear();
+  const namePlaceholder = `${auth.currentUserFullName} - ${currentMonth} ${currentYear}`;
 
   const [expandedReportIds, setExpandedReportIds] = useState<string[]>([]);
 
@@ -84,7 +82,6 @@ function Reports() {
     initialValues: {
       id: crypto.randomUUID(),
       name: "",
-      isApproved: false,
       isAbroad: true,
       title: "",
       department: "",
@@ -102,6 +99,8 @@ function Reports() {
       departmentManager: "",
       departmentHead: "",
       financeOfficer: "",
+      tlIban: "",
+      eurIban: "",
       searchText: "",
       createUserId: "",
       createUserFullName: "",
@@ -114,11 +113,13 @@ function Reports() {
     modals.open({
       title: <Title order={4}>{t(Dictionary.Report.EDIT)}</Title>,
       size: report.isAbroad ? "60%" : "40%",
-      styles: {
-        content: {
-          minHeight: report.isAbroad ? "102vh" : "20vh",
-        },
-      },
+      styles: report.isAbroad
+        ? {
+            content: {
+              minHeight: 840,
+            },
+          }
+        : undefined,
       children: report.isAbroad ? (
         <EditAbroadReportModal
           report={report}
@@ -141,66 +142,15 @@ function Reports() {
       size: "60%",
       styles: {
         content: {
-          minHeight: "102vh",
+          minHeight: 840,
         },
       },
       children: (
-        <CreateAbroadReportModal checkIfReportIsValid={checkIfReportIsValid} />
-      ),
-    });
-  };
-
-  const approveReport = async (report: Report) => {
-    setIsLoading(true);
-
-    const patchDocument = createJsonPatchDocumentFromObject({
-      isApproved: true,
-    });
-
-    const response = await handleDataRequest<JsonPatchKeyValuePair[], Report>(
-      `${urls.report}/${report.id}`,
-      RequestType.Patch,
-      patchDocument,
-    );
-
-    if (!response.isSuccess) {
-      setIsLoading(false);
-      return;
-    }
-
-    updateReport({ ...report, isApproved: true });
-
-    toast.success(t(Dictionary.Report.SUCCESSFULLY_APPROVED));
-
-    modals.closeAll();
-
-    setIsLoading(false);
-  };
-
-  const openApproveReportModal = (report: Report) => {
-    modals.open({
-      title: <Title order={5}>{t(Dictionary.Report.APPROVE)}</Title>,
-      size: "md",
-      children: (
-        <Flex direction="column" gap={20}>
-          <Text>{t(Dictionary.Report.APPROVE_QUESTION)}</Text>
-          <Flex direction="row" gap={10}>
-            <Button
-              style={{
-                flexGrow: 1,
-                color: "green",
-                backgroundColor: "#e7ffe0",
-              }}
-              onClick={() => approveReport(report)}
-              variant="light"
-            >
-              {t(Dictionary.Common.APPROVE)}
-            </Button>
-            <Button style={{ flexGrow: 1 }} variant="light">
-              {t(Dictionary.Common.CANCEL)}
-            </Button>
-          </Flex>
-        </Flex>
+        <CreateAbroadReportModal
+          addReport={addReport}
+          checkIfReportIsValid={checkIfReportIsValid}
+          currentUserFullName={auth.currentUserFullName}
+        />
       ),
     });
   };
@@ -214,7 +164,8 @@ function Reports() {
           <Text>{t(Dictionary.Report.DELETE_QUESTION)}</Text>
           <Flex direction="row" gap={10}>
             <Button
-              style={{ flexGrow: 1, color: "red", backgroundColor: "#ffeeee" }}
+              flex={1}
+              style={{ color: "red", backgroundColor: "#ffeeee" }}
               onClick={() => {
                 handleDelete(id);
                 modals.closeAll();
@@ -223,11 +174,7 @@ function Reports() {
             >
               {t(Dictionary.Common.DELETE)}
             </Button>
-            <Button
-              onClick={() => modals.closeAll()}
-              style={{ flexGrow: 1 }}
-              variant="light"
-            >
+            <Button onClick={() => modals.closeAll()} flex={1} variant="light">
               {t(Dictionary.Common.CANCEL)}
             </Button>
           </Flex>
@@ -255,7 +202,23 @@ function Reports() {
 
     if (!response.isSuccess) return;
 
-    replaceReports(response.value);
+    replaceReports(
+      response.value.map((x) => ({
+        ...x,
+        advanceReceivedAmountCurrency:
+          x.advanceReceivedAmountCurrency !== null
+            ? x.advanceReceivedAmountCurrency.toString()
+            : null,
+        amountToBeRefundedCurrency:
+          x.amountToBeRefundedCurrency !== null
+            ? x.amountToBeRefundedCurrency.toString()
+            : null,
+        amountToBePaidCurrency:
+          x.amountToBePaidCurrency !== null
+            ? x.amountToBePaidCurrency.toString()
+            : null,
+      })),
+    );
   };
 
   const checkIfReportIsValid = (report: Report) => {
@@ -293,8 +256,8 @@ function Reports() {
     }
 
     const request: ReportRequest = {
+      ...form.values,
       name: form.values.name.trim(),
-      isApproved: form.values.isApproved,
       isAbroad: false,
     };
 
@@ -311,14 +274,12 @@ function Reports() {
 
     addReport({
       ...response.value,
-      createUserFullName: auth.currentUser
-        ? `${auth.currentUser.name} ${auth.currentUser.surname}`
-        : "",
+      createUserFullName: auth.currentUserFullName,
     });
 
     form.reset();
 
-    toast.success(t(Dictionary.Report.ADDED));
+    toast.success(t(Dictionary.Report.CREATED));
 
     setIsLoading(false);
   };
@@ -376,7 +337,6 @@ function Reports() {
     () =>
       reports
         .filter((x) => (showAbroadReports === true ? x.isAbroad : x))
-        .filter((x) => (showUnapprovedReports === true ? !x.isApproved : x))
         .filter((x) =>
           x.searchText.toLowerCase().includes(searchQuery.toLowerCase()),
         )
@@ -399,52 +359,25 @@ function Reports() {
                       : t(Dictionary.Common.NO)}
                   </Badge>
                 </Table.Td>
-                <Table.Td>
-                  <Badge
-                    size="md"
-                    color={x.isApproved ? "green" : "gray"}
-                    variant="light"
-                  >
-                    {x.isApproved
-                      ? t(Dictionary.Common.YES)
-                      : t(Dictionary.Common.NO)}
-                  </Badge>
-                </Table.Td>
                 <Table.Td> {x.createUserFullName} </Table.Td>
                 <Table.Td>
                   {format(x.createDate, "dd/MM/yyyy - HH.mm")}
                 </Table.Td>
                 <Table.Td onClick={(e) => e.stopPropagation()}>
-                  <Flex justify="center" gap={5} align="center">
+                  <Flex justify="center" gap={10} align="center">
                     <Button
                       size="xs"
                       onClick={() => downloadReport(x)}
                       variant="light"
                       color="blue"
                       loading={isLoading}
-                      disabled={!x.isApproved}
                       leftSection={<IconDownload size={16} />}
                     >
                       {t(Dictionary.Report.DOWNLOAD)}
                     </Button>
-                    {auth.currentUser?.role !== Role.User && (
-                      <Button
-                        size="xs"
-                        disabled={x.isApproved}
-                        onClick={() => openApproveReportModal(x)}
-                        variant="light"
-                        style={{ color: "green", backgroundColor: "#e7ffe0" }}
-                        leftSection={<HiCheck size={18} />}
-                      >
-                        {t(Dictionary.Common.APPROVE)}
-                      </Button>
-                    )}
                     <Button
                       size="xs"
                       onClick={() => openEditReport(x)}
-                      disabled={
-                        auth.currentUser?.role === Role.User && x.isApproved
-                      }
                       variant="light"
                       leftSection={<IconEdit size={16} />}
                     >
@@ -453,9 +386,6 @@ function Reports() {
                     <Button
                       size="xs"
                       onClick={() => openDeleteReportModal(x.id)}
-                      disabled={
-                        auth.currentUser?.role === Role.User && x.isApproved
-                      }
                       variant="light"
                       leftSection={<IconTrash size={16} />}
                       style={{ color: "red", backgroundColor: "#ffeeee" }}
@@ -466,7 +396,7 @@ function Reports() {
                 </Table.Td>
               </Table.Tr>
               <Table.Tr>
-                <Table.Td colSpan={6} p={0}>
+                <Table.Td colSpan={5} p={0}>
                   <Collapse in={isExpanded} transitionDuration={200}>
                     <Card
                       style={{
@@ -479,7 +409,7 @@ function Reports() {
                           <Table.Thead>
                             <Table.Tr>
                               <Table.Th>
-                                {t(Dictionary.Expense.USER_NAME)}
+                                {t(Dictionary.Expense.DECLARANT)}
                               </Table.Th>
                               <Table.Th>{t(Dictionary.Expense.TYPE)}</Table.Th>
                               <Table.Th>{t(Dictionary.Expense.DATE)}</Table.Th>
@@ -497,7 +427,7 @@ function Reports() {
                           <Table.Tbody>
                             {reportExpenses.map((e) => (
                               <Table.Tr key={e.id}>
-                                <Table.Td>{e.userFullName}</Table.Td>
+                                <Table.Td>{e.declarantFullName}</Table.Td>
                                 <Table.Td>
                                   {expenseTypes[Number(e.expenseType)]?.label}
                                 </Table.Td>
@@ -536,7 +466,6 @@ function Reports() {
     [
       reports,
       showAbroadReports,
-      showUnapprovedReports,
       searchQuery,
       isLoading,
       expandedReportIds,
@@ -559,9 +488,9 @@ function Reports() {
             <TextInput
               {...form.getInputProps("name")}
               withAsterisk
-              placeholder={format(new Date(), "dd.MM.yyyy")}
+              placeholder={namePlaceholder}
               label={t(Dictionary.Report.NAME)}
-              style={{ minHeight: 80 }}
+              mih={80}
             />
             <Button
               onClick={handleSave}
@@ -569,7 +498,7 @@ function Reports() {
               loading={isLoading}
               leftSection={<PiPlusCircle size={22} />}
             >
-              {t(Dictionary.Report.ADD_NEW)}
+              {t(Dictionary.Report.CREATE_NEW)}
             </Button>
           </Flex>
           <Divider orientation="vertical" />
@@ -590,7 +519,7 @@ function Reports() {
             size="xs"
             radius="xl"
             rightSection={<IconSearch size={SEARCH_ICON_SIZE}></IconSearch>}
-            style={{ flex: 1 }}
+            flex={1}
             {...form.getInputProps("searchText")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.currentTarget.value)}
@@ -603,16 +532,8 @@ function Reports() {
             onChange={() => setShowAbroadReports(!showAbroadReports)}
             type="checkbox"
           />
-          <Checkbox
-            labelPosition="left"
-            label={t(Dictionary.Report.SHOW_UNAPPROVED)}
-            style={{ marginLeft: "10px" }}
-            checked={showUnapprovedReports}
-            onChange={() => setShowUnapprovedReports(!showUnapprovedReports)}
-            type="checkbox"
-          />
         </Flex>
-        <ScrollArea style={{ flex: 1 }}>
+        <ScrollArea flex={1}>
           <Table
             striped
             stickyHeader
@@ -624,12 +545,9 @@ function Reports() {
             <Table.Thead>
               <Table.Tr>
                 <Table.Th>{t(Dictionary.Report.NAME)}</Table.Th>
-                <Table.Th w="150px">{t(Dictionary.Report.ABROAD)}</Table.Th>
-                <Table.Th w="150px">{t(Dictionary.Report.APPROVED)}</Table.Th>
+                <Table.Th>{t(Dictionary.Report.ABROAD)}</Table.Th>
                 <Table.Th>{t(Dictionary.Common.CREATE_USER)}</Table.Th>
-                <Table.Th w="200px">
-                  {t(Dictionary.Common.CREATE_DATE)}
-                </Table.Th>
+                <Table.Th>{t(Dictionary.Common.CREATE_DATE)}</Table.Th>
                 <Table.Th></Table.Th>
               </Table.Tr>
             </Table.Thead>

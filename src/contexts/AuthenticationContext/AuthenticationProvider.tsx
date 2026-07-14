@@ -6,6 +6,7 @@ import Dictionary from "../../helpers/translation/dictionary";
 
 interface AuthenticationState {
   currentUser: CurrentUser | null;
+  currentUserFullName: string;
   login: (token: string) => CurrentUser;
   logout(): void;
 }
@@ -29,6 +30,8 @@ export function AuthenticationProvider({
 }) {
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
 
+  const [currentUserFullName, setCurrentUserFullName] = useState<string>("");
+
   const login = (token: string) => {
     sessionStorage.setItem("token", token);
 
@@ -47,6 +50,8 @@ export function AuthenticationProvider({
 
     setCurrentUser(user);
 
+    setCurrentUserFullName(user ? `${user.name} ${user.surname}` : "");
+
     return user;
   };
 
@@ -54,12 +59,14 @@ export function AuthenticationProvider({
     sessionStorage.removeItem("token");
     sessionStorage.removeItem("current-user");
     setCurrentUser(null);
+    setCurrentUserFullName("");
   };
 
   return (
     <AuthenticationContext
       value={{
         currentUser,
+        currentUserFullName,
         login,
         logout,
       }}

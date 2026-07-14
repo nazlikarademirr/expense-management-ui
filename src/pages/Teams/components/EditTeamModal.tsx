@@ -100,11 +100,11 @@ function EditTeamModal({
   }, []);
 
   return (
-    <Flex direction={"column"} gap={10}>
+    <Flex direction="column" gap={10}>
       <TextInput
         ref={nameInputRef}
         {...teamForm.getInputProps("name")}
-        style={{ minHeight: 80 }}
+        mih={80}
         withAsterisk
         label={t(Dictionary.Team.NAME)}
       />

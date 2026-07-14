@@ -122,28 +122,21 @@ function Login() {
       <Title order={1} mb={30} ta="center">
         {t(Dictionary.Common.EXPENSE_MANAGEMENT)}
       </Title>
-      <Card
-        withBorder
-        shadow="xs"
-        radius="md"
-        w="100%"
-        maw={500}
-        style={{ padding: 40 }}
-      >
+      <Card withBorder shadow="xs" radius="md" w="100%" maw={500} p={40}>
         <Flex direction="column" gap={20} w="100%">
           <TextInput
             w="100%"
             label={t(Dictionary.Login.EMAIL)}
             withAsterisk
             {...form.getInputProps("email")}
-            style={{ minHeight: 80 }}
+            mih={80}
           />
           <PasswordInput
             w="100%"
             label={t(Dictionary.Login.PASSWORD)}
             withAsterisk
             {...form.getInputProps("password")}
-            style={{ minHeight: 80 }}
+            mih={80}
           />
           <Anchor
             style={{ fontSize: 15, alignSelf: "flex-end" }}

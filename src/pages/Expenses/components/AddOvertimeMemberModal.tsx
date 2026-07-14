@@ -63,12 +63,14 @@ const AddOvertimeMemberModal = ({
     if (
       overtimeMembers.some((x) => x.userId === overtimeMemberForm.values.userId)
     ) {
-      return toast.error(t(Dictionary.Expense.OVERTIME_MEMBER_VALID));
+      return toast.error(t(Dictionary.OvertimeMember.VALID));
     }
 
-    if (expenseForm.values.userId === overtimeMemberForm.values.userId) {
+    if (expenseForm.values.declarantId === overtimeMemberForm.values.userId) {
       return toast.error(
-        t(Dictionary.Expense.YOU_CAN_NOT_ADD_YOURSELF_AS_OVERTIME_MEMBER),
+        t(
+          Dictionary.OvertimeMember.YOU_CAN_NOT_ADD_YOURSELF_AS_OVERTIME_MEMBER,
+        ),
       );
     }
 
@@ -130,22 +132,22 @@ const AddOvertimeMemberModal = ({
         withBorder
         padding={10}
       >
-        <Flex gap="sm" style={{ minHeight: 90 }}>
+        <Flex gap="sm" mih={90}>
           <Select
             {...overtimeMemberForm.getInputProps("userId")}
             withAsterisk
             data={activeUserSelectData}
             searchable
-            label={t(Dictionary.Expense.USER_NAME)}
-            style={{ flexGrow: 1 }}
+            label={t(Dictionary.OvertimeMember.USER_NAME)}
+            flex={1}
           />
 
           <NumberInput
             {...overtimeMemberForm.getInputProps("price")}
             withAsterisk
-            label={t(Dictionary.Expense.PRICE)}
+            label={t(Dictionary.OvertimeMember.PRICE)}
             hideControls
-            style={{ flexGrow: 1 }}
+            flex={1}
           />
 
           <Button
@@ -157,7 +159,7 @@ const AddOvertimeMemberModal = ({
             {t(Dictionary.Common.ADD)}
           </Button>
         </Flex>
-        <ScrollArea style={{ flex: 1 }}>
+        <ScrollArea flex={1}>
           <Table
             striped
             stickyHeader
@@ -167,8 +169,8 @@ const AddOvertimeMemberModal = ({
           >
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>{t(Dictionary.Expense.USER_NAME)}</Table.Th>
-                <Table.Th>{t(Dictionary.Expense.PRICE)}</Table.Th>
+                <Table.Th>{t(Dictionary.OvertimeMember.USER_NAME)}</Table.Th>
+                <Table.Th>{t(Dictionary.OvertimeMember.PRICE)}</Table.Th>
                 <Table.Th>{t(Dictionary.Common.CREATE_USER)}</Table.Th>
                 <Table.Th>{t(Dictionary.Common.CREATE_DATE)}</Table.Th>
                 <Table.Th></Table.Th>

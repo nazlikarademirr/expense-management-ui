@@ -70,6 +70,9 @@ function UserMenu() {
           value={language}
           onChange={handleChangeLanguage}
           placeholder={t(Dictionary.UserMenu.SELECT_LANGUAGE)}
+          comboboxProps={{
+            withinPortal: false,
+          }}
           data={[
             { value: "en", label: t(Dictionary.UserMenu.ENGLISH) },
             { value: "tr", label: t(Dictionary.UserMenu.TURKISH) },

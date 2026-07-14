@@ -2,7 +2,6 @@ import { useForm } from "@mantine/form";
 import {
   Button,
   Card,
-  Checkbox,
   Divider,
   Flex,
   Group,
@@ -26,15 +25,10 @@ import expenseSchema, {
   ExpenseResponse,
 } from "../../types/expense.types";
 import useExpenses from "./hooks/useExpenses";
-import {
-  IconEdit,
-  IconSearch,
-  IconTrash,
-  IconCheck,
-} from "@tabler/icons-react";
+import { IconEdit, IconSearch, IconTrash } from "@tabler/icons-react";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
-import { DateInput } from "@mantine/dates";
+import { DateInput, DatesProvider } from "@mantine/dates";
 import EditExpenseModal from "./components/EditExpenseModal";
 import AddOvertimeMemberModal from "./components/AddOvertimeMemberModal";
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
@@ -56,9 +50,12 @@ import { OcrResult } from "../../types/ocr.types";
 import { PiPlusCircle } from "react-icons/pi";
 import ReceiptUploader from "../../components/ReceiptUploader/ReceiptUploader";
 import normalizeText from "../../helpers/NormalizeText";
-import Role from "../../enums/role";
 import { FaPlaneDeparture } from "react-icons/fa";
 import CreateAbroadReportModal from "../Reports/components/CreateAbroadReportModal";
+import useReports from "../../hooks/useReports";
+import i18n from "../../helpers/translation/i18n";
+
+const INPUT_WIDTH = "25%";
 const MIN_FLEX_HEIGHT = 120;
 const foodSelectorKeywords = ["yiyecek", "icecek", "KDV", "kdv"];
 const tripSelectorKeywords = [
@@ -97,6 +94,8 @@ function Expenses() {
     replaceExpenses,
   } = useExpenses();
 
+  const { addReport } = useReports();
+
   const { handleDataRequest } = useRequestHandler();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -109,13 +108,7 @@ function Expenses() {
     SelectItem[]
   >([]);
 
-  const [reportSelectData, setReportSelectData] = useState<
-    (SelectItem & { isApproved: boolean })[]
-  >([]);
-
-  const [unapprovedReportSelectData, setUnapprovedReportSelectData] = useState<
-    SelectItem[]
-  >([]);
+  const [reportSelectData, setReportSelectData] = useState<SelectItem[]>([]);
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -125,8 +118,6 @@ function Expenses() {
 
   const [newReportName, setNewReportName] = useState("");
 
-  const [showUnapprovedExpenses, setShowUnapprovedExpenses] = useState(false);
-
   const combobox = useCombobox();
 
   const auth = useAuthentication();
@@ -134,8 +125,8 @@ function Expenses() {
   const form = useForm<Expense>({
     initialValues: {
       id: crypto.randomUUID(),
-      userId: null,
-      userFullName: "",
+      declarantId: null,
+      declarantFullName: "",
       projectId: null,
       projectName: "",
       expenseType: "",
@@ -145,7 +136,6 @@ function Expenses() {
       description: "",
       reportId: "",
       reportName: "",
-      isApproved: false,
       overtimeMembers: [],
       isActive: false,
       searchText: "",
@@ -159,17 +149,16 @@ function Expenses() {
   const openEditExpense = (expense: Expense) => {
     modals.open({
       title: <Title order={4}>{t(Dictionary.Expense.EDIT)}</Title>,
-      size: 2000,
+      size: "90%",
       children: (
         <EditExpenseModal
-          currentUser={auth.currentUser ? auth.currentUser : null}
           expense={expense}
           updateExpense={updateExpense}
           activeUserSelectData={activeUserSelectData}
           activeProjectSelectData={activeProjectSelectData}
           reportSelectData={reportSelectData}
-          unapprovedReportSelectData={unapprovedReportSelectData}
           checkIfExpenseIsValid={checkIfExpenseIsValid}
+          currentUserFullName={auth.currentUserFullName}
         />
       ),
     });
@@ -190,15 +179,12 @@ function Expenses() {
                 modals.closeAll();
               }}
               variant="light"
-              style={{ flex: 1, color: "red", backgroundColor: "#ffeeee" }}
+              flex={1}
+              style={{ color: "red", backgroundColor: "#ffeeee" }}
             >
               {t(Dictionary.Common.DELETE)}
             </Button>
-            <Button
-              onClick={() => modals.closeAll()}
-              style={{ flex: 1 }}
-              variant="light"
-            >
+            <Button onClick={() => modals.closeAll()} flex={1} variant="light">
               {t(Dictionary.Common.CANCEL)}
             </Button>
           </Flex>
@@ -211,14 +197,18 @@ function Expenses() {
     modals.open({
       title: <Title order={4}>{t(Dictionary.Report.ABROAD)}</Title>,
       size: "60%",
+      returnFocus: false,
       styles: {
         content: {
-          minHeight: "102vh",
+          minHeight: 840,
         },
       },
-      returnFocus: false,
       children: (
-        <CreateAbroadReportModal checkIfReportIsValid={checkIfReportIsValid} />
+        <CreateAbroadReportModal
+          addReport={addReport}
+          checkIfReportIsValid={checkIfReportIsValid}
+          currentUserFullName={auth.currentUserFullName}
+        />
       ),
     });
   };
@@ -287,14 +277,7 @@ function Expenses() {
       response.value.map((x) => ({
         value: x.id,
         label: x.name,
-        isApproved: x.isApproved,
       })),
-    );
-
-    setUnapprovedReportSelectData(
-      response.value
-        .filter((x) => !x.isApproved)
-        .map((x) => ({ value: x.id, label: x.name })),
     );
   };
 
@@ -357,28 +340,22 @@ function Expenses() {
     }
 
     if (
-      form.values.overtimeMembers.some((x) => x.userId === form.values.userId)
+      form.values.overtimeMembers.some(
+        (x) => x.userId === form.values.declarantId,
+      )
     ) {
       toast.error(
-        t(Dictionary.Expense.YOU_CAN_NOT_ADD_YOURSELF_AS_OVERTIME_MEMBER),
+        t(
+          Dictionary.OvertimeMember.YOU_CAN_NOT_ADD_YOURSELF_AS_OVERTIME_MEMBER,
+        ),
       );
-      setIsLoading(false);
-      return;
-    }
-
-    const isSelectedReportApproved = !unapprovedReportSelectData.some(
-      (x) => x.value === selectedReport,
-    );
-
-    if (isSelectedReportApproved && auth.currentUser?.role === Role.User) {
-      toast.error(t(Dictionary.Report.ERROR_MESSAGE));
       setIsLoading(false);
       return;
     }
 
     const expenseRequest: ExpenseRequest = {
       ...form.values,
-      userId: form.values.userId ?? "",
+      declarantId: form.values.declarantId ?? "",
       projectId: form.values.projectId ?? "",
       expenseType: Number(form.values.expenseType),
       currency: Number(form.values.currency),
@@ -396,21 +373,11 @@ function Expenses() {
       return;
     }
 
-    if (isSelectedReportApproved) {
-      await handleDataRequest(
-        `${urls.report}/${selectedReport}`,
-        RequestType.Patch,
-        [{ path: "/isApproved", value: "false" }],
-      );
-    }
-
     addExpense({
       ...response.value,
       expenseType: expenseTypes[response.value.expenseType].value,
       currency: currencyTypes[response.value.currency].value,
-      createUserFullName: auth.currentUser
-        ? `${auth.currentUser.name} ${auth.currentUser.surname}`
-        : "",
+      createUserFullName: auth.currentUserFullName,
     });
 
     form.reset();
@@ -435,16 +402,6 @@ function Expenses() {
       return;
     }
 
-    const expense = expenses.find((x) => x.id === id);
-
-    if (expense?.isApproved) {
-      await handleDataRequest(
-        `${urls.report}/${expense.reportId}`,
-        RequestType.Patch,
-        [{ path: "/isApproved", value: "false" }],
-      );
-    }
-
     deleteExpense(id);
 
     toast.success(t(Dictionary.Expense.DELETED));
@@ -453,9 +410,7 @@ function Expenses() {
   };
   const addOvertimeMember = () => {
     modals.open({
-      title: (
-        <Title order={5}>{t(Dictionary.Expense.ADD_OVERTIME_MEMBER)}</Title>
-      ),
+      title: <Title order={5}>{t(Dictionary.OvertimeMember.ADD_NEW)}</Title>,
       size: "xl",
       children: (
         <AddOvertimeMemberModal
@@ -478,8 +433,25 @@ function Expenses() {
 
     const request: ReportRequest = {
       name: value.trim(),
-      isApproved: false,
       isAbroad: false,
+      title: null,
+      department: null,
+      requestedAdvanceAmount: null,
+      travelPlace: null,
+      departureAndReturnDates: null,
+      purposeOfTravel: null,
+      advanceReceivedAmount: null,
+      advanceReceivedAmountCurrency: null,
+      amountToBeRefunded: null,
+      amountToBeRefundedCurrency: null,
+      amountToBePaid: null,
+      amountToBePaidCurrency: null,
+      declarant: null,
+      departmentManager: null,
+      departmentHead: null,
+      financeOfficer: null,
+      tlIban: null,
+      eurIban: null,
     };
 
     const response = await handleDataRequest<ReportRequest, Report>(
@@ -499,16 +471,13 @@ function Expenses() {
     const newReport = {
       label: response.value.name,
       value: response.value.id,
-      isApproved: false,
     };
 
     setReportSelectData([...reportSelectData, newReport]);
 
-    setUnapprovedReportSelectData([...unapprovedReportSelectData, newReport]);
-
     combobox.closeDropdown();
 
-    toast.success(t(Dictionary.Report.ADDED));
+    toast.success(t(Dictionary.Report.CREATED));
 
     setIsLoading(false);
   };
@@ -564,16 +533,14 @@ function Expenses() {
   const memoizedExpenses = useMemo(
     () =>
       expenses
-        .filter((x) => (showUnapprovedExpenses === true ? !x.isApproved : x))
         .filter((x) =>
           x.searchText.toLowerCase().includes(searchQuery.toLowerCase()),
         )
-        .filter((x) =>
-          selectedReport ? x.reportId === selectedReport : expenses,
-        )
-        .filter((x) => (selectedUser ? x.userId === selectedUser : true))
+        .filter((x) => (selectedReport ? x.reportId === selectedReport : true))
+        .filter((x) => (selectedUser ? x.declarantId === selectedUser : true))
         .filter(
-          (x) => activeUserSelectData.find((y) => y.value === x.userId)?.label,
+          (x) =>
+            activeUserSelectData.find((y) => y.value === x.declarantId)?.label,
         )
         .filter(
           (x) =>
@@ -581,7 +548,7 @@ function Expenses() {
         )
         .map((x: Expense) => (
           <Table.Tr key={x.id}>
-            <Table.Td>{x.userFullName}</Table.Td>
+            <Table.Td>{x.declarantFullName}</Table.Td>
             <Table.Td>{x.projectName}</Table.Td>
             <Table.Td>{expenseTypes[Number(x.expenseType)].label}</Table.Td>
             <Table.Td>{format(x.expenseDate, "dd/MM/yyyy")}</Table.Td>
@@ -597,9 +564,6 @@ function Expenses() {
             <Table.Td>
               <Flex justify="center" gap={5}>
                 <Button
-                  disabled={
-                    auth.currentUser?.role === Role.User && x.isApproved
-                  }
                   onClick={() => openEditExpense(x)}
                   variant="light"
                   radius={5}
@@ -608,9 +572,6 @@ function Expenses() {
                   {t(Dictionary.Common.EDIT)}
                 </Button>
                 <Button
-                  disabled={
-                    auth.currentUser?.role === Role.User && x.isApproved
-                  }
                   onClick={() => openDeleteExpenseModal(x.id)}
                   variant="light"
                   radius={5}
@@ -628,7 +589,8 @@ function Expenses() {
       searchQuery,
       selectedUser,
       selectedReport,
-      showUnapprovedExpenses,
+      activeUserSelectData,
+      activeProjectSelectData,
     ],
   );
 
@@ -694,7 +656,7 @@ function Expenses() {
         <Title order={3} mb={5}>
           {t(Dictionary.Common.EXPENSES)}
         </Title>
-        <Box w="25%" pos="relative">
+        <Box w={INPUT_WIDTH} pos="relative">
           <Combobox
             store={combobox}
             onOptionSubmit={handleReportSelect}
@@ -719,10 +681,7 @@ function Expenses() {
                 </Combobox.Option>
                 {filteredReportSelectData.map((x) => (
                   <Combobox.Option key={x.value} value={x.value}>
-                    <Group justify="space-between">
-                      <Text>{x.label}</Text>
-                      {x.isApproved && <IconCheck size={20} color="green" />}
-                    </Group>
+                    {x.label}
                   </Combobox.Option>
                 ))}
               </Combobox.Options>
@@ -734,7 +693,7 @@ function Expenses() {
                   leftSection={<PiPlusCircle size={22} />}
                   onClick={() => createNewReport(newReportName)}
                 >
-                  {t(Dictionary.Report.ADD_NEW)}
+                  {t(Dictionary.Report.CREATE_NEW)}
                 </Button>
                 <Button
                   mt={10}
@@ -752,44 +711,49 @@ function Expenses() {
       </Flex>
       <Divider mt={7} mb={12} />
       <Flex gap={10} w="100%">
-        <Card w="75%" shadow="xs" radius="xs" withBorder padding={10}>
+        <Card
+          w="75%"
+          shadow="xs"
+          radius="xs"
+          withBorder
+          padding={10}
+          style={{ overflow: "visible" }}
+        >
           <Flex gap="md" w="100%">
             <Flex direction="column" w="100%">
-              <Flex
-                gap="sm"
-                style={{
-                  minHeight: MIN_FLEX_HEIGHT,
-                }}
-              >
+              <Flex gap="sm" mih={MIN_FLEX_HEIGHT}>
                 <Select
-                  w="25%"
-                  {...form.getInputProps("userId")}
+                  w={INPUT_WIDTH}
+                  {...form.getInputProps("declarantId")}
                   withAsterisk
                   data={activeUserSelectData}
                   searchable
-                  label={t(Dictionary.Expense.USER_NAME)}
+                  label={t(Dictionary.Expense.DECLARANT)}
                   comboboxProps={{ withinPortal: false }}
                 />
 
                 <Select
-                  w="25%"
+                  w={INPUT_WIDTH}
                   {...form.getInputProps("projectId")}
                   withAsterisk
                   data={activeProjectSelectData}
                   label={t(Dictionary.Expense.PROJECT_NAME)}
                   comboboxProps={{ withinPortal: false }}
                 />
-
-                <DateInput
-                  w="25%"
-                  {...form.getInputProps("expenseDate")}
-                  withAsterisk
-                  valueFormat="DD MMMM YYYY"
-                  label={t(Dictionary.Expense.DATE)}
-                />
-
+                <DatesProvider
+                  settings={{ locale: i18n.language === "en" ? "en" : "tr" }}
+                >
+                  <DateInput
+                    w={INPUT_WIDTH}
+                    {...form.getInputProps("expenseDate")}
+                    withAsterisk
+                    valueFormat="DD MMMM YYYY"
+                    label={t(Dictionary.Expense.DATE)}
+                    popoverProps={{ withinPortal: false, position: "bottom" }}
+                  />
+                </DatesProvider>
                 <Radio.Group
-                  w="25%"
+                  w={INPUT_WIDTH}
                   label={t(Dictionary.Expense.TYPE)}
                   withAsterisk
                   {...form.getInputProps("expenseType")}
@@ -802,29 +766,31 @@ function Expenses() {
                   </Group>
                 </Radio.Group>
               </Flex>
-              <Flex gap="sm" style={{ flex: 1, minHeight: MIN_FLEX_HEIGHT }}>
+              <Flex gap="sm" flex={1} mih={MIN_FLEX_HEIGHT}>
                 <NumberInput
-                  w="25%"
+                  w={INPUT_WIDTH}
                   {...form.getInputProps("totalPrice")}
                   withAsterisk
                   label={t(Dictionary.Expense.TOTAL_PRICE)}
                   hideControls
                 />
 
-                <Select
-                  w="25%"
-                  {...form.getInputProps("currency")}
-                  withAsterisk
-                  data={currencyTypes}
+                <Radio.Group
+                  w={INPUT_WIDTH}
                   label={t(Dictionary.Expense.CURRENCY)}
-                  comboboxProps={{
-                    withinPortal: false,
-                    middlewares: { flip: false },
-                  }}
-                />
+                  withAsterisk
+                  {...form.getInputProps("currency")}
+                  display="center"
+                >
+                  <Group mt="xs" gap={10}>
+                    {currencyTypes.map((x) => (
+                      <Radio value={x.value} label={x.label}></Radio>
+                    ))}
+                  </Group>
+                </Radio.Group>
 
                 <TextInput
-                  w="25%"
+                  w={INPUT_WIDTH}
                   {...form.getInputProps("description")}
                   label={t(Dictionary.Expense.DESCRIPTION)}
                   withAsterisk={
@@ -835,13 +801,13 @@ function Expenses() {
                 />
 
                 <Button
-                  w="25%"
+                  w={INPUT_WIDTH}
                   mt={25}
                   variant="light"
                   onClick={() => addOvertimeMember()}
                   leftSection={<PiPlusCircle size={22} />}
                 >
-                  {t(Dictionary.Expense.ADD_OVERTIME_MEMBER)}
+                  {t(Dictionary.OvertimeMember.ADD_NEW)}
                 </Button>
               </Flex>
             </Flex>
@@ -849,7 +815,6 @@ function Expenses() {
           <Button
             onClick={handleSave}
             variant="light"
-            mt={10}
             loading={isLoading}
             leftSection={<PiPlusCircle size={22} />}
           >
@@ -873,29 +838,21 @@ function Expenses() {
             size="xs"
             radius="xl"
             rightSection={<IconSearch size={SEARCH_ICON_SIZE}></IconSearch>}
-            style={{ flexGrow: 120 }}
             value={searchQuery}
+            flex={3}
             onChange={(e) => setSearchQuery(e.currentTarget.value)}
           />
           <Select
             data={activeUserSelectData}
             searchable
             placeholder={t(Dictionary.Expense.SELECT_USER)}
-            style={{ flexGrow: 1 }}
             clearable
+            flex={1}
             onChange={(e) => setSelectedUser(e)}
             comboboxProps={{ withinPortal: false }}
           />
-          <Checkbox
-            labelPosition="left"
-            label={t(Dictionary.Expense.SHOW_UNAPPROVED)}
-            style={{ marginLeft: "10px" }}
-            checked={showUnapprovedExpenses}
-            onChange={() => setShowUnapprovedExpenses(!showUnapprovedExpenses)}
-            type="checkbox"
-          />
         </Flex>
-        <ScrollArea style={{ flex: 1 }}>
+        <ScrollArea flex={1}>
           <Table
             striped
             stickyHeader
@@ -905,7 +862,7 @@ function Expenses() {
           >
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>{t(Dictionary.Expense.USER_NAME)}</Table.Th>
+                <Table.Th>{t(Dictionary.Expense.DECLARANT)}</Table.Th>
                 <Table.Th>{t(Dictionary.Expense.PROJECT_NAME)}</Table.Th>
                 <Table.Th>{t(Dictionary.Expense.TYPE)}</Table.Th>
                 <Table.Th>{t(Dictionary.Expense.DATE)}</Table.Th>

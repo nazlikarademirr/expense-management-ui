@@ -9,24 +9,29 @@ import reportSchema, {
   Report,
   ReportRequest,
 } from "../../../types/report.types";
-import { SelectItem } from "../../../types/select-item.types";
 import urls from "../../../constants/urls";
 import RequestType from "../../../request-handler/request-type";
 import useRequestHandler from "../../../hooks/useRequestHandler";
 import { useState } from "react";
-import useReports from "../../../hooks/useReports";
 import toast from "react-hot-toast";
-import CurrencyType from "../../../enums/currency-type";
 import { format, subDays } from "date-fns";
+import { modals } from "@mantine/modals";
+import CurrencyType from "../../../enums/currency-type";
+import { formatIban } from "../../../helpers/IbanFormatter";
+import { SelectItem } from "../../../types/select-item.types";
 
 const TEXT_INPUT_MIN_HEIGHT = 90;
 
 interface CreateAbroadReportModalProps {
+  addReport: (report: Report) => void;
   checkIfReportIsValid: (report: Report) => boolean;
+  currentUserFullName: string;
 }
 
 function CreateAbroadReportModal({
+  addReport,
   checkIfReportIsValid,
+  currentUserFullName,
 }: CreateAbroadReportModalProps) {
   const { t } = useTranslation();
 
@@ -34,13 +39,10 @@ function CreateAbroadReportModal({
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const { addReport } = useReports();
-
   const form = useForm({
     initialValues: {
       id: crypto.randomUUID(),
       name: "",
-      isApproved: false,
       isAbroad: true,
       title: "",
       department: "",
@@ -58,6 +60,8 @@ function CreateAbroadReportModal({
       departmentManager: "",
       departmentHead: "",
       financeOfficer: "",
+      tlIban: "",
+      eurIban: "",
       searchText: "",
       createUserId: "",
       createUserFullName: "",
@@ -100,14 +104,35 @@ function CreateAbroadReportModal({
 
     addReport({
       ...response.value,
+      advanceReceivedAmountCurrency:
+        response.value.advanceReceivedAmountCurrency !== null
+          ? response.value.advanceReceivedAmountCurrency.toString()
+          : null,
+      amountToBeRefundedCurrency:
+        response.value.amountToBeRefundedCurrency !== null
+          ? response.value.amountToBeRefundedCurrency.toString()
+          : null,
+      amountToBePaidCurrency:
+        response.value.amountToBePaidCurrency !== null
+          ? response.value.amountToBePaidCurrency.toString()
+          : null,
+      createUserFullName: currentUserFullName,
     });
 
     form.reset();
 
-    toast.success(t(Dictionary.Report.ADDED));
+    toast.success(t(Dictionary.Report.CREATED));
+
+    modals.closeAll();
 
     setIsLoading(false);
   };
+
+  const filteredCurrency = currencyTypes.filter(
+    (x) =>
+      x.value !== CurrencyType.MacedonianDenar &&
+      x.value !== CurrencyType.MalaysianRinggit,
+  );
 
   const handleAdvanceReceivedAmountCurrencyDeselect = (
     selectItem: SelectItem,
@@ -130,71 +155,45 @@ function CreateAbroadReportModal({
   };
 
   return (
-    <Flex direction="column" style={{ minHeight: TEXT_INPUT_MIN_HEIGHT }}>
+    <Flex direction="column" mih={TEXT_INPUT_MIN_HEIGHT}>
       <Flex gap={20}>
         <TextInput
+          label={t(Dictionary.AbroadReport.DECLARANT)}
+          flex={1}
+          mih={TEXT_INPUT_MIN_HEIGHT}
+          {...form.getInputProps("declarant")}
+        />
+        <TextInput
           label={t(Dictionary.Report.NAME)}
-          flex={2}
+          flex={1}
           mih={TEXT_INPUT_MIN_HEIGHT}
           withAsterisk
           {...form.getInputProps("name")}
         />
-        <Flex gap={20} style={{ flex: 2 }}>
-          <TextInput
-            label={t(Dictionary.AbroadReport.ADVANCE_RECEIVED_AMOUNT)}
-            flex={1}
-            mih={TEXT_INPUT_MIN_HEIGHT}
-            {...form.getInputProps("advanceReceivedAmount")}
-          />
-          <Radio.Group
-            style={{
-              flex: 1,
-              marginTop: 25,
-            }}
-            {...form.getInputProps("advanceReceivedAmountCurrency")}
-          >
-            <Group>
-              {currencyTypes
-                .filter((x) => x.value !== CurrencyType.MalaysianRinggit)
-                .map((x) => (
-                  <Radio
-                    value={x.value}
-                    label={x.label}
-                    onClick={() =>
-                      handleAdvanceReceivedAmountCurrencyDeselect(x)
-                    }
-                  ></Radio>
-                ))}
-            </Group>
-          </Radio.Group>
-        </Flex>
       </Flex>
       <Flex gap={20}>
         <TextInput
           label={t(Dictionary.AbroadReport.TITLE)}
-          style={{ flex: 2, minHeight: TEXT_INPUT_MIN_HEIGHT }}
+          flex={2}
+          mih={TEXT_INPUT_MIN_HEIGHT}
           {...form.getInputProps("title")}
         />
-        <Flex gap={20} style={{ flex: 2 }}>
+        <Flex gap={20} flex={2} align="center">
           <TextInput
-            label={t(Dictionary.AbroadReport.AMOUNT_TO_BE_REFUNDED)}
-            style={{ flex: 1, minHeight: TEXT_INPUT_MIN_HEIGHT }}
-            {...form.getInputProps("amountToBeRefunded")}
+            label={t(Dictionary.AbroadReport.ADVANCE_RECEIVED_AMOUNT)}
+            flex={2}
+            mih={TEXT_INPUT_MIN_HEIGHT}
+            {...form.getInputProps("advanceReceivedAmount")}
           />
-          <Radio.Group
-            style={{ flex: 1, marginTop: 25 }}
-            {...form.getInputProps("amountToBeRefundedCurrency")}
-          >
+          <Radio.Group {...form.getInputProps("advanceReceivedAmountCurrency")}>
             <Group>
-              {currencyTypes
-                .filter((x) => x.value !== CurrencyType.MalaysianRinggit)
-                .map((x) => (
-                  <Radio
-                    value={x.value}
-                    label={x.label}
-                    onClick={() => handleAmountToBeRefundedCurrencyDeselect(x)}
-                  ></Radio>
-                ))}
+              {filteredCurrency.map((x) => (
+                <Radio
+                  value={x.value}
+                  label={x.label}
+                  onClick={() => handleAdvanceReceivedAmountCurrencyDeselect(x)}
+                ></Radio>
+              ))}
             </Group>
           </Radio.Group>
         </Flex>
@@ -202,29 +201,26 @@ function CreateAbroadReportModal({
       <Flex gap={20}>
         <TextInput
           label={t(Dictionary.AbroadReport.DEPARTMENT)}
-          style={{ flex: 2, minHeight: TEXT_INPUT_MIN_HEIGHT }}
+          flex={2}
+          mih={TEXT_INPUT_MIN_HEIGHT}
           {...form.getInputProps("department")}
         />
-        <Flex gap={20} style={{ flex: 2 }}>
+        <Flex gap={20} flex={2} align="center">
           <TextInput
-            label={t(Dictionary.AbroadReport.AMOUNT_TO_BE_PAID)}
-            style={{ flex: 1, minHeight: TEXT_INPUT_MIN_HEIGHT }}
-            {...form.getInputProps("amountToBePaid")}
+            label={t(Dictionary.AbroadReport.AMOUNT_TO_BE_REFUNDED)}
+            mih={TEXT_INPUT_MIN_HEIGHT}
+            flex={2}
+            {...form.getInputProps("amountToBeRefunded")}
           />
-          <Radio.Group
-            style={{ flex: 1, marginTop: 25 }}
-            {...form.getInputProps("amountToBePaidCurrency")}
-          >
+          <Radio.Group {...form.getInputProps("amountToBeRefundedCurrency")}>
             <Group>
-              {currencyTypes
-                .filter((x) => x.value !== CurrencyType.MalaysianRinggit)
-                .map((x) => (
-                  <Radio
-                    value={x.value}
-                    label={x.label}
-                    onClick={() => handleAmountToBePaidCurrencyDeselect(x)}
-                  ></Radio>
-                ))}
+              {filteredCurrency.map((x) => (
+                <Radio
+                  value={x.value}
+                  label={x.label}
+                  onClick={() => handleAmountToBeRefundedCurrencyDeselect(x)}
+                ></Radio>
+              ))}
             </Group>
           </Radio.Group>
         </Flex>
@@ -232,52 +228,93 @@ function CreateAbroadReportModal({
       <Flex gap={20}>
         <TextInput
           label={t(Dictionary.AbroadReport.TRAVEL_PLACE)}
-          style={{ flex: 1, minHeight: TEXT_INPUT_MIN_HEIGHT }}
+          flex={2}
+          mih={TEXT_INPUT_MIN_HEIGHT}
           {...form.getInputProps("travelPlace")}
         />
-        <TextInput
-          label={t(Dictionary.AbroadReport.DECLARANT)}
-          style={{ flex: 1, minHeight: TEXT_INPUT_MIN_HEIGHT }}
-          {...form.getInputProps("declarant")}
-        />
+        <Flex gap={20} flex={2} align="center">
+          <TextInput
+            label={t(Dictionary.AbroadReport.AMOUNT_TO_BE_PAID)}
+            flex={2}
+            mih={TEXT_INPUT_MIN_HEIGHT}
+            {...form.getInputProps("amountToBePaid")}
+          />
+          <Radio.Group {...form.getInputProps("amountToBePaidCurrency")}>
+            <Group>
+              {filteredCurrency.map((x) => (
+                <Radio
+                  value={x.value}
+                  label={x.label}
+                  onClick={() => handleAmountToBePaidCurrencyDeselect(x)}
+                ></Radio>
+              ))}
+            </Group>
+          </Radio.Group>
+        </Flex>
       </Flex>
       <Flex gap={20}>
         <TextInput
           label={t(Dictionary.AbroadReport.PURPOSE_OF_TRAVEL)}
-          style={{ flex: 1, minHeight: TEXT_INPUT_MIN_HEIGHT }}
+          flex={1}
+          mih={TEXT_INPUT_MIN_HEIGHT}
           {...form.getInputProps("purposeOfTravel")}
         />
 
         <TextInput
           label={t(Dictionary.AbroadReport.DEPARTMENT_MANAGER)}
-          style={{ flex: 1, minHeight: TEXT_INPUT_MIN_HEIGHT }}
+          flex={1}
+          mih={TEXT_INPUT_MIN_HEIGHT}
           {...form.getInputProps("departmentManager")}
         />
       </Flex>
       <Flex gap={20}>
         <TextInput
           label={t(Dictionary.AbroadReport.DEPARTURE_AND_RETURN_DATES)}
-          style={{ flex: 1, minHeight: TEXT_INPUT_MIN_HEIGHT }}
+          flex={1}
+          mih={TEXT_INPUT_MIN_HEIGHT}
           placeholder={`${format(subDays(new Date(), 10), "dd.MM.yyyy")} - ${format(new Date(), "dd.MM.yyyy")}`}
           maxLength={21}
           {...form.getInputProps("departureAndReturnDates")}
         />
         <TextInput
           label={t(Dictionary.AbroadReport.DEPARTMENT_HEAD)}
-          style={{ flex: 1, minHeight: TEXT_INPUT_MIN_HEIGHT }}
+          flex={1}
+          mih={TEXT_INPUT_MIN_HEIGHT}
           {...form.getInputProps("departmentHead")}
         />
       </Flex>
       <Flex gap={20}>
         <TextInput
           label={t(Dictionary.AbroadReport.REQUESTED_ADVANCE_AMOUNT)}
-          style={{ flex: 1, minHeight: TEXT_INPUT_MIN_HEIGHT }}
+          flex={1}
+          mih={TEXT_INPUT_MIN_HEIGHT}
           {...form.getInputProps("requestedAdvanceAmount")}
         />
         <TextInput
           label={t(Dictionary.AbroadReport.FINANCE_OFFICER)}
-          style={{ flex: 1, minHeight: TEXT_INPUT_MIN_HEIGHT }}
+          flex={1}
+          mih={TEXT_INPUT_MIN_HEIGHT}
           {...form.getInputProps("financeOfficer")}
+        />
+      </Flex>
+      <Flex gap={20}>
+        <TextInput
+          label={t(Dictionary.AbroadReport.TL_IBAN)}
+          mih={TEXT_INPUT_MIN_HEIGHT}
+          flex={2}
+          {...form.getInputProps("tlIban")}
+          onChange={(e) =>
+            form.setFieldValue("tlIban", formatIban(e.currentTarget.value))
+          }
+        />
+        <TextInput
+          label={t(Dictionary.AbroadReport.EUR_IBAN)}
+          mih={TEXT_INPUT_MIN_HEIGHT}
+          flex={2}
+          {...form.getInputProps("eurIban")}
+          onChange={(e) =>
+            form.setFieldValue("eurIban", formatIban(e.currentTarget.value))
+          }
         />
       </Flex>
       <Button
@@ -286,7 +323,7 @@ function CreateAbroadReportModal({
         onClick={handleSave}
         leftSection={<PiPlusCircle size={22} />}
       >
-        {t(Dictionary.Report.ADD_NEW)}
+        {t(Dictionary.Report.CREATE_NEW)}
       </Button>
     </Flex>
   );

@@ -24,7 +24,7 @@ import useRequestHandler from "../../../hooks/useRequestHandler";
 import urls from "../../../constants/urls";
 import { useForm } from "@mantine/form";
 import toast from "react-hot-toast";
-import { DateInput } from "@mantine/dates";
+import { DateInput, DatesProvider } from "@mantine/dates";
 import { currencyTypes, expenseTypes } from "../../../constants/static-data";
 import overtimeMemberSchema, {
   OvertimeMember,
@@ -34,33 +34,30 @@ import { IconTrash } from "@tabler/icons-react";
 import ExpenseType from "../../../enums/expense-type";
 import { SelectItem } from "../../../types/select-item.types";
 import { zod4Resolver } from "mantine-form-zod-resolver";
-import { CurrentUser } from "../../../types/authentication.types";
 import { useTranslation } from "react-i18next";
 import Dictionary from "../../../helpers/translation/dictionary";
-import Role from "../../../enums/role";
+import i18n from "../../../helpers/translation/i18n";
 
 interface EditExpenseProps {
-  currentUser: CurrentUser | null;
   expense: Expense;
   updateExpense: (expenseForm: Expense) => void;
   activeUserSelectData: SelectItem[];
   activeProjectSelectData: SelectItem[];
   reportSelectData: SelectItem[];
-  unapprovedReportSelectData: SelectItem[];
   checkIfExpenseIsValid: (expense: Expense) => boolean;
+  currentUserFullName: string;
 }
 
 const MIN_FLEX_HEIGHT = 90;
 
 function EditExpenseModal({
-  currentUser,
   expense,
   updateExpense,
   activeUserSelectData,
   activeProjectSelectData,
   reportSelectData,
-  unapprovedReportSelectData,
   checkIfExpenseIsValid,
+  currentUserFullName,
 }: EditExpenseProps) {
   const { handleDataRequest } = useRequestHandler();
   const { t } = useTranslation();
@@ -114,18 +111,20 @@ function EditExpenseModal({
 
     if (
       expenseForm.values.overtimeMembers.find(
-        (x) => x.userId === expenseForm.values.userId,
+        (x) => x.userId === expenseForm.values.declarantId,
       )
     ) {
       setIsLoading(false);
       toast.error(
-        t(Dictionary.Expense.YOU_CAN_NOT_ADD_YOURSELF_AS_OVERTIME_MEMBER),
+        t(
+          Dictionary.OvertimeMember.YOU_CAN_NOT_ADD_YOURSELF_AS_OVERTIME_MEMBER,
+        ),
       );
       return;
     }
 
     const expenseRequest: ExpenseRequest = {
-      userId: expenseForm.values.userId ?? "",
+      declarantId: expenseForm.values.declarantId ?? "",
       projectId: expenseForm.values.projectId ?? "",
       expenseType: Number(expenseForm.values.expenseType),
       expenseDate: expenseForm.values.expenseDate,
@@ -147,24 +146,13 @@ function EditExpenseModal({
       return;
     }
 
-    if (expense.isApproved) {
-      await handleDataRequest(
-        `${urls.report}/${expense.reportId}`,
-        RequestType.Patch,
-        [{ op: "replace", path: "/isApproved", value: "false" }],
-      );
-      expenseForm.values.isApproved = false;
-    }
-
     initialValues.current = {
       ...expenseForm.values,
     };
 
     updateExpense({
       ...expenseForm.values,
-      createUserFullName: currentUser
-        ? `${currentUser.name} ${currentUser.surname}`
-        : "",
+      createUserFullName: currentUserFullName,
     });
 
     expenseForm.reset();
@@ -178,8 +166,6 @@ function EditExpenseModal({
   };
 
   const saveOvertimeMember = async () => {
-    if (!currentUser) return;
-
     overtimeMemberForm.validate();
 
     if (!overtimeMemberForm.isValid()) return;
@@ -189,12 +175,14 @@ function EditExpenseModal({
         (x) => x.userId === overtimeMemberForm.values.userId,
       )
     ) {
-      return toast.error(t(Dictionary.Expense.OVERTIME_MEMBER_VALID));
+      return toast.error(t(Dictionary.OvertimeMember.VALID));
     }
 
-    if (expenseForm.values.userId === overtimeMemberForm.values.userId) {
+    if (expenseForm.values.declarantId === overtimeMemberForm.values.userId) {
       return toast.error(
-        t(Dictionary.Expense.YOU_CAN_NOT_ADD_YOURSELF_AS_OVERTIME_MEMBER),
+        t(
+          Dictionary.OvertimeMember.YOU_CAN_NOT_ADD_YOURSELF_AS_OVERTIME_MEMBER,
+        ),
       );
     }
 
@@ -202,7 +190,7 @@ function EditExpenseModal({
       ...expenseForm.values.overtimeMembers,
       {
         ...overtimeMemberForm.values,
-        createUserFullName: `${currentUser.name} ${currentUser.surname}`,
+        createUserFullName: currentUserFullName,
       },
     ]);
 
@@ -221,8 +209,8 @@ function EditExpenseModal({
   };
 
   const changeUser = (user: ComboboxItem) => {
-    expenseForm.setFieldValue("userId", user.value);
-    expenseForm.setFieldValue("userFullName", user.label);
+    expenseForm.setFieldValue("declarantId", user.value);
+    expenseForm.setFieldValue("declarantFullName", user.label);
   };
 
   const changeProject = (project: ComboboxItem) => {
@@ -249,11 +237,11 @@ function EditExpenseModal({
           <Table.Td>{x.createUserFullName}</Table.Td>
           <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
           <Table.Td>
-            <Flex justify={"center"} gap={5}>
-              <ActionIcon variant={"light"} color={"red"}>
+            <Flex justify="center" gap={5}>
+              <ActionIcon variant="light" color="red">
                 <IconTrash
                   onClick={() => deleteOvertimeMember(x.id)}
-                  color={"red"}
+                  color="red"
                 />
               </ActionIcon>
             </Flex>
@@ -276,85 +264,97 @@ function EditExpenseModal({
   }, []);
 
   return (
-    <Card shadow={"xs"} radius={"xs"} withBorder padding={10}>
-      <Flex gap={"md"}>
-        <Flex direction="column" w="60%">
-          <Flex gap="sm" style={{ flexGrow: 1, minHeight: MIN_FLEX_HEIGHT }}>
+    <Card
+      shadow="xs"
+      radius="xs"
+      withBorder
+      padding={10}
+      style={{ overflow: "visible" }}
+    >
+      <Flex gap="md">
+        <Flex direction="column" w="50%">
+          <Flex gap="sm" flex={1} mih={MIN_FLEX_HEIGHT}>
             <Select
               w="20%"
-              {...expenseForm.getInputProps("userId")}
+              {...expenseForm.getInputProps("declarantId")}
               onChange={(_, option) => changeUser(option)}
               withAsterisk
               data={activeUserSelectData}
               searchable
-              label={t(Dictionary.Expense.USER_NAME)}
-              style={{ flexGrow: 1 }}
+              label={t(Dictionary.Expense.DECLARANT)}
+              flex={1}
             />
-            <DateInput
-              w="20%"
-              {...expenseForm.getInputProps("expenseDate")}
-              withAsterisk
-              valueFormat="DD MMMM YYYY"
-              label={t(Dictionary.Expense.DATE)}
-              style={{ flexGrow: 1 }}
-            />
+            <DatesProvider
+              settings={{ locale: i18n.language === "en" ? "en" : "tr" }}
+            >
+              <DateInput
+                w="20%"
+                {...expenseForm.getInputProps("expenseDate")}
+                withAsterisk
+                valueFormat="DD MMMM YYYY"
+                label={t(Dictionary.Expense.DATE)}
+                flex={1}
+                popoverProps={{ withinPortal: false, position: "bottom" }}
+              />
+            </DatesProvider>
           </Flex>
-          <Flex gap="sm" style={{ flexGrow: 1, minHeight: MIN_FLEX_HEIGHT }}>
+          <Flex gap="sm" flex={1} mih={MIN_FLEX_HEIGHT}>
             <Select
-              w={"20%"}
+              w="20%"
               {...expenseForm.getInputProps("projectId")}
               onChange={(_, option) => changeProject(option)}
               withAsterisk
               data={activeProjectSelectData}
               label={t(Dictionary.Expense.PROJECT_NAME)}
-              style={{ flexGrow: 1 }}
+              flex={1}
             />
 
+            <Select
+              w="20%"
+              {...expenseForm.getInputProps("reportId")}
+              onChange={(_, option) => changeReport(option)}
+              data={reportSelectData}
+              placeholder={t(Dictionary.Expense.SELECT_REPORT)}
+              withAsterisk
+              searchable
+              label={t(Dictionary.Expense.REPORT_NAME)}
+              flex={1}
+              allowDeselect={false}
+            />
+          </Flex>
+          <Flex gap="sm" flex={1} mih={MIN_FLEX_HEIGHT}>
             <NumberInput
               w="20%"
               {...expenseForm.getInputProps("totalPrice")}
               withAsterisk
               label={t(Dictionary.Expense.TOTAL_PRICE)}
               hideControls
-              style={{ flexGrow: 1 }}
-            />
-          </Flex>
-          <Flex gap="sm" style={{ flexGrow: 1, minHeight: MIN_FLEX_HEIGHT }}>
-            <Select
-              w="20%"
-              {...expenseForm.getInputProps("reportId")}
-              onChange={(_, option) => changeReport(option)}
-              data={
-                currentUser?.role === Role.User
-                  ? unapprovedReportSelectData
-                  : reportSelectData
-              }
-              placeholder={t(Dictionary.Expense.SELECT_REPORT)}
-              withAsterisk
-              searchable
-              label={t(Dictionary.Expense.REPORT_NAME)}
-              style={{ flexGrow: 1 }}
-              allowDeselect={false}
+              flex={1}
             />
 
-            <Select
+            <Radio.Group
               w="20%"
-              {...expenseForm.getInputProps("currency")}
-              withAsterisk
-              data={currencyTypes}
+              flex={1}
               label={t(Dictionary.Expense.CURRENCY)}
-              style={{ flexGrow: 1 }}
-              allowDeselect={false}
-            />
+              withAsterisk
+              {...expenseForm.getInputProps("currency")}
+              display="center"
+            >
+              <Group mt="xs" gap={10}>
+                {currencyTypes.map((x) => (
+                  <Radio value={x.value} label={x.label}></Radio>
+                ))}
+              </Group>
+            </Radio.Group>
           </Flex>
-          <Flex gap={"sm"} style={{ flexGrow: 1, minHeight: MIN_FLEX_HEIGHT }}>
+          <Flex gap="sm" flex={1} mih={MIN_FLEX_HEIGHT}>
             <Radio.Group
               w="20%"
               label={t(Dictionary.Expense.TYPE)}
               withAsterisk
               {...expenseForm.getInputProps("expenseType")}
-              style={{ flexGrow: 1 }}
-              display={"center"}
+              flex={1}
+              display="center"
             >
               <Group mt="xs">
                 {expenseTypes.map((x) => (
@@ -363,7 +363,7 @@ function EditExpenseModal({
               </Group>
             </Radio.Group>
             <TextInput
-              w={"20%"}
+              w="20%"
               {...expenseForm.getInputProps("description")}
               label={t(Dictionary.Expense.DESCRIPTION)}
               withAsterisk={
@@ -371,34 +371,34 @@ function EditExpenseModal({
                 expenseForm.values.expenseType === ExpenseType.Other
               }
               disabled={expenseForm.values.expenseType === ExpenseType.Food}
-              style={{ flexGrow: 1 }}
+              flex={1}
             />
           </Flex>
         </Flex>
-        <Flex w={"40%"}>
-          <Card shadow={"xs"} radius={"md"} withBorder padding={10} w={"100%"}>
-            <Flex gap="sm" style={{ minHeight: 80 }}>
+        <Flex w="50%">
+          <Card shadow="xs" radius="md" withBorder padding={10} w="100%">
+            <Flex gap="sm" mih={80}>
               <Select
                 {...overtimeMemberForm.getInputProps("userId")}
                 onChange={(_, option) => changeOvertimeMember(option)}
                 withAsterisk
                 data={activeUserSelectData}
                 searchable
-                label={t(Dictionary.Expense.USER_NAME)}
-                style={{ flexGrow: 1 }}
+                label={t(Dictionary.OvertimeMember.USER_NAME)}
+                flex={1}
                 allowDeselect={false}
               />
 
               <NumberInput
                 {...overtimeMemberForm.getInputProps("price")}
                 withAsterisk
-                label={t(Dictionary.Expense.PRICE)}
+                label={t(Dictionary.OvertimeMember.PRICE)}
                 hideControls
-                style={{ flexGrow: 1 }}
+                flex={1}
               />
 
-              <Button onClick={saveOvertimeMember} variant={"light"} mt={25}>
-                {t(Dictionary.Expense.ADD_OVERTIME_MEMBER)}
+              <Button onClick={saveOvertimeMember} variant="light" mt={25}>
+                {t(Dictionary.OvertimeMember.ADD_NEW)}
               </Button>
             </Flex>
 
@@ -409,13 +409,14 @@ function EditExpenseModal({
               withTableBorder
               withColumnBorders
               mt={15}
-              h="100%"
             >
               <ScrollArea h={250}>
                 <Table.Thead>
                   <Table.Tr>
-                    <Table.Th>{t(Dictionary.Expense.USER_NAME)}</Table.Th>
-                    <Table.Th>{t(Dictionary.Expense.PRICE)}</Table.Th>
+                    <Table.Th>
+                      {t(Dictionary.OvertimeMember.USER_NAME)}
+                    </Table.Th>
+                    <Table.Th>{t(Dictionary.OvertimeMember.PRICE)}</Table.Th>
                     <Table.Th>{t(Dictionary.Common.CREATE_USER)}</Table.Th>
                     <Table.Th>{t(Dictionary.Common.CREATE_DATE)}</Table.Th>
                     <Table.Th></Table.Th>
@@ -430,7 +431,7 @@ function EditExpenseModal({
       <Button
         onClick={handleSave}
         disabled={!expenseForm.isDirty()}
-        variant={"light"}
+        variant="light"
         loading={isLoading}
         mt={10}
       >

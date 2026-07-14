@@ -65,14 +65,6 @@ function EditReportModal({
       reportForm.values,
     );
 
-    if (report.isApproved) {
-      patchDocument.push({
-        path: "/isApproved",
-        value: "false",
-      });
-      reportForm.values.isApproved = false;
-    }
-
     const response = await handleDataRequest<JsonPatchKeyValuePair[], Report>(
       `${urls.report}/${report.id}`,
       RequestType.Patch,
@@ -102,11 +94,11 @@ function EditReportModal({
   }, []);
 
   return (
-    <Flex direction={"column"} gap={10}>
+    <Flex direction="column" gap={10}>
       <TextInput
         ref={nameInputRef}
         label={t(Dictionary.Report.NAME)}
-        style={{ minHeight: 80 }}
+        mih={80}
         withAsterisk
         {...reportForm.getInputProps("name")}
       />

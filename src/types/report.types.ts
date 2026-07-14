@@ -5,24 +5,25 @@ import Dictionary from "../helpers/translation/dictionary";
 type Report = {
   id: string;
   name: string;
-  isApproved: boolean;
   isAbroad: boolean;
-  title?: string;
-  department?: string;
-  requestedAdvanceAmount?: string;
-  travelPlace?: string;
-  departureAndReturnDates?: string;
-  purposeOfTravel?: string;
-  advanceReceivedAmount?: number | null;
-  advanceReceivedAmountCurrency?: string | null;
-  amountToBeRefunded?: number | null;
-  amountToBeRefundedCurrency?: string | null;
-  amountToBePaid?: number | null;
-  amountToBePaidCurrency?: string | null;
-  declarant?: string;
-  departmentManager?: string;
-  departmentHead?: string;
-  financeOfficer?: string;
+  title: string | null;
+  department: string | null;
+  requestedAdvanceAmount: string | null;
+  travelPlace: string | null;
+  departureAndReturnDates: string | null;
+  purposeOfTravel: string | null;
+  advanceReceivedAmount: number | null;
+  advanceReceivedAmountCurrency: string | null;
+  amountToBeRefunded: number | null;
+  amountToBeRefundedCurrency: string | null;
+  amountToBePaid: number | null;
+  amountToBePaidCurrency: string | null;
+  declarant: string | null;
+  departmentManager: string | null;
+  departmentHead: string | null;
+  financeOfficer: string | null;
+  tlIban: string | null;
+  eurIban: string | null;
   searchText: string;
   createUserId: string;
   createUserFullName: string;
@@ -31,24 +32,25 @@ type Report = {
 
 type ReportRequest = {
   name: string;
-  isApproved: boolean;
   isAbroad: boolean;
-  title?: string;
-  department?: string;
-  requestedAdvanceAmount?: string;
-  travelPlace?: string;
-  departureAndReturnDates?: string;
-  purposeOfTravel?: string;
-  advanceReceivedAmount?: number | null;
-  advanceReceivedAmountCurrency?: string | null;
-  amountToBeRefunded?: number | null;
-  amountToBeRefundedCurrency?: string | null;
-  amountToBePaid?: number | null;
-  amountToBePaidCurrency?: string | null;
-  declarant?: string;
-  departmentManager?: string;
-  departmentHead?: string;
-  financeOfficer?: string;
+  title: string | null;
+  department: string | null;
+  requestedAdvanceAmount: string | null;
+  travelPlace: string | null;
+  departureAndReturnDates: string | null;
+  purposeOfTravel: string | null;
+  advanceReceivedAmount: number | null;
+  advanceReceivedAmountCurrency: string | null;
+  amountToBeRefunded: number | null;
+  amountToBeRefundedCurrency: string | null;
+  amountToBePaid: number | null;
+  amountToBePaidCurrency: string | null;
+  declarant: string | null;
+  departmentManager: string | null;
+  departmentHead: string | null;
+  financeOfficer: string | null;
+  tlIban: string | null;
+  eurIban: string | null;
 };
 
 const reportSchema = z.object({
@@ -57,6 +59,22 @@ const reportSchema = z.object({
     .trim()
     .min(2, t(Dictionary.Report.NAME_MIN_LENGTH))
     .max(128, t(Dictionary.Report.NAME_MAX_LENGTH)),
+  tlIban: z
+    .string()
+    .nullable()
+    .optional()
+    .refine((val) => {
+      if (!val || val.trim() === "") return true;
+      return val.replace(/\s/g, "").length === 26;
+    }, t(Dictionary.AbroadReport.INVALID_IBAN)),
+  eurIban: z
+    .string()
+    .nullable()
+    .optional()
+    .refine((val) => {
+      if (!val || val.trim() === "") return true;
+      return val.replace(/\s/g, "").length === 26;
+    }, t(Dictionary.AbroadReport.INVALID_IBAN)),
 });
 
 export default reportSchema;

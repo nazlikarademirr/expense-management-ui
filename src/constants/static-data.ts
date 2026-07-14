@@ -52,12 +52,16 @@ const currencyTypes = [
     label: t(Dictionary.Common.TL),
   },
   {
+    value: CurrencyType.Dollar,
+    label: t(Dictionary.Common.DOLLAR),
+  },
+  {
     value: CurrencyType.Euro,
     label: t(Dictionary.Common.EURO),
   },
   {
-    value: CurrencyType.Dollar,
-    label: t(Dictionary.Common.DOLLAR),
+    value: CurrencyType.MacedonianDenar,
+    label: t(Dictionary.Common.MACEDONIAN_DENAR),
   },
   {
     value: CurrencyType.MalaysianRinggit,

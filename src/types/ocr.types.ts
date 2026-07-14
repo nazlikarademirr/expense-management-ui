@@ -7,7 +7,7 @@ export interface OcrResult {
 
 export interface OcrError {
   message: string;
-  status?: number;
+  status: number | null;
 }
 
 export type OcrStatus =
