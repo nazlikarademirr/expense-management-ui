@@ -61,7 +61,7 @@ function ResetPasswordModal({ email }: ResetPasswordModalProps) {
         label={t(Dictionary.Login.EMAIL)}
         withAsterisk
         w={410}
-        style={{ minHeight: 80 }}
+        mih={80}
         {...form.getInputProps("email")}
       />
       <Flex direction="row" gap={10}>

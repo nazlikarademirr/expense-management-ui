@@ -1,8 +1,9 @@
 enum CurrencyType {
   TL = "0",
-  Euro = "1",
-  Dollar = "2",
-  MalaysianRinggit = "3",
+  Dollar = "1",
+  Euro = "2",
+  MacedonianDenar = "3",
+  MalaysianRinggit = "4",
 }
 
 export default CurrencyType;

@@ -33,6 +33,7 @@ abstract class Dictionary {
     static readonly EURO = "common.euro";
     static readonly DOLLAR = "common.dollar";
     static readonly MALAYSIAN_RINGGIT = "common.malaysianRinggit";
+    static readonly MACEDONIAN_DENAR = "common.macedonianDenar";
   };
 
   static Authentication = class {
@@ -164,23 +165,17 @@ abstract class Dictionary {
   static Expense = class {
     static readonly DATE_VALID = "expense.dateValid";
     static readonly TOTAL_PRICE_VALID = "expense.totalPriceValid";
-    static readonly YOU_CAN_NOT_ADD_YOURSELF_AS_OVERTIME_MEMBER =
-      "expense.youCanNotAddYourselfAsOvertimeMember";
     static readonly ADDED = "expense.added";
     static readonly UPDATED = "expense.updated";
     static readonly DELETED = "expense.deleted";
-    static readonly OVERTIME_MEMBER_VALID = "expense.overtimeMemberValid";
-    static readonly USER_NAME = "expense.userName";
+    static readonly DECLARANT = "expense.declarant";
     static readonly PROJECT_NAME = "expense.projectName";
     static readonly DATE = "expense.date";
     static readonly DESCRIPTION = "expense.description";
     static readonly CURRENCY = "expense.currency";
-    static readonly PRICE = "expense.price";
-    static readonly ADD_OVERTIME_MEMBER = "expense.addOvertimeMember";
     static readonly ADD_NEW = "expense.addNew";
     static readonly SELECT_USER = "expense.selectUser";
     static readonly SELECT_REPORT = "expense.selectReport";
-    static readonly SHOW_UNAPPROVED = "expense.showUnapproved";
     static readonly REPORT_NAME = "expense.reportName";
     static readonly TOTAL_PRICE = "expense.totalPrice";
     static readonly TYPE = "expense.type";
@@ -189,7 +184,8 @@ abstract class Dictionary {
     static readonly DELETE = "expense.delete";
     static readonly DELETION_QUESTION = "expense.deletionQuestion";
     static readonly EDIT = "expense.edit";
-    static readonly USER_MUST_BE_SELECTED = "expense.userMustBeSelected";
+    static readonly DECLARANT_MUST_BE_SELECTED =
+      "expense.declarantMustBeSelected";
     static readonly PROJECT_MUST_BE_SELECTED = "expense.projectMustBeSelected";
     static readonly TYPE_MUST_BE_SELECTED = "expense.typeMustBeSelected";
     static readonly DATE_MUST_BE_SELECTED = "expense.dateMustBeSelected";
@@ -200,8 +196,6 @@ abstract class Dictionary {
     static readonly CURRENCY_MUST_BE_SELECTED =
       "expense.currencyMustBeSelected";
     static readonly DESCRIPTION_RULE = "expense.descriptionRule";
-    static readonly PRICE_CANNOT_BE_EMPTY = "expense.priceCannotBeEmpty";
-    static readonly PRICE_CANNOT_BE_ZERO = "expense.priceCannotBeZero";
     static readonly RECEIPT_UPLOADER = "expense.receiptUploader";
     static readonly RECEIPT_SELECT = "expense.receiptSelect";
     static readonly REMOVE_IMAGE = "expense.removeImage";
@@ -217,21 +211,28 @@ abstract class Dictionary {
       "expense.textCouldNotBeDetected";
   };
 
+  static OvertimeMember = class {
+    static readonly USER_NAME = "overtimeMember.userName";
+    static readonly PRICE = "overtimeMember.price";
+    static readonly USER_MUST_BE_SELECTED = "overtimeMember.userMustBeSelected";
+    static readonly PRICE_CANNOT_BE_EMPTY = "overtimeMember.priceCannotBeEmpty";
+    static readonly PRICE_CANNOT_BE_ZERO = "overtimeMember.priceCannotBeZero";
+    static readonly ADD_NEW = "overtimeMember.addNew";
+    static readonly VALID = "overtimeMember.valid";
+    static readonly YOU_CAN_NOT_ADD_YOURSELF_AS_OVERTIME_MEMBER =
+      "overtimeMember.youCanNotAddYourselfAsOvertimeMember";
+  };
+
   static Report = class {
     static readonly EDIT = "report.edit";
-    static readonly APPROVED = "report.approved";
-    static readonly APPROVE_QUESTION = "report.approveQuestion";
-    static readonly APPROVE = "report.approve";
     static readonly DELETE = "report.delete";
     static readonly DELETE_QUESTION = "report.deleteQuestion";
     static readonly SAME_NAME = "report.sameName";
-    static readonly ADDED = "report.added";
+    static readonly CREATED = "report.created";
     static readonly DELETED = "report.deleted";
     static readonly DOWNLOAD = "report.download";
-    static readonly ADD_NEW = "report.addNew";
+    static readonly CREATE_NEW = "report.createNew";
     static readonly NAME = "report.name";
-    static readonly SHOW_UNAPPROVED = "report.showUnapproved";
-    static readonly SUCCESSFULLY_APPROVED = "report.successfullyApproved";
     static readonly UPDATED = "report.updated";
     static readonly NAME_MIN_LENGTH = "report.nameMinLength";
     static readonly NAME_MAX_LENGTH = "report.nameMaxLength";
@@ -268,6 +269,9 @@ abstract class Dictionary {
     static readonly DEPARTMENT_HEAD = "abroadReport.departmentHead";
     static readonly FINANCE_OFFICER = "abroadReport.financeOfficer";
     static readonly CREATE = "abroadReport.create";
+    static readonly TL_IBAN = "abroadReport.tlIban";
+    static readonly EUR_IBAN = "abroadReport.eurIban";
+    static readonly INVALID_IBAN = "abroadReport.invalidIban";
   };
 }
 

@@ -150,9 +150,7 @@ function Teams() {
 
     addTeam({
       ...response.value,
-      createUserFullName: auth.currentUser
-        ? `${auth.currentUser.name} ${auth.currentUser.surname}`
-        : "",
+      createUserFullName: auth.currentUserFullName,
     });
 
     form.reset();
@@ -230,11 +228,7 @@ function Teams() {
                 ? t(Dictionary.Team.DEACTIVATE)
                 : t(Dictionary.Team.ACTIVATE)}
             </Button>
-            <Button
-              onClick={() => modals.closeAll()}
-              style={{ flexGrow: 1 }}
-              variant="light"
-            >
+            <Button onClick={() => modals.closeAll()} flex={1} variant="light">
               {t(Dictionary.Common.CANCEL)}
             </Button>
           </Flex>
@@ -265,7 +259,7 @@ function Teams() {
               </Badge>
             </Table.Td>
             <Table.Td>
-              <Flex justify={"center"} gap={5}>
+              <Flex justify="center" gap={5}>
                 <Flex justify="center" gap={10}>
                   {x.isActive && (
                     <Button
@@ -316,17 +310,17 @@ function Teams() {
     <Flex direction="column" h={PAGE_FLEX_HEIGHT}>
       <Title order={3}>{t(Dictionary.Common.TEAMS)}</Title>
       <Divider my={TITLE_DIVIDER_MY} />
-      <Card shadow={"xs"} radius={"md"} withBorder>
-        <Flex gap={"md"} direction={"column"}>
+      <Card shadow="xs" radius="md" withBorder>
+        <Flex gap="md" direction="column">
           <TextInput
             {...form.getInputProps("name")}
-            style={{ minHeight: 80 }}
+            mih={80}
             withAsterisk
             label={t(Dictionary.Team.NAME)}
           />
           <Button
             onClick={handleSave}
-            variant={"light"}
+            variant="light"
             loading={isLoading}
             leftSection={<PiPlusCircle size={22} />}
           >
@@ -335,12 +329,12 @@ function Teams() {
         </Flex>
       </Card>
       <Card mt="xs" withBorder radius="md" padding="sm" flex={1}>
-        <Flex gap={"xs"} mb="md" align="center">
+        <Flex gap="xs" mb="md" align="center">
           <TextInput
             size="xs"
             radius="xl"
             rightSection={<IconSearch size={SEARCH_ICON_SIZE}></IconSearch>}
-            style={{ flex: 1 }}
+            flex={1}
             {...form.getInputProps("searchText")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.currentTarget.value)}
@@ -348,14 +342,14 @@ function Teams() {
           <Checkbox
             labelPosition="left"
             label={t(Dictionary.Team.SHOW_ACTIVE)}
-            style={{ marginLeft: "10px" }}
+            ml="10px"
             checked={showActiveTeams}
             onChange={() => setShowActiveTeams(!showActiveTeams)}
             type="checkbox"
           />
         </Flex>
         {memoizedTeams.length > 0 ? (
-          <ScrollArea style={{ flex: 1 }}>
+          <ScrollArea flex={1}>
             <Table
               striped
               stickyHeader

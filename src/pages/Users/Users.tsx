@@ -100,10 +100,10 @@ function Users() {
   const openEditUserModal = (user: User) => {
     modals.open({
       title: <Title order={4}>{t(Dictionary.User.EDIT)}</Title>,
-      size: "xl",
+      size: "lg",
       styles: {
         content: {
-          minHeight: "102vh",
+          minHeight: 750,
         },
       },
       children: (
@@ -153,7 +153,9 @@ function Users() {
     if (
       users.some(
         (x) =>
-          x.id !== user.id && x.cardNumber?.trim() === user.cardNumber?.trim(),
+          x.id !== user.id &&
+          user.cardNumber !== null &&
+          x.cardNumber?.trim() === user.cardNumber?.trim(),
       )
     ) {
       toast.error(t(Dictionary.User.SAME_CARD_NUMBER));
@@ -222,9 +224,7 @@ function Users() {
       gender: form.values.gender,
       cardNumber: form.values.cardNumber,
       role: response.value.role.toString(),
-      createUserFullName: auth.currentUser
-        ? `${auth.currentUser.name} ${auth.currentUser.surname}`
-        : "",
+      createUserFullName: auth.currentUserFullName,
     });
 
     form.reset();
@@ -296,7 +296,7 @@ function Users() {
       ) : (
         <Title order={4}>{t(Dictionary.User.ACTIVATE)}</Title>
       ),
-      size: "md",
+      size: "lg",
       children: (
         <Flex direction="column" gap={20}>
           {user.isActive
@@ -310,21 +310,18 @@ function Users() {
                 modals.closeAll();
               }}
               variant="light"
+              flex={1}
               style={
                 user.isActive
-                  ? { flexGrow: 1, color: "red", backgroundColor: "#ffeeee" }
-                  : { flexGrow: 1, color: "green", backgroundColor: "#e7ffe0" }
+                  ? { color: "red", backgroundColor: "#ffeeee" }
+                  : { color: "green", backgroundColor: "#e7ffe0" }
               }
             >
               {user.isActive
                 ? t(Dictionary.User.DEACTIVATE)
                 : t(Dictionary.User.ACTIVATE)}
             </Button>
-            <Button
-              onClick={() => modals.closeAll()}
-              style={{ flexGrow: 1 }}
-              variant="light"
-            >
+            <Button onClick={() => modals.closeAll()} flex={1} variant="light">
               {t(Dictionary.Common.CANCEL)}
             </Button>
           </Flex>
@@ -442,85 +439,71 @@ function Users() {
       <Divider my={TITLE_DIVIDER_MY} />
       <Card shadow="xs" radius="md" withBorder>
         <Flex gap="xl" direction="row" justify="center">
-          <Flex gap="xl" direction="column" style={{ flexGrow: 1 }}>
+          <Flex gap="xl" direction="column" flex={1}>
             <TextInput
               {...form.getInputProps("name")}
               withAsterisk
-              style={{
-                flexGrow: 1,
-                minHeight: MIN_INPUT_HEIGHT,
-                minWidth: MIN_INPUT_WIDTH,
-              }}
+              flex={1}
+              mih={MIN_INPUT_HEIGHT}
+              miw={MIN_INPUT_WIDTH}
               label={t(Dictionary.User.NAME)}
             />
 
             <TextInput
               {...form.getInputProps("cardNumber")}
-              style={{
-                flexGrow: 1,
-                minHeight: MIN_INPUT_HEIGHT,
-                minWidth: MIN_INPUT_WIDTH,
-              }}
+              flex={1}
+              mih={MIN_INPUT_HEIGHT}
+              miw={MIN_INPUT_WIDTH}
               label={t(Dictionary.User.CARD_NUMBER)}
             />
           </Flex>
-          <Flex gap="xl" direction="column" style={{ flexGrow: 1 }}>
+          <Flex gap="xl" direction="column" flex={1}>
             <TextInput
               {...form.getInputProps("surname")}
               withAsterisk
-              style={{
-                flexGrow: 1,
-                minHeight: MIN_INPUT_HEIGHT,
-                minWidth: MIN_INPUT_WIDTH,
-              }}
+              flex={1}
+              mih={MIN_INPUT_HEIGHT}
+              miw={MIN_INPUT_WIDTH}
               label={t(Dictionary.User.SURNAME)}
             />
 
             <TextInput
               {...form.getInputProps("email")}
               withAsterisk
-              style={{
-                flexGrow: 1,
-                minHeight: MIN_INPUT_HEIGHT,
-                minWidth: MIN_INPUT_WIDTH,
-              }}
+              flex={1}
+              mih={MIN_INPUT_HEIGHT}
+              miw={MIN_INPUT_WIDTH}
               label={t(Dictionary.User.EMAIL)}
             />
           </Flex>
-          <Flex gap="xl" direction="column" style={{ flexGrow: 1 }}>
+          <Flex gap="xl" direction="column" flex={1}>
             <Select
               {...form.getInputProps("teamId")}
               withAsterisk
               data={activeTeamSelectData}
               searchable
               comboboxProps={{ withinPortal: false }}
-              style={{
-                flexGrow: 1,
-                minHeight: MIN_INPUT_HEIGHT,
-                minWidth: MIN_INPUT_WIDTH,
-              }}
+              flex={1}
+              mih={MIN_INPUT_HEIGHT}
+              miw={MIN_INPUT_WIDTH}
               label={t(Dictionary.User.TEAM_NAME)}
             />
 
             <PasswordInput
               {...form.getInputProps("password")}
               withAsterisk
-              style={{
-                flexGrow: 1,
-                minHeight: MIN_INPUT_HEIGHT,
-                minWidth: MIN_INPUT_WIDTH,
-              }}
+              flex={1}
+              mih={MIN_INPUT_HEIGHT}
+              miw={MIN_INPUT_WIDTH}
               label={t(Dictionary.User.PASSWORD)}
             />
           </Flex>
-          <Flex gap="xl" direction="column" style={{ flexGrow: 1 }}>
+          <Flex gap="xl" direction="column" flex={1}>
             <Radio.Group
               label={t(Dictionary.User.GENDER)}
-              style={{
-                flexGrow: 1,
-                minHeight: MIN_INPUT_HEIGHT,
-                minWidth: MIN_INPUT_WIDTH,
-              }}
+              flex={1}
+              mih={MIN_INPUT_HEIGHT}
+              miw={MIN_INPUT_WIDTH}
               {...form.getInputProps("gender")}
             >
               <Group mt="xs">
@@ -537,11 +520,9 @@ function Users() {
             <Radio.Group
               label={t(Dictionary.User.ROLE)}
               withAsterisk
-              style={{
-                flexGrow: 1,
-                minHeight: MIN_INPUT_HEIGHT,
-                minWidth: MIN_INPUT_WIDTH,
-              }}
+              flex={1}
+              mih={MIN_INPUT_HEIGHT}
+              miw={MIN_INPUT_WIDTH}
               {...form.getInputProps("role")}
             >
               <Group mt="xs">
@@ -555,8 +536,8 @@ function Users() {
         <Button
           onClick={handleSave}
           variant="light"
-          style={{ flexGrow: 1, marginTop: 15 }}
           loading={isLoading}
+          mt={15}
           leftSection={<PiPlusCircle size={22} />}
         >
           {t(Dictionary.User.ADD_NEW)}
@@ -568,7 +549,7 @@ function Users() {
             size="xs"
             radius="xl"
             rightSection={<IconSearch size={SEARCH_ICON_SIZE} />}
-            style={{ flexGrow: 120 }}
+            flex={5}
             {...form.getInputProps("searchText")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -578,7 +559,7 @@ function Users() {
             searchable
             comboboxProps={{ withinPortal: false }}
             placeholder={t(Dictionary.User.SELECT_TEAM)}
-            style={{ flexGrow: 1 }}
+            flex={1}
             clearable
             onChange={(e) => setSelectedTeam(e ?? "")}
           />
@@ -587,20 +568,20 @@ function Users() {
             searchable
             comboboxProps={{ withinPortal: false }}
             placeholder={t(Dictionary.User.SELECT_ROLE)}
-            style={{ flexGrow: 1 }}
+            flex={1}
             clearable
             onChange={(e) => setSelectedRole(e ?? "")}
           />
           <Checkbox
             labelPosition="left"
             label={t(Dictionary.User.SHOW_ACTIVE)}
-            style={{ marginLeft: "10px" }}
+            ml={10}
             checked={showActiveUsers}
             onChange={() => setShowActiveUsers(!showActiveUsers)}
             type="checkbox"
           />
         </Flex>
-        <ScrollArea style={{ flex: 1 }}>
+        <ScrollArea flex={1}>
           <Table
             striped
             stickyHeader

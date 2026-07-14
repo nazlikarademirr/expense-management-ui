@@ -30,9 +30,10 @@
     "add": "Add",
     "all": "All",
     "tl": "TL",
-    "euro": "Euro",
-    "dollar": "Dollar",
-    "malaysianRinggit": "Malaysian Ringgit"
+    "euro": "EUR",
+    "dollar": "USD",
+    "malaysianRinggit": "MYR",
+    "macedonianDenar": "MKD"
   },
 
   "authentication": {
@@ -158,31 +159,26 @@
   "expense": {
     "dateValid": "Expenses cannot be entered for future dates.",
     "totalPriceValid": "The total price cannot be less than the sum of the individual prices.",
-    "youCanNotAddYourselfAsOvertimeMember": "You can not add yourself to your expense as overtime member.",
     "added": "Expense has been added successfully.",
     "updated": "Expense updated successfully.",
     "deleted": "Expense has been deleted successfully.",
-    "overtimeMemberValid": "There is a entry for this user.",
-    "userName": "User Name",
+    "declarant": "Beyan Eden",
     "projectName": "Project Name",
     "date": "Expense Date",
     "totalPrice": "Total Price",
     "type": "Expense Type",
     "description": "Description",
     "currency": "Currency",
-    "price": "Price",
-    "addOvertimeMember": "Add Overtime Member",
     "addNew": "Add New Expense",
     "selectUser": "Select User",
     "selectReport": "Select Report",
-    "showUnapproved": "Show Unapproved Expenses",
     "reportName": "Report Name",
     "food": "Food",
     "transportation": "Transportation",
     "delete": "Delete Expense",
     "deletionQuestion": "Are you sure you want to delete the expense?",
     "edit": "Edit Expense",
-    "userMustBeSelected": "User must be selected.",
+    "declarantMustBeSelected": "Declarant must be selected.",
     "projectMustBeSelected": "Project must be selected.",
     "typeMustBeSelected": "Expense type must be selected.",
     "dateMustBeSelected": "Expense date must be selected.",
@@ -190,8 +186,6 @@
     "totalPriceCannotBeZero": "Total price cannot be 0 or less.",
     "currencyMustBeSelected": "Currency must be selected.",
     "descriptionRule": "When the expense type is transportation or other, the description cannot be left blank.",
-    "priceCannotBeEmpty": "Price cannot be empty.",
-    "priceCannotBeZero": "Price cannot be 0 or less.",
     "receiptUploader": "Drag the receipt or invoice here",
     "receiptSelect": "or select by clicking · max. 10MB",
     "removeImage": "Remove image.",
@@ -206,21 +200,27 @@
     "textCouldNotBeDetected": "Text could not be detected."
   },
 
+  "overtimeMember": {
+    "userName": "User Name",
+    "price": "Price",
+    "userMustBeSelected": "User must be selected.",
+    "priceCannotBeEmpty": "Price cannot be empty.",
+    "priceCannotBeZero": "Price cannot be 0 or less.",
+    "addNew": "Add Overtime Member",
+    "valid": "There is a entry for this user.",
+    "youCanNotAddYourselfAsOvertimeMember": "You can not add yourself to your expense as overtime member."
+  },
+
   "report": {
     "edit": "Edit Report",
-    "approved": "Approved",
-    "approveQuestion": "Are you sure you want to approve the report?",
-    "approve": "Approve Report",
     "delete": "Delete Report",
     "deleteQuestion": "Are you sure you want to delete report?",
     "sameName": "There is a report with the same name.",
-    "added": "Report has been added successfully.",
+    "created": "Report has been created successfully.",
     "deleted": "Report has been deleted successfully.",
     "download": "Download",
-    "addNew": "Add New Report",
+    "createNew": "Create New Report",
     "name": "Name",
-    "showUnapproved": "Show Unapproved Reports",
-    "successfullyApproved": "Report approved successfully.",
     "updated": "Report has been updated successfully.",
     "nameMinLength": "Name must have at least 2 letters.",
     "nameMaxLength": "Name cannot exceed 128 characters.",
@@ -229,8 +229,7 @@
     "select": "Select the report you want to work with, or create a new one.",
     "allName": "A report cannot be created with the name 'all'.",
     "abroad": "Abroad Report",
-    "showAbroad": "Show Abroad Reports",
-    "errorMessage": "You cannot add expense to an approved report."
+    "showAbroad": "Show Abroad Reports"
   },
 
   "abroadReport": {
@@ -250,6 +249,9 @@
     "departmentManager": "Department Manager",
     "departmentHead": "Department Head",
     "financeOfficer": "Finance Officer",
-    "create": "Abroad Report Create"
+    "create": "Abroad Report Create",
+    "tlIban": "TL Iban",
+    "eurIban": "EUR Iban",
+    "invalidIban": "You entered an incomplete or invalid IBAN."
   }
 }

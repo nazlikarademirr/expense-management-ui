@@ -102,9 +102,9 @@ function EditProjectModal({
   }, []);
 
   return (
-    <Flex direction={"column"} gap={10}>
+    <Flex direction="column" gap={10}>
       <TextInput
-        style={{ minHeight: MIN_INPUT_HEIGHT }}
+        mih={MIN_INPUT_HEIGHT}
         ref={nameInputRef}
         withAsterisk
         {...projectForm.getInputProps("name")}
@@ -112,7 +112,7 @@ function EditProjectModal({
       />
 
       <TextInput
-        style={{ minHeight: MIN_INPUT_HEIGHT }}
+        mih={MIN_INPUT_HEIGHT}
         withAsterisk
         {...projectForm.getInputProps("code")}
         label={t(Dictionary.Project.CODE)}

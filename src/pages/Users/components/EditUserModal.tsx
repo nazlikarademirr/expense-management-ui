@@ -138,20 +138,20 @@ function EditUserModal({
       <TextInput
         ref={nameInputRef}
         {...userForm.getInputProps("name")}
-        style={{ minHeight: MIN_INPUT_HEIGHT }}
+        mih={MIN_INPUT_HEIGHT}
         withAsterisk
         label={t(Dictionary.User.NAME)}
       />
       <TextInput
         {...userForm.getInputProps("surname")}
-        style={{ minHeight: MIN_INPUT_HEIGHT }}
+        mih={MIN_INPUT_HEIGHT}
         withAsterisk
         label={t(Dictionary.User.SURNAME)}
       />
       <Select
         {...userForm.getInputProps("teamId")}
         onChange={(_, option) => changeTeam(option)}
-        style={{ minHeight: MIN_INPUT_HEIGHT }}
+        mih={MIN_INPUT_HEIGHT}
         withAsterisk
         data={activeTeamSelectData}
         searchable
@@ -160,7 +160,8 @@ function EditUserModal({
       />
       <Radio.Group
         label={t(Dictionary.User.GENDER)}
-        style={{ flexGrow: 1, minHeight: MIN_INPUT_HEIGHT }}
+        flex={1}
+        mih={MIN_INPUT_HEIGHT}
         {...userForm.getInputProps("gender")}
       >
         <Group mt="xs">
@@ -175,19 +176,20 @@ function EditUserModal({
       </Radio.Group>
       <TextInput
         {...userForm.getInputProps("cardNumber")}
-        style={{ minHeight: MIN_INPUT_HEIGHT }}
+        mih={MIN_INPUT_HEIGHT}
         label={t(Dictionary.User.CARD_NUMBER)}
       />
       <TextInput
         {...userForm.getInputProps("email")}
-        style={{ minHeight: MIN_INPUT_HEIGHT }}
+        mih={MIN_INPUT_HEIGHT}
         withAsterisk
         label={t(Dictionary.User.EMAIL)}
       />
       <Radio.Group
         label={t(Dictionary.User.ROLE)}
         withAsterisk
-        style={{ flexGrow: 1, minHeight: MIN_INPUT_HEIGHT }}
+        flex={1}
+        mih={MIN_INPUT_HEIGHT}
         {...userForm.getInputProps("role")}
       >
         <Group mt="xs">
@@ -198,7 +200,7 @@ function EditUserModal({
       </Radio.Group>
 
       <Button
-        variant={"light"}
+        variant="light"
         disabled={!userForm.isDirty()}
         onClick={(e) => handleSave(e)}
         loading={isLoading}

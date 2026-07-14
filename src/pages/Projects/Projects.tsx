@@ -150,9 +150,7 @@ function Projects() {
 
     addProject({
       ...response.value,
-      createUserFullName: auth.currentUser
-        ? `${auth.currentUser.name} ${auth.currentUser.surname}`
-        : "",
+      createUserFullName: auth.currentUserFullName,
     });
 
     form.reset();
@@ -214,21 +212,18 @@ function Projects() {
                 modals.closeAll();
               }}
               variant="light"
+              flex={1}
               style={
                 project.isActive
-                  ? { flexGrow: 1, color: "red", backgroundColor: "#ffeeee" }
-                  : { flexGrow: 1, color: "green", backgroundColor: "#e7ffe0" }
+                  ? { color: "red", backgroundColor: "#ffeeee" }
+                  : { color: "green", backgroundColor: "#e7ffe0" }
               }
             >
               {project.isActive
                 ? t(Dictionary.Project.DEACTIVATE)
                 : t(Dictionary.Project.ACTIVATE)}
             </Button>
-            <Button
-              onClick={() => modals.closeAll()}
-              style={{ flexGrow: 1 }}
-              variant="light"
-            >
+            <Button onClick={() => modals.closeAll()} flex={1} variant="light">
               {t(Dictionary.Common.CANCEL)}
             </Button>
           </Flex>
@@ -308,20 +303,20 @@ function Projects() {
     <Flex direction="column" h={PAGE_FLEX_HEIGHT}>
       <Title order={3}>{t(Dictionary.Common.PROJECTS)}</Title>
       <Divider my={TITLE_DIVIDER_MY} />
-      <Card shadow={"xs"} radius={"md"} withBorder>
-        <Flex gap="md" direction="row" style={{ minHeight: 80 }}>
+      <Card shadow="xs" radius="md" withBorder>
+        <Flex gap="md" direction="row" mih={80}>
           <TextInput
             key={form.key("name")}
             {...form.getInputProps("name")}
             withAsterisk
-            style={{ flexGrow: 1 }}
+            flex={1}
             label={t(Dictionary.Project.NAME)}
           />
 
           <TextInput
             {...form.getInputProps("code")}
             withAsterisk
-            style={{ flexGrow: 1 }}
+            flex={1}
             label={t(Dictionary.Project.CODE)}
           />
         </Flex>
@@ -329,8 +324,8 @@ function Projects() {
           onClick={handleSave}
           variant="light"
           loading={isLoading}
+          mt={15}
           leftSection={<PiPlusCircle size={22} />}
-          style={{ flexGrow: 2, marginTop: "15px" }}
         >
           {t(Dictionary.Project.ADD_NEW)}
         </Button>
@@ -342,7 +337,7 @@ function Projects() {
             size="xs"
             radius="xl"
             rightSection={<IconSearch size={SEARCH_ICON_SIZE}></IconSearch>}
-            style={{ flex: 1 }}
+            flex={1}
             {...form.getInputProps("searchText")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -350,13 +345,13 @@ function Projects() {
           <Checkbox
             labelPosition="left"
             label={t(Dictionary.Project.SHOW_ACTIVE)}
-            style={{ marginLeft: "10px" }}
+            ml={10}
             checked={showActiveProjects}
             onChange={() => setShowActiveProjects(!showActiveProjects)}
             type="checkbox"
           />
         </Flex>
-        <ScrollArea style={{ flex: 1 }}>
+        <ScrollArea flex={1}>
           <Table
             striped
             stickyHeader

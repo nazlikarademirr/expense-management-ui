@@ -7,8 +7,8 @@ import Dictionary from "../helpers/translation/dictionary";
 
 type Expense = {
   id: string;
-  userId: string | null;
-  userFullName: string;
+  declarantId: string | null;
+  declarantFullName: string;
   projectId: string | null;
   projectName: string;
   expenseType: string;
@@ -18,7 +18,6 @@ type Expense = {
   description: string;
   reportId: string;
   reportName: string;
-  isApproved: boolean;
   overtimeMembers: OvertimeMember[];
   isActive: boolean;
   searchText: string;
@@ -28,7 +27,7 @@ type Expense = {
 };
 
 type ExpenseRequest = {
-  userId: string;
+  declarantId: string;
   projectId: string;
   expenseType: number;
   expenseDate: Date;
@@ -41,8 +40,8 @@ type ExpenseRequest = {
 
 type ExpenseResponse = {
   id: string;
-  userId: string;
-  userFullName: string;
+  declarantId: string;
+  declarantFullName: string;
   projectId: string;
   projectName: string;
   expenseType: number;
@@ -52,7 +51,6 @@ type ExpenseResponse = {
   description: string;
   reportId: string;
   reportName: string;
-  isApproved: boolean;
   overtimeMembers: OvertimeMember[];
   isActive: boolean;
   searchText: string;
@@ -63,7 +61,7 @@ type ExpenseResponse = {
 
 const expenseSchema = z
   .object({
-    userId: z.string(t(Dictionary.Expense.USER_MUST_BE_SELECTED)),
+    declarantId: z.string(t(Dictionary.Expense.DECLARANT_MUST_BE_SELECTED)),
     projectId: z.string(t(Dictionary.Expense.PROJECT_MUST_BE_SELECTED)),
     expenseType: z.enum(
       ExpenseType,

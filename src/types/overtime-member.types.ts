@@ -31,10 +31,10 @@ type OvertimeMemberResponse = {
 };
 
 const overtimeMemberSchema = z.object({
-  userId: z.string(t(Dictionary.Expense.USER_MUST_BE_SELECTED)),
+  userId: z.string(t(Dictionary.OvertimeMember.USER_MUST_BE_SELECTED)),
   price: z
-    .number(t(Dictionary.Expense.PRICE_CANNOT_BE_EMPTY))
-    .min(1, t(Dictionary.Expense.PRICE_CANNOT_BE_ZERO)),
+    .number(t(Dictionary.OvertimeMember.PRICE_CANNOT_BE_EMPTY))
+    .min(1, t(Dictionary.OvertimeMember.PRICE_CANNOT_BE_ZERO)),
 });
 
 export default overtimeMemberSchema;

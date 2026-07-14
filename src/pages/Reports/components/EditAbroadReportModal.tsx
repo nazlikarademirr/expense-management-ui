@@ -15,16 +15,16 @@ import {
 } from "../../../types/json-patch-document";
 import toast from "react-hot-toast";
 import { modals } from "@mantine/modals";
-import { SelectItem } from "../../../types/select-item.types";
-import CurrencyType from "../../../enums/currency-type";
 import { format, subDays } from "date-fns";
+import CurrencyType from "../../../enums/currency-type";
+import { formatIban } from "../../../helpers/IbanFormatter";
+import { SelectItem } from "../../../types/select-item.types";
 
 const TEXT_INPUT_MIN_HEIGHT = 90;
 
 interface EditAbroadReportModalProps {
   report: Report;
   updateReport: (formEditedReport: Report) => void;
-
   checkIfReportIsValid: (report: Report) => boolean;
 }
 
@@ -55,9 +55,9 @@ function EditAbroadReportModal({
 
     e.preventDefault();
 
-    reportForm.validate();
+    const validation = reportForm.validate();
 
-    if (!reportForm.isValid()) {
+    if (validation.hasErrors) {
       setIsLoading(false);
       return;
     }
@@ -71,14 +71,6 @@ function EditAbroadReportModal({
       reportForm,
       reportForm.values,
     );
-
-    if (report.isApproved) {
-      patchDocument.push({
-        path: "/isApproved",
-        value: "false",
-      });
-      reportForm.values.isApproved = false;
-    }
 
     const response = await handleDataRequest<JsonPatchKeyValuePair[], Report>(
       `${urls.report}/${report.id}`,
@@ -101,6 +93,12 @@ function EditAbroadReportModal({
 
     setIsLoading(false);
   };
+
+  const filteredCurrency = currencyTypes.filter(
+    (x) =>
+      x.value !== CurrencyType.MacedonianDenar &&
+      x.value !== CurrencyType.MalaysianRinggit,
+  );
 
   const handleAdvanceReceivedAmountCurrencyDeselect = (
     selectItem: SelectItem,
@@ -129,69 +127,47 @@ function EditAbroadReportModal({
   }, []);
 
   return (
-    <Flex direction="column" style={{ minHeight: TEXT_INPUT_MIN_HEIGHT }}>
+    <Flex direction="column" mih={TEXT_INPUT_MIN_HEIGHT}>
       <Flex gap={20}>
         <TextInput
+          label={t(Dictionary.AbroadReport.DECLARANT)}
+          flex={1}
+          mih={TEXT_INPUT_MIN_HEIGHT}
+          {...reportForm.getInputProps("declarant")}
+        />
+        <TextInput
           label={t(Dictionary.Report.NAME)}
-          style={{ flex: 2, minHeight: TEXT_INPUT_MIN_HEIGHT }}
+          flex={1}
+          mih={TEXT_INPUT_MIN_HEIGHT}
           withAsterisk
           {...reportForm.getInputProps("name")}
         />
-        <Flex gap={20} style={{ flex: 2 }}>
-          <TextInput
-            label={t(Dictionary.AbroadReport.ADVANCE_RECEIVED_AMOUNT)}
-            style={{ flex: 1, minHeight: TEXT_INPUT_MIN_HEIGHT }}
-            {...reportForm.getInputProps("advanceReceivedAmount")}
-          />
-          <Radio.Group
-            style={{
-              flex: 1,
-              marginTop: 32,
-            }}
-            {...reportForm.getInputProps("advanceReceivedAmountCurrency")}
-          >
-            <Group>
-              {currencyTypes
-                .filter((x) => x.value !== CurrencyType.MalaysianRinggit)
-                .map((x) => (
-                  <Radio
-                    value={x.value}
-                    label={x.label}
-                    onClick={() =>
-                      handleAdvanceReceivedAmountCurrencyDeselect(x)
-                    }
-                  ></Radio>
-                ))}
-            </Group>
-          </Radio.Group>
-        </Flex>
       </Flex>
       <Flex gap={20}>
         <TextInput
           label={t(Dictionary.AbroadReport.TITLE)}
-          style={{ flex: 2, minHeight: TEXT_INPUT_MIN_HEIGHT }}
+          flex={2}
+          mih={TEXT_INPUT_MIN_HEIGHT}
           {...reportForm.getInputProps("title")}
         />
-        <Flex gap={20} style={{ flex: 2 }}>
+        <Flex gap={20} flex={2} align="center">
           <TextInput
-            label={t(Dictionary.AbroadReport.AMOUNT_TO_BE_REFUNDED)}
-            style={{ flex: 1, minHeight: TEXT_INPUT_MIN_HEIGHT }}
-            {...reportForm.getInputProps("amountToBeRefunded")}
+            label={t(Dictionary.AbroadReport.ADVANCE_RECEIVED_AMOUNT)}
+            flex={2}
+            mih={TEXT_INPUT_MIN_HEIGHT}
+            {...reportForm.getInputProps("advanceReceivedAmount")}
           />
           <Radio.Group
-            style={{ flex: 1, marginTop: 32 }}
-            {...reportForm.getInputProps("amountToBeRefundedCurrency")}
+            {...reportForm.getInputProps("advanceReceivedAmountCurrency")}
           >
             <Group>
-              {currencyTypes
-                .filter((x) => x.value !== CurrencyType.MalaysianRinggit)
-                .map((x) => (
-                  <Radio
-                    value={x.value}
-                    label={x.label}
-                    onClick={() => handleAmountToBeRefundedCurrencyDeselect(x)}
-                  ></Radio>
-                ))}
+              {filteredCurrency.map((x) => (
+                <Radio
+                  value={x.value}
+                  label={x.label}
+                  onClick={() => handleAdvanceReceivedAmountCurrencyDeselect(x)}
+                ></Radio>
+              ))}
             </Group>
           </Radio.Group>
         </Flex>
@@ -199,29 +175,28 @@ function EditAbroadReportModal({
       <Flex gap={20}>
         <TextInput
           label={t(Dictionary.AbroadReport.DEPARTMENT)}
-          style={{ flex: 2, minHeight: TEXT_INPUT_MIN_HEIGHT }}
+          flex={2}
+          mih={TEXT_INPUT_MIN_HEIGHT}
           {...reportForm.getInputProps("department")}
         />
-        <Flex gap={20} style={{ flex: 2 }}>
+        <Flex gap={20} flex={2} align="center">
           <TextInput
-            label={t(Dictionary.AbroadReport.AMOUNT_TO_BE_PAID)}
-            style={{ flex: 1, minHeight: TEXT_INPUT_MIN_HEIGHT }}
-            {...reportForm.getInputProps("amountToBePaid")}
+            label={t(Dictionary.AbroadReport.AMOUNT_TO_BE_REFUNDED)}
+            mih={TEXT_INPUT_MIN_HEIGHT}
+            flex={2}
+            {...reportForm.getInputProps("amountToBeRefunded")}
           />
           <Radio.Group
-            style={{ flex: 1, marginTop: 32 }}
-            {...reportForm.getInputProps("amountToBePaidCurrency")}
+            {...reportForm.getInputProps("amountToBeRefundedCurrency")}
           >
             <Group>
-              {currencyTypes
-                .filter((x) => x.value !== CurrencyType.MalaysianRinggit)
-                .map((x) => (
-                  <Radio
-                    value={x.value}
-                    label={x.label}
-                    onClick={() => handleAmountToBePaidCurrencyDeselect(x)}
-                  ></Radio>
-                ))}
+              {filteredCurrency.map((x) => (
+                <Radio
+                  value={x.value}
+                  label={x.label}
+                  onClick={() => handleAmountToBeRefundedCurrencyDeselect(x)}
+                ></Radio>
+              ))}
             </Group>
           </Radio.Group>
         </Flex>
@@ -229,51 +204,99 @@ function EditAbroadReportModal({
       <Flex gap={20}>
         <TextInput
           label={t(Dictionary.AbroadReport.TRAVEL_PLACE)}
-          style={{ flex: 1, minHeight: TEXT_INPUT_MIN_HEIGHT }}
+          flex={2}
+          mih={TEXT_INPUT_MIN_HEIGHT}
           {...reportForm.getInputProps("travelPlace")}
         />
-        <TextInput
-          label={t(Dictionary.AbroadReport.DECLARANT)}
-          style={{ flex: 1, minHeight: TEXT_INPUT_MIN_HEIGHT }}
-          {...reportForm.getInputProps("declarant")}
-        />
+        <Flex gap={20} flex={2} align="center">
+          <TextInput
+            label={t(Dictionary.AbroadReport.AMOUNT_TO_BE_PAID)}
+            flex={2}
+            mih={TEXT_INPUT_MIN_HEIGHT}
+            {...reportForm.getInputProps("amountToBePaid")}
+          />
+          <Radio.Group {...reportForm.getInputProps("amountToBePaidCurrency")}>
+            <Group>
+              {filteredCurrency.map((x) => (
+                <Radio
+                  value={x.value}
+                  label={x.label}
+                  onClick={() => handleAmountToBePaidCurrencyDeselect(x)}
+                ></Radio>
+              ))}
+            </Group>
+          </Radio.Group>
+        </Flex>
       </Flex>
       <Flex gap={20}>
         <TextInput
           label={t(Dictionary.AbroadReport.PURPOSE_OF_TRAVEL)}
-          style={{ flex: 1, minHeight: TEXT_INPUT_MIN_HEIGHT }}
+          flex={1}
+          mih={TEXT_INPUT_MIN_HEIGHT}
           {...reportForm.getInputProps("purposeOfTravel")}
         />
 
         <TextInput
           label={t(Dictionary.AbroadReport.DEPARTMENT_MANAGER)}
-          style={{ flex: 1, minHeight: TEXT_INPUT_MIN_HEIGHT }}
+          flex={1}
+          mih={TEXT_INPUT_MIN_HEIGHT}
           {...reportForm.getInputProps("departmentManager")}
         />
       </Flex>
       <Flex gap={20}>
         <TextInput
           label={t(Dictionary.AbroadReport.DEPARTURE_AND_RETURN_DATES)}
-          style={{ flex: 1, minHeight: TEXT_INPUT_MIN_HEIGHT }}
+          flex={1}
+          mih={TEXT_INPUT_MIN_HEIGHT}
           placeholder={`${format(subDays(new Date(), 10), "dd.MM.yyyy")} - ${format(new Date(), "dd.MM.yyyy")}`}
+          maxLength={21}
           {...reportForm.getInputProps("departureAndReturnDates")}
         />
         <TextInput
           label={t(Dictionary.AbroadReport.DEPARTMENT_HEAD)}
-          style={{ flex: 1, minHeight: TEXT_INPUT_MIN_HEIGHT }}
+          flex={1}
+          mih={TEXT_INPUT_MIN_HEIGHT}
           {...reportForm.getInputProps("departmentHead")}
         />
       </Flex>
       <Flex gap={20}>
         <TextInput
           label={t(Dictionary.AbroadReport.REQUESTED_ADVANCE_AMOUNT)}
-          style={{ flex: 1, minHeight: TEXT_INPUT_MIN_HEIGHT }}
+          flex={1}
+          mih={TEXT_INPUT_MIN_HEIGHT}
           {...reportForm.getInputProps("requestedAdvanceAmount")}
         />
         <TextInput
           label={t(Dictionary.AbroadReport.FINANCE_OFFICER)}
-          style={{ flex: 1, minHeight: TEXT_INPUT_MIN_HEIGHT }}
+          flex={1}
+          mih={TEXT_INPUT_MIN_HEIGHT}
           {...reportForm.getInputProps("financeOfficer")}
+        />
+      </Flex>
+      <Flex gap={20}>
+        <TextInput
+          label={t(Dictionary.AbroadReport.TL_IBAN)}
+          mih={TEXT_INPUT_MIN_HEIGHT}
+          flex={2}
+          {...reportForm.getInputProps("tlIban")}
+          onChange={(e) =>
+            reportForm.setFieldValue(
+              "tlIban",
+              formatIban(e.currentTarget.value),
+            )
+          }
+        />
+        <TextInput
+          label={t(Dictionary.AbroadReport.EUR_IBAN)}
+          mih={TEXT_INPUT_MIN_HEIGHT}
+          flex={2}
+          {...reportForm.getInputProps("eurIban")}
+          onChange={(e) =>
+            reportForm.setFieldValue(
+              "eurIban",
+              formatIban(e.currentTarget.value),
+            )
+          }
         />
       </Flex>
       <Button
