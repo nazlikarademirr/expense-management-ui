@@ -242,36 +242,32 @@ abstract class Dictionary {
     static readonly ALL_NAME = "report.allName";
     static readonly ABROAD = "report.abroad";
     static readonly SHOW_ABROAD = "report.showAbroad";
-    static readonly ERROR_MESSAGE = "report.errorMessage";
-  };
-
-  static AbroadReport = class {
-    static readonly TITLE = "abroadReport.title";
-    static readonly DEPARTMENT = "abroadReport.department";
-    static readonly REQUESTED_ADVANCE_AMOUNT =
-      "abroadReport.requestedAdvanceAmount";
-    static readonly TRAVEL_PLACE = "abroadReport.travelPlace";
+    static readonly TITLE = "report.title";
+    static readonly DEPARTMENT = "report.department";
+    static readonly REQUESTED_ADVANCE_AMOUNT = "report.requestedAdvanceAmount";
+    static readonly TRAVEL_PLACE = "report.travelPlace";
     static readonly DEPARTURE_AND_RETURN_DATES =
-      "abroadReport.departureAndReturnDates";
-    static readonly PURPOSE_OF_TRAVEL = "abroadReport.purposeOfTravel";
-    static readonly ADVANCE_RECEIVED_AMOUNT =
-      "abroadReport.advanceReceivedAmount";
+      "report.departureAndReturnDates";
+    static readonly PURPOSE_OF_TRAVEL = "report.purposeOfTravel";
+    static readonly ADVANCE_RECEIVED_AMOUNT = "report.advanceReceivedAmount";
     static readonly ADVANCE_RECEIVED_AMOUNT_CURRENCY =
-      "abroadReport.advanceReceivedAmountCurrency";
-    static readonly AMOUNT_TO_BE_REFUNDED = "abroadReport.amountToBeRefunded";
+      "report.advanceReceivedAmountCurrency";
+    static readonly AMOUNT_TO_BE_REFUNDED = "report.amountToBeRefunded";
     static readonly AMOUNT_TO_BE_REFUNDED_CURRENCY =
-      "abroadReport.amountToBeRefundedCurrency";
-    static readonly AMOUNT_TO_BE_PAID = "abroadReport.amountToBePaid";
-    static readonly AMOUNT_TO_BE_PAID_CURRENY =
-      "abroadReport.amountToBePaidCurrency";
-    static readonly DECLARANT = "abroadReport.declarant";
-    static readonly DEPARTMENT_MANAGER = "abroadReport.departmentManager";
-    static readonly DEPARTMENT_HEAD = "abroadReport.departmentHead";
-    static readonly FINANCE_OFFICER = "abroadReport.financeOfficer";
-    static readonly CREATE = "abroadReport.create";
-    static readonly TL_IBAN = "abroadReport.tlIban";
-    static readonly EUR_IBAN = "abroadReport.eurIban";
-    static readonly INVALID_IBAN = "abroadReport.invalidIban";
+      "report.amountToBeRefundedCurrency";
+    static readonly AMOUNT_TO_BE_PAID = "report.amountToBePaid";
+    static readonly AMOUNT_TO_BE_PAID_CURRENY = "report.amountToBePaidCurrency";
+    static readonly DECLARANT = "report.declarant";
+    static readonly DEPARTMENT_MANAGER = "report.departmentManager";
+    static readonly DEPARTMENT_HEAD = "report.departmentHead";
+    static readonly FINANCE_OFFICER = "report.financeOfficer";
+    static readonly TL_IBAN = "report.tlIban";
+    static readonly EUR_IBAN = "report.eurIban";
+    static readonly INVALID_IBAN = "report.invalidIban";
+    static readonly NEW = "report.new";
+    static readonly PURPOSE_OF_TRAVEL_PLACEHOLDER =
+      "report.purposeOfTravelPlaceholder";
+    static readonly MAX_NUMBER_OF_EXPENSES = "report.maxNumberOfExpenses";
   };
 }
 

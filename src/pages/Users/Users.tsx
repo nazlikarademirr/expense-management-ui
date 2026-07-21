@@ -368,6 +368,7 @@ function Users() {
                     onClick={() => openEditUserModal(x)}
                     variant="light"
                     color="blue"
+                    loading={isLoading}
                     leftSection={<IconEdit size={18} />}
                   >
                     {t(Dictionary.Common.EDIT)}

@@ -5,8 +5,13 @@ export const formatIban = (value: string) => {
 
   if (cleaned.length === 0) return "";
 
+  if (cleaned === "T" || cleaned === "TR") {
+    return cleaned;
+  }
+
   if (!cleaned.startsWith("TR")) {
     const numbersOnly = cleaned.replace(/[^0-9]/g, "");
+    if (numbersOnly.length === 0) return "";
     cleaned = "TR" + numbersOnly;
   } else {
     const numbersOnly = cleaned.substring(2).replace(/[^0-9]/g, "");

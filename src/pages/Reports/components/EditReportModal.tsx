@@ -1,36 +1,62 @@
+import {
+  Button,
+  Checkbox,
+  Flex,
+  Group,
+  Radio,
+  Select,
+  TextInput,
+  Autocomplete,
+} from "@mantine/core";
+import { useTranslation } from "react-i18next";
+import Dictionary from "../../../helpers/translation/dictionary";
 import { useForm } from "@mantine/form";
-import useRequestHandler from "../../../hooks/useRequestHandler";
 import reportSchema, { Report } from "../../../types/report.types";
+import { zod4Resolver } from "mantine-form-zod-resolver";
+import { currencyTypes } from "../../../constants/static-data";
 import { useEffect, useRef, useState } from "react";
-import { Button, Flex, TextInput } from "@mantine/core";
-import { modals } from "@mantine/modals";
-import toast from "react-hot-toast";
-import RequestType from "../../../request-handler/request-type";
 import urls from "../../../constants/urls";
+import RequestType from "../../../request-handler/request-type";
+import useRequestHandler from "../../../hooks/useRequestHandler";
 import {
   createJsonPatchDocumentFromDirtyForm,
   JsonPatchKeyValuePair,
 } from "../../../types/json-patch-document";
-import { zod4Resolver } from "mantine-form-zod-resolver";
-import Dictionary from "../../../helpers/translation/dictionary";
-import { useTranslation } from "react-i18next";
+import toast from "react-hot-toast";
+import { modals } from "@mantine/modals";
+import { format, subDays } from "date-fns";
+import CurrencyType from "../../../enums/currency-type";
+import { formatIban } from "../../../helpers/IbanFormatter";
+import { SelectItem } from "../../../types/select-item.types";
 
-interface EditReportProps {
+const TEXT_INPUT_MIN_HEIGHT = 90;
+
+interface EditAbroadReportModalProps {
   report: Report;
   updateReport: (formEditedReport: Report) => void;
   checkIfReportIsValid: (report: Report) => boolean;
+  activeUserSelectData: SelectItem[];
+  managerSelectData: SelectItem[];
+  projectSelectData: string[];
+  namePlaceholder: string;
+  handleCurrencyDeselect: (field: keyof Report, selectItem: SelectItem) => void;
 }
 
-function EditReportModal({
+function EditAbroadReportModal({
   report,
   updateReport,
   checkIfReportIsValid,
-}: EditReportProps) {
+  activeUserSelectData,
+  managerSelectData,
+  projectSelectData,
+  namePlaceholder,
+  handleCurrencyDeselect,
+}: EditAbroadReportModalProps) {
+  const { t } = useTranslation();
+
   const { handleDataRequest } = useRequestHandler();
 
   const [isLoading, setIsLoading] = useState(false);
-
-  const { t } = useTranslation();
 
   const reportForm = useForm({
     initialValues: {
@@ -87,6 +113,12 @@ function EditReportModal({
     setIsLoading(false);
   };
 
+  const filteredCurrency = currencyTypes.filter(
+    (x) =>
+      x.value !== CurrencyType.MacedonianDenar &&
+      x.value !== CurrencyType.MalaysianRinggit,
+  );
+
   useEffect(() => {
     if (nameInputRef.current) {
       nameInputRef.current.focus();
@@ -94,19 +126,209 @@ function EditReportModal({
   }, []);
 
   return (
-    <Flex direction="column" gap={10}>
-      <TextInput
-        ref={nameInputRef}
-        label={t(Dictionary.Report.NAME)}
-        mih={80}
-        withAsterisk
-        {...reportForm.getInputProps("name")}
-      />
+    <Flex direction="column" mih={TEXT_INPUT_MIN_HEIGHT}>
+      <Flex gap={20}>
+        <Flex flex={1} gap={10} align="center">
+          <TextInput
+            label={t(Dictionary.Report.NAME)}
+            mih={TEXT_INPUT_MIN_HEIGHT}
+            withAsterisk
+            placeholder={namePlaceholder}
+            flex={1}
+            {...reportForm.getInputProps("name")}
+          />
+          <Checkbox
+            labelPosition="left"
+            label={t(Dictionary.Report.ABROAD)}
+            mb={10}
+            {...reportForm.getInputProps("isAbroad", { type: "checkbox" })}
+          />
+        </Flex>
+        <TextInput
+          label={t(Dictionary.Report.REQUESTED_ADVANCE_AMOUNT)}
+          mih={TEXT_INPUT_MIN_HEIGHT}
+          flex={1}
+          {...reportForm.getInputProps("requestedAdvanceAmount")}
+        />
+      </Flex>
+      <Flex gap={20}>
+        <Select
+          {...reportForm.getInputProps("declarant")}
+          mih={TEXT_INPUT_MIN_HEIGHT}
+          data={activeUserSelectData}
+          flex={2}
+          searchable
+          label={t(Dictionary.Report.DECLARANT)}
+          comboboxProps={{ withinPortal: false }}
+        />
+        <Flex gap={20} flex={2} align="center">
+          <TextInput
+            label={t(Dictionary.Report.ADVANCE_RECEIVED_AMOUNT)}
+            flex={1}
+            mih={TEXT_INPUT_MIN_HEIGHT}
+            {...reportForm.getInputProps("advanceReceivedAmount")}
+          />
+          <Radio.Group
+            {...reportForm.getInputProps("advanceReceivedAmountCurrency")}
+          >
+            <Group>
+              {filteredCurrency.map((x) => (
+                <Radio
+                  value={x.value}
+                  label={x.label}
+                  onClick={() =>
+                    handleCurrencyDeselect("advanceReceivedAmountCurrency", x)
+                  }
+                ></Radio>
+              ))}
+            </Group>
+          </Radio.Group>
+        </Flex>
+      </Flex>
+      <Flex gap={20}>
+        <TextInput
+          label={t(Dictionary.Report.TITLE)}
+          flex={2}
+          mih={TEXT_INPUT_MIN_HEIGHT}
+          {...reportForm.getInputProps("title")}
+        />
+        <Flex gap={20} flex={2} align="center">
+          <TextInput
+            label={t(Dictionary.Report.AMOUNT_TO_BE_REFUNDED)}
+            mih={TEXT_INPUT_MIN_HEIGHT}
+            flex={2}
+            {...reportForm.getInputProps("amountToBeRefunded")}
+          />
+          <Radio.Group
+            {...reportForm.getInputProps("amountToBeRefundedCurrency")}
+          >
+            <Group>
+              {filteredCurrency.map((x) => (
+                <Radio
+                  value={x.value}
+                  label={x.label}
+                  onClick={() =>
+                    handleCurrencyDeselect("amountToBeRefundedCurrency", x)
+                  }
+                ></Radio>
+              ))}
+            </Group>
+          </Radio.Group>
+        </Flex>
+      </Flex>
+      <Flex gap={20}>
+        <TextInput
+          label={t(Dictionary.Report.DEPARTMENT)}
+          flex={2}
+          mih={TEXT_INPUT_MIN_HEIGHT}
+          {...reportForm.getInputProps("department")}
+        />
+        <Flex gap={20} flex={2} align="center">
+          <TextInput
+            label={t(Dictionary.Report.AMOUNT_TO_BE_PAID)}
+            flex={2}
+            mih={TEXT_INPUT_MIN_HEIGHT}
+            {...reportForm.getInputProps("amountToBePaid")}
+          />
+          <Radio.Group {...reportForm.getInputProps("amountToBePaidCurrency")}>
+            <Group>
+              {filteredCurrency.map((x) => (
+                <Radio
+                  value={x.value}
+                  label={x.label}
+                  onClick={() =>
+                    handleCurrencyDeselect("amountToBePaidCurrency", x)
+                  }
+                ></Radio>
+              ))}
+            </Group>
+          </Radio.Group>
+        </Flex>
+      </Flex>
+      <Flex gap={20}>
+        <TextInput
+          label={t(Dictionary.Report.TRAVEL_PLACE)}
+          flex={1}
+          mih={TEXT_INPUT_MIN_HEIGHT}
+          {...reportForm.getInputProps("travelPlace")}
+        />
+        <Select
+          {...reportForm.getInputProps("departmentManager")}
+          mih={TEXT_INPUT_MIN_HEIGHT}
+          data={managerSelectData}
+          flex={1}
+          searchable
+          label={t(Dictionary.Report.DEPARTMENT_MANAGER)}
+          comboboxProps={{ withinPortal: false }}
+        />
+      </Flex>
+      <Flex gap={20}>
+        <Autocomplete
+          label={t(Dictionary.Report.PURPOSE_OF_TRAVEL)}
+          flex={1}
+          mih={TEXT_INPUT_MIN_HEIGHT}
+          data={projectSelectData}
+          placeholder={t(Dictionary.Report.PURPOSE_OF_TRAVEL_PLACEHOLDER)}
+          clearable
+          {...reportForm.getInputProps("purposeOfTravel")}
+        />
+        <Select
+          {...reportForm.getInputProps("departmentHead")}
+          mih={TEXT_INPUT_MIN_HEIGHT}
+          data={managerSelectData}
+          flex={1}
+          searchable
+          label={t(Dictionary.Report.DEPARTMENT_HEAD)}
+          comboboxProps={{ withinPortal: false }}
+        />
+      </Flex>
+      <Flex gap={20}>
+        <TextInput
+          label={t(Dictionary.Report.DEPARTURE_AND_RETURN_DATES)}
+          flex={1}
+          mih={TEXT_INPUT_MIN_HEIGHT}
+          placeholder={`${format(subDays(new Date(), 10), "dd.MM.yyyy")} - ${format(new Date(), "dd.MM.yyyy")}`}
+          maxLength={21}
+          {...reportForm.getInputProps("departureAndReturnDates")}
+        />
+        <TextInput
+          label={t(Dictionary.Report.FINANCE_OFFICER)}
+          flex={1}
+          mih={TEXT_INPUT_MIN_HEIGHT}
+          {...reportForm.getInputProps("financeOfficer")}
+        />
+      </Flex>
+      <Flex gap={20}>
+        <TextInput
+          label={t(Dictionary.Report.TL_IBAN)}
+          mih={TEXT_INPUT_MIN_HEIGHT}
+          flex={2}
+          {...reportForm.getInputProps("tlIban")}
+          onChange={(e) =>
+            reportForm.setFieldValue(
+              "tlIban",
+              formatIban(e.currentTarget.value),
+            )
+          }
+        />
+        <TextInput
+          label={t(Dictionary.Report.EUR_IBAN)}
+          mih={TEXT_INPUT_MIN_HEIGHT}
+          flex={2}
+          {...reportForm.getInputProps("eurIban")}
+          onChange={(e) =>
+            reportForm.setFieldValue(
+              "eurIban",
+              formatIban(e.currentTarget.value),
+            )
+          }
+        />
+      </Flex>
       <Button
         variant="light"
-        disabled={!reportForm.isDirty()}
-        onClick={(e) => handleSave(e)}
         loading={isLoading}
+        onClick={handleSave}
+        disabled={!reportForm.isDirty()}
       >
         {t(Dictionary.Common.EDIT)}
       </Button>
@@ -114,4 +336,4 @@ function EditReportModal({
   );
 }
 
-export default EditReportModal;
+export default EditAbroadReportModal;

@@ -260,6 +260,7 @@ function Projects() {
                   <Button
                     onClick={() => openEditProject(x)}
                     variant="light"
+                    loading={isLoading}
                     leftSection={<IconEdit size={18} />}
                     color="blue"
                   >

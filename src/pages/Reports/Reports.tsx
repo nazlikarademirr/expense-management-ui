@@ -14,6 +14,10 @@ import {
   Text,
   Badge,
   Collapse,
+  Group,
+  Radio,
+  Select,
+  Autocomplete,
 } from "@mantine/core";
 import {
   IconDownload,
@@ -21,10 +25,9 @@ import {
   IconSearch,
   IconTrash,
 } from "@tabler/icons-react";
-import { format } from "date-fns";
+import { format, subDays } from "date-fns";
 import toast from "react-hot-toast";
 import { modals } from "@mantine/modals";
-import EditReportModal from "./components/EditReportModal";
 import useReports from "../../hooks/useReports";
 import {
   PAGE_FLEX_HEIGHT,
@@ -40,11 +43,17 @@ import { useTranslation } from "react-i18next";
 import Dictionary from "../../helpers/translation/dictionary";
 import { PiPlusCircle } from "react-icons/pi";
 import { Expense } from "../../types/expense.types";
-import { FaPlaneDeparture } from "react-icons/fa";
-import CreateAbroadReportModal from "./components/CreateAbroadReportModal";
-import EditAbroadReportModal from "./components/EditAbroadReportModal";
 import { currencyTypes, expenseTypes } from "../../constants/static-data";
 import ExpenseType from "../../enums/expense-type";
+import { SelectItem } from "../../types/select-item.types";
+import CurrencyType from "../../enums/currency-type";
+import { formatIban } from "../../helpers/IbanFormatter";
+import { User } from "../../types/user.types";
+import { Project } from "../../types/project.types";
+import Role from "../../enums/role";
+import EditReportModal from "./components/EditReportModal";
+
+const TEXT_INPUT_MIN_HEIGHT = 85;
 
 function Reports() {
   const { reports, addReport, updateReport, deleteReport, replaceReports } =
@@ -70,6 +79,14 @@ function Reports() {
   const currentYear = new Date().getFullYear();
   const namePlaceholder = `${auth.currentUserFullName} - ${currentMonth} ${currentYear}`;
 
+  const [activeUserSelectData, setActiveUserSelectData] = useState<
+    SelectItem[]
+  >([]);
+
+  const [managerSelectData, setManagerSelectData] = useState<SelectItem[]>([]);
+
+  const [projectSelectData, setProjectSelectData] = useState<string[]>([]);
+
   const [expandedReportIds, setExpandedReportIds] = useState<string[]>([]);
 
   const toggleRow = (id: string) => {
@@ -82,7 +99,7 @@ function Reports() {
     initialValues: {
       id: crypto.randomUUID(),
       name: "",
-      isAbroad: true,
+      isAbroad: false,
       title: "",
       department: "",
       requestedAdvanceAmount: "",
@@ -112,44 +129,18 @@ function Reports() {
   const openEditReport = (report: Report) => {
     modals.open({
       title: <Title order={4}>{t(Dictionary.Report.EDIT)}</Title>,
-      size: report.isAbroad ? "60%" : "40%",
-      styles: report.isAbroad
-        ? {
-            content: {
-              minHeight: 840,
-            },
-          }
-        : undefined,
-      children: report.isAbroad ? (
-        <EditAbroadReportModal
-          report={report}
-          updateReport={updateReport}
-          checkIfReportIsValid={checkIfReportIsValid}
-        />
-      ) : (
+      size: "60%",
+      styles: { content: { minHeight: 840 } },
+      children: (
         <EditReportModal
           report={report}
           updateReport={updateReport}
           checkIfReportIsValid={checkIfReportIsValid}
-        />
-      ),
-    });
-  };
-
-  const openCreateAbroadReportModal = () => {
-    modals.open({
-      title: <Title order={4}>{t(Dictionary.Report.ABROAD)}</Title>,
-      size: "60%",
-      styles: {
-        content: {
-          minHeight: 840,
-        },
-      },
-      children: (
-        <CreateAbroadReportModal
-          addReport={addReport}
-          checkIfReportIsValid={checkIfReportIsValid}
-          currentUserFullName={auth.currentUserFullName}
+          activeUserSelectData={activeUserSelectData}
+          managerSelectData={managerSelectData}
+          projectSelectData={projectSelectData}
+          namePlaceholder={namePlaceholder}
+          handleCurrencyDeselect={handleCurrencyDeselect}
         />
       ),
     });
@@ -217,6 +208,9 @@ function Reports() {
           x.amountToBePaidCurrency !== null
             ? x.amountToBePaidCurrency.toString()
             : null,
+        declarant: x.declarant ? x.declarant : null,
+        departmentManager: x.departmentManager ? x.departmentManager : null,
+        departmentHead: x.departmentHead ? x.departmentHead : null,
       })),
     );
   };
@@ -237,6 +231,21 @@ function Reports() {
       toast.error(t(Dictionary.Report.ALL_NAME));
       return false;
     }
+
+    const expenseCount = expenses.filter(
+      (x) => x.reportId === report.id,
+    ).length;
+
+    if (!report.isAbroad && expenseCount > 15) {
+      toast.error(t(Dictionary.Report.MAX_NUMBER_OF_EXPENSES));
+      return false;
+    }
+
+    if (report.isAbroad && expenseCount > 50) {
+      toast.error(t(Dictionary.Report.MAX_NUMBER_OF_EXPENSES));
+      return false;
+    }
+
     return true;
   };
 
@@ -258,7 +267,6 @@ function Reports() {
     const request: ReportRequest = {
       ...form.values,
       name: form.values.name.trim(),
-      isAbroad: false,
     };
 
     const response = await handleDataRequest<ReportRequest, Report>(
@@ -333,6 +341,61 @@ function Reports() {
     setIsLoading(false);
   };
 
+  const filteredCurrency = currencyTypes.filter(
+    (x) =>
+      x.value !== CurrencyType.MacedonianDenar &&
+      x.value !== CurrencyType.MalaysianRinggit,
+  );
+
+  const handleCurrencyDeselect = (
+    field: keyof typeof form.values,
+    selectItem: SelectItem,
+  ) => {
+    if (form.values[field] === selectItem.value) {
+      form.setFieldValue(field, null);
+    }
+  };
+
+  const getProjects = async () => {
+    const response = await handleDataRequest<never, Project[]>(
+      urls.project,
+      RequestType.Get,
+    );
+
+    if (!response.isSuccess) return;
+
+    setProjectSelectData(
+      response.value.filter((x) => x.isActive).map((x) => x.name),
+    );
+  };
+
+  const getActiveUsers = async () => {
+    const response = await handleDataRequest<never, User[]>(
+      urls.user,
+      RequestType.Get,
+      undefined,
+      { isActive: true },
+    );
+
+    if (!response.isSuccess) return;
+
+    setActiveUserSelectData(
+      response.value.map((x) => ({
+        value: x.id,
+        label: `${x.name} ${x.surname}`,
+      })),
+    );
+
+    setManagerSelectData(
+      response.value
+        .filter((x) => x.role.toString() !== Role.User)
+        .map((x) => ({
+          value: x.id,
+          label: `${x.name} ${x.surname}`,
+        })),
+    );
+  };
+
   const memoizedReports = useMemo(
     () =>
       reports
@@ -347,7 +410,14 @@ function Reports() {
           return (
             <Fragment key={x.id}>
               <Table.Tr onClick={() => toggleRow(x.id)}>
-                <Table.Td> {x.name} </Table.Td>
+                <Table.Td>
+                  <Flex justify="space-between" align="center">
+                    {x.name}
+                    <Text size="sm" c="dimmed">
+                      {reportExpenses.length}
+                    </Text>
+                  </Flex>
+                </Table.Td>
                 <Table.Td>
                   <Badge
                     size="md"
@@ -379,6 +449,7 @@ function Reports() {
                       size="xs"
                       onClick={() => openEditReport(x)}
                       variant="light"
+                      loading={isLoading}
                       leftSection={<IconEdit size={16} />}
                     >
                       {t(Dictionary.Common.EDIT)}
@@ -388,6 +459,7 @@ function Reports() {
                       onClick={() => openDeleteReportModal(x.id)}
                       variant="light"
                       leftSection={<IconTrash size={16} />}
+                      loading={isLoading}
                       style={{ color: "red", backgroundColor: "#ffeeee" }}
                     >
                       {t(Dictionary.Common.DELETE)}
@@ -476,6 +548,8 @@ function Reports() {
   useEffect(() => {
     getReports();
     getExpenses();
+    getActiveUsers();
+    getProjects();
   }, []);
 
   return (
@@ -483,34 +557,201 @@ function Reports() {
       <Title order={3}>{t(Dictionary.Common.REPORTS)}</Title>
       <Divider my={TITLE_DIVIDER_MY} />
       <Card shadow="xs" radius="md" withBorder>
-        <Flex gap={20}>
-          <Flex gap="md" direction="column" w="100%">
+        <Flex direction="column" mih={TEXT_INPUT_MIN_HEIGHT}>
+          <Flex gap={20}>
+            <Flex gap={10} flex={1} align="center">
+              <TextInput
+                label={t(Dictionary.Report.NAME)}
+                flex={2}
+                mih={TEXT_INPUT_MIN_HEIGHT}
+                withAsterisk
+                placeholder={namePlaceholder}
+                {...form.getInputProps("name")}
+              />
+              <Checkbox
+                {...form.getInputProps("isAbroad", { type: "checkbox" })}
+                labelPosition="left"
+                label={t(Dictionary.Report.ABROAD)}
+              />
+            </Flex>
             <TextInput
-              {...form.getInputProps("name")}
-              withAsterisk
-              placeholder={namePlaceholder}
-              label={t(Dictionary.Report.NAME)}
-              mih={80}
+              label={t(Dictionary.Report.TRAVEL_PLACE)}
+              flex={1}
+              mih={TEXT_INPUT_MIN_HEIGHT}
+              {...form.getInputProps("travelPlace")}
             />
-            <Button
-              onClick={handleSave}
-              variant="light"
-              loading={isLoading}
-              leftSection={<PiPlusCircle size={22} />}
-            >
-              {t(Dictionary.Report.CREATE_NEW)}
-            </Button>
+            <Flex gap={20} flex={1} align="center">
+              <TextInput
+                label={t(Dictionary.Report.ADVANCE_RECEIVED_AMOUNT)}
+                flex={1}
+                mih={TEXT_INPUT_MIN_HEIGHT}
+                {...form.getInputProps("advanceReceivedAmount")}
+              />
+              <Radio.Group
+                {...form.getInputProps("advanceReceivedAmountCurrency")}
+              >
+                <Group>
+                  {filteredCurrency.map((x) => (
+                    <Radio
+                      value={x.value}
+                      label={x.label}
+                      onClick={() =>
+                        handleCurrencyDeselect(
+                          "advanceReceivedAmountCurrency",
+                          x,
+                        )
+                      }
+                    ></Radio>
+                  ))}
+                </Group>
+              </Radio.Group>
+            </Flex>
+            <Select
+              {...form.getInputProps("departmentManager")}
+              mih={TEXT_INPUT_MIN_HEIGHT}
+              data={managerSelectData}
+              flex={1}
+              searchable
+              label={t(Dictionary.Report.DEPARTMENT_MANAGER)}
+              comboboxProps={{ withinPortal: false }}
+            />
           </Flex>
-          <Divider orientation="vertical" />
-          <Flex align="center">
-            <Button
-              variant="light"
-              leftSection={<FaPlaneDeparture />}
-              onClick={openCreateAbroadReportModal}
-            >
-              {t(Dictionary.AbroadReport.CREATE)}
-            </Button>
+          <Flex gap={20}>
+            <Select
+              {...form.getInputProps("declarant")}
+              mih={TEXT_INPUT_MIN_HEIGHT}
+              data={activeUserSelectData}
+              flex={1}
+              searchable
+              label={t(Dictionary.Report.DECLARANT)}
+              comboboxProps={{ withinPortal: false }}
+            />
+            <Autocomplete
+              label={t(Dictionary.Report.PURPOSE_OF_TRAVEL)}
+              flex={1}
+              mih={TEXT_INPUT_MIN_HEIGHT}
+              data={projectSelectData}
+              clearable
+              comboboxProps={{ withinPortal: false }}
+              placeholder={t(Dictionary.Report.PURPOSE_OF_TRAVEL_PLACEHOLDER)}
+              {...form.getInputProps("purposeOfTravel")}
+            />
+            <Flex gap={20} flex={1} align="center">
+              <TextInput
+                label={t(Dictionary.Report.AMOUNT_TO_BE_REFUNDED)}
+                mih={TEXT_INPUT_MIN_HEIGHT}
+                flex={1}
+                {...form.getInputProps("amountToBeRefunded")}
+              />
+              <Radio.Group
+                {...form.getInputProps("amountToBeRefundedCurrency")}
+              >
+                <Group>
+                  {filteredCurrency.map((x) => (
+                    <Radio
+                      value={x.value}
+                      label={x.label}
+                      onClick={() =>
+                        handleCurrencyDeselect("amountToBeRefundedCurrency", x)
+                      }
+                    ></Radio>
+                  ))}
+                </Group>
+              </Radio.Group>
+            </Flex>
+            <Select
+              {...form.getInputProps("departmentHead")}
+              mih={TEXT_INPUT_MIN_HEIGHT}
+              data={managerSelectData}
+              flex={1}
+              searchable
+              label={t(Dictionary.Report.DEPARTMENT_HEAD)}
+              comboboxProps={{ withinPortal: false }}
+            />
           </Flex>
+          <Flex gap={20}>
+            <TextInput
+              label={t(Dictionary.Report.TITLE)}
+              flex={1}
+              mih={TEXT_INPUT_MIN_HEIGHT}
+              {...form.getInputProps("title")}
+            />
+            <TextInput
+              label={t(Dictionary.Report.DEPARTURE_AND_RETURN_DATES)}
+              flex={1}
+              mih={TEXT_INPUT_MIN_HEIGHT}
+              placeholder={`${format(subDays(new Date(), 10), "dd.MM.yyyy")} - ${format(new Date(), "dd.MM.yyyy")}`}
+              maxLength={21}
+              {...form.getInputProps("departureAndReturnDates")}
+            />
+            <Flex gap={20} flex={1} align="center">
+              <TextInput
+                label={t(Dictionary.Report.AMOUNT_TO_BE_PAID)}
+                flex={1}
+                mih={TEXT_INPUT_MIN_HEIGHT}
+                {...form.getInputProps("amountToBePaid")}
+              />
+              <Radio.Group {...form.getInputProps("amountToBePaidCurrency")}>
+                <Group>
+                  {filteredCurrency.map((x) => (
+                    <Radio
+                      value={x.value}
+                      label={x.label}
+                      onClick={() =>
+                        handleCurrencyDeselect("amountToBePaidCurrency", x)
+                      }
+                    ></Radio>
+                  ))}
+                </Group>
+              </Radio.Group>
+            </Flex>
+            <TextInput
+              label={t(Dictionary.Report.TL_IBAN)}
+              mih={TEXT_INPUT_MIN_HEIGHT}
+              flex={1}
+              {...form.getInputProps("tlIban")}
+              onChange={(e) =>
+                form.setFieldValue("tlIban", formatIban(e.currentTarget.value))
+              }
+            />
+          </Flex>
+          <Flex gap={20}>
+            <TextInput
+              label={t(Dictionary.Report.DEPARTMENT)}
+              flex={1}
+              mih={TEXT_INPUT_MIN_HEIGHT}
+              {...form.getInputProps("department")}
+            />
+            <TextInput
+              label={t(Dictionary.Report.REQUESTED_ADVANCE_AMOUNT)}
+              flex={1}
+              mih={TEXT_INPUT_MIN_HEIGHT}
+              {...form.getInputProps("requestedAdvanceAmount")}
+            />
+            <TextInput
+              label={t(Dictionary.Report.FINANCE_OFFICER)}
+              flex={1}
+              mih={TEXT_INPUT_MIN_HEIGHT}
+              {...form.getInputProps("financeOfficer")}
+            />
+            <TextInput
+              label={t(Dictionary.Report.EUR_IBAN)}
+              mih={TEXT_INPUT_MIN_HEIGHT}
+              flex={1}
+              {...form.getInputProps("eurIban")}
+              onChange={(e) =>
+                form.setFieldValue("eurIban", formatIban(e.currentTarget.value))
+              }
+            />
+          </Flex>
+          <Button
+            variant="light"
+            loading={isLoading}
+            onClick={handleSave}
+            leftSection={<PiPlusCircle size={22} />}
+          >
+            {t(Dictionary.Report.CREATE_NEW)}
+          </Button>
         </Flex>
       </Card>
       <Card mt="sm" radius="md" withBorder padding="sm" flex={1}>
