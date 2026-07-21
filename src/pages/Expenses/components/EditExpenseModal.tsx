@@ -37,6 +37,9 @@ import { zod4Resolver } from "mantine-form-zod-resolver";
 import { useTranslation } from "react-i18next";
 import Dictionary from "../../../helpers/translation/dictionary";
 import i18n from "../../../helpers/translation/i18n";
+import { dateParse } from "../../../helpers/DateParser";
+
+const INPUT_WIDTH = "20%";
 
 interface EditExpenseProps {
   expense: Expense;
@@ -252,12 +255,6 @@ function EditExpenseModal({
   );
 
   useEffect(() => {
-    if (expenseForm.values.expenseType === ExpenseType.Food) {
-      expenseForm.setFieldValue("description", "");
-    }
-  }, [expenseForm.values.expenseType]);
-
-  useEffect(() => {
     if (nameInputRef.current) {
       nameInputRef.current.focus();
     }
@@ -275,7 +272,7 @@ function EditExpenseModal({
         <Flex direction="column" w="50%">
           <Flex gap="sm" flex={1} mih={MIN_FLEX_HEIGHT}>
             <Select
-              w="20%"
+              w={INPUT_WIDTH}
               {...expenseForm.getInputProps("declarantId")}
               onChange={(_, option) => changeUser(option)}
               withAsterisk
@@ -288,10 +285,12 @@ function EditExpenseModal({
               settings={{ locale: i18n.language === "en" ? "en" : "tr" }}
             >
               <DateInput
-                w="20%"
+                w={INPUT_WIDTH}
                 {...expenseForm.getInputProps("expenseDate")}
                 withAsterisk
-                valueFormat="DD MMMM YYYY"
+                valueFormat="DD.MM.YYYY"
+                dateParser={dateParse}
+                maxLength={10}
                 label={t(Dictionary.Expense.DATE)}
                 flex={1}
                 popoverProps={{ withinPortal: false, position: "bottom" }}
@@ -300,7 +299,7 @@ function EditExpenseModal({
           </Flex>
           <Flex gap="sm" flex={1} mih={MIN_FLEX_HEIGHT}>
             <Select
-              w="20%"
+              w={INPUT_WIDTH}
               {...expenseForm.getInputProps("projectId")}
               onChange={(_, option) => changeProject(option)}
               withAsterisk
@@ -310,7 +309,7 @@ function EditExpenseModal({
             />
 
             <Select
-              w="20%"
+              w={INPUT_WIDTH}
               {...expenseForm.getInputProps("reportId")}
               onChange={(_, option) => changeReport(option)}
               data={reportSelectData}
@@ -324,7 +323,7 @@ function EditExpenseModal({
           </Flex>
           <Flex gap="sm" flex={1} mih={MIN_FLEX_HEIGHT}>
             <NumberInput
-              w="20%"
+              w={INPUT_WIDTH}
               {...expenseForm.getInputProps("totalPrice")}
               withAsterisk
               label={t(Dictionary.Expense.TOTAL_PRICE)}
@@ -333,7 +332,7 @@ function EditExpenseModal({
             />
 
             <Radio.Group
-              w="20%"
+              w={INPUT_WIDTH}
               flex={1}
               label={t(Dictionary.Expense.CURRENCY)}
               withAsterisk
@@ -349,7 +348,7 @@ function EditExpenseModal({
           </Flex>
           <Flex gap="sm" flex={1} mih={MIN_FLEX_HEIGHT}>
             <Radio.Group
-              w="20%"
+              w={INPUT_WIDTH}
               label={t(Dictionary.Expense.TYPE)}
               withAsterisk
               {...expenseForm.getInputProps("expenseType")}
@@ -363,14 +362,14 @@ function EditExpenseModal({
               </Group>
             </Radio.Group>
             <TextInput
-              w="20%"
+              w={INPUT_WIDTH}
               {...expenseForm.getInputProps("description")}
               label={t(Dictionary.Expense.DESCRIPTION)}
               withAsterisk={
                 expenseForm.values.expenseType === ExpenseType.Transportation ||
                 expenseForm.values.expenseType === ExpenseType.Other
               }
-              disabled={expenseForm.values.expenseType === ExpenseType.Food}
+              maxLength={128}
               flex={1}
             />
           </Flex>
@@ -388,7 +387,6 @@ function EditExpenseModal({
                 flex={1}
                 allowDeselect={false}
               />
-
               <NumberInput
                 {...overtimeMemberForm.getInputProps("price")}
                 withAsterisk
@@ -396,7 +394,6 @@ function EditExpenseModal({
                 hideControls
                 flex={1}
               />
-
               <Button onClick={saveOvertimeMember} variant="light" mt={25}>
                 {t(Dictionary.OvertimeMember.ADD_NEW)}
               </Button>

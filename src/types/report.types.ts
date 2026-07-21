@@ -66,7 +66,7 @@ const reportSchema = z.object({
     .refine((val) => {
       if (!val || val.trim() === "") return true;
       return val.replace(/\s/g, "").length === 26;
-    }, t(Dictionary.AbroadReport.INVALID_IBAN)),
+    }, t(Dictionary.Report.INVALID_IBAN)),
   eurIban: z
     .string()
     .nullable()
@@ -74,7 +74,7 @@ const reportSchema = z.object({
     .refine((val) => {
       if (!val || val.trim() === "") return true;
       return val.replace(/\s/g, "").length === 26;
-    }, t(Dictionary.AbroadReport.INVALID_IBAN)),
+    }, t(Dictionary.Report.INVALID_IBAN)),
 });
 
 export default reportSchema;

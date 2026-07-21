@@ -214,13 +214,13 @@
   "report": {
     "edit": "Raporu Düzenle",
     "delete": "Raporu Sil",
-    "deleteQuestion": "Raporu silmek istediğinizden emin misini?",
+    "deleteQuestion": "Raporu silmek istediğinizden emin misiniz?",
     "sameName": "Aynı isimde bir rapor mevcut.",
     "created": "Rapor başarıyla oluşturuldu.",
     "deleted": "Rapor başarıyla silindi.",
     "download": "İndir",
     "createNew": "Yeni Rapor Oluştur",
-    "name": "Ad",
+    "name": "Rapor Adı",
     "updated": "Rapor başarıyla güncellendi.",
     "nameMinLength": "İsim en az 2 harften oluşmalıdır.",
     "nameMaxLength": "İsim 128 karakteri geçemez.",
@@ -230,10 +230,6 @@
     "allName": "'Hepsi' ismi ile bir rapor oluşturulamaz.",
     "abroad": "Yurtdışı Raporu",
     "showAbroad": "Yurtdışı Raporlarını Göster",
-    "errorMessage": "Onaylanmış bir rapora masraf ekleyemezsiniz."
-  },
-
-  "abroadReport": {
     "title": "Görevi",
     "department": "Bölümü",
     "requestedAdvanceAmount": "Talep Edilen Avans Tutarı",
@@ -250,9 +246,11 @@
     "departmentManager": "Bölüm Yöneticisi",
     "departmentHead": "Bölüm Üst Yöneticisi",
     "financeOfficer": "Mali İşler",
-    "create": "Yurtdışı Raporu Oluştur",
     "tlIban": "TL Iban",
     "eurIban": "EUR Iban",
-    "invalidIban": "Hatalı veya eksik IBAN girdiniz."
+    "invalidIban": "Hatalı veya eksik IBAN girdiniz.",
+    "new": "Yeni Rapor",
+    "purposeOfTravelPlaceholder": "Bir proje seçin veya seyahat amacınızı girin.",
+    "maxNumberOfExpenses": "Rapordaki masraf alanları doldu, lütfen yeni bir rapor oluşturun."
   }
 }

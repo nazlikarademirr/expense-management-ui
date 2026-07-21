@@ -41,7 +41,7 @@ import useRequestHandler from "../../hooks/useRequestHandler";
 import { SelectItem } from "../../types/select-item.types";
 import { User } from "../../types/user.types";
 import { Project } from "../../types/project.types";
-import { Report, ReportRequest } from "../../types/report.types";
+import { Report } from "../../types/report.types";
 import { zod4Resolver } from "mantine-form-zod-resolver";
 import { useAuthentication } from "../../contexts/AuthenticationContext/AuthenticationProvider";
 import { useTranslation } from "react-i18next";
@@ -50,10 +50,10 @@ import { OcrResult } from "../../types/ocr.types";
 import { PiPlusCircle } from "react-icons/pi";
 import ReceiptUploader from "../../components/ReceiptUploader/ReceiptUploader";
 import normalizeText from "../../helpers/NormalizeText";
-import { FaPlaneDeparture } from "react-icons/fa";
-import CreateAbroadReportModal from "../Reports/components/CreateAbroadReportModal";
 import useReports from "../../hooks/useReports";
 import i18n from "../../helpers/translation/i18n";
+import CreateReportModal from "./components/CreateReportModal";
+import { dateParse } from "../../helpers/DateParser";
 
 const INPUT_WIDTH = "25%";
 const MIN_FLEX_HEIGHT = 120;
@@ -108,7 +108,12 @@ function Expenses() {
     SelectItem[]
   >([]);
 
-  const [reportSelectData, setReportSelectData] = useState<SelectItem[]>([]);
+  const [reports, setReports] = useState<Report[]>([]);
+
+  const reportSelectData = useMemo<SelectItem[]>(
+    () => reports.map((x) => ({ value: x.id, label: x.name })),
+    [reports],
+  );
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -193,9 +198,17 @@ function Expenses() {
     });
   };
 
-  const openCreateAbroadReportModal = () => {
+  const handleAddReport = (report: Report) => {
+    addReport(report);
+    setReports((prev) => [...prev, report]);
+    setSelectedReport(report.id);
+    setNewReportName(report.name);
+    setSearchQuery("");
+  };
+
+  const openCreateReportModal = () => {
     modals.open({
-      title: <Title order={4}>{t(Dictionary.Report.ABROAD)}</Title>,
+      title: <Title order={4}>{t(Dictionary.Report.NEW)}</Title>,
       size: "60%",
       returnFocus: false,
       styles: {
@@ -204,8 +217,8 @@ function Expenses() {
         },
       },
       children: (
-        <CreateAbroadReportModal
-          addReport={addReport}
+        <CreateReportModal
+          addReport={handleAddReport}
           checkIfReportIsValid={checkIfReportIsValid}
           currentUserFullName={auth.currentUserFullName}
         />
@@ -229,6 +242,21 @@ function Expenses() {
       toast.error(t(Dictionary.Report.ALL_NAME));
       return false;
     }
+
+    const expenseCount = expenses.filter(
+      (x) => x.reportId === report.id,
+    ).length;
+
+    if (!report.isAbroad && expenseCount > 15) {
+      toast.error(t(Dictionary.Report.MAX_NUMBER_OF_EXPENSES));
+      return false;
+    }
+
+    if (report.isAbroad && expenseCount > 50) {
+      toast.error(t(Dictionary.Report.MAX_NUMBER_OF_EXPENSES));
+      return false;
+    }
+
     return true;
   };
 
@@ -273,12 +301,7 @@ function Expenses() {
 
     if (!response.isSuccess) return;
 
-    setReportSelectData(
-      response.value.map((x) => ({
-        value: x.id,
-        label: x.name,
-      })),
-    );
+    setReports(response.value);
   };
 
   const getExpenses = async () => {
@@ -325,6 +348,23 @@ function Expenses() {
       toast.error(t(Dictionary.Report.SELECT));
       setIsLoading(false);
       return;
+    }
+
+    const currentReport = reports.find((x) => x.id === selectedReport);
+    if (currentReport) {
+      const expenseCount = expenses.filter(
+        (x) => x.reportId === selectedReport,
+      ).length;
+      if (!currentReport.isAbroad && expenseCount >= 15) {
+        toast.error(t(Dictionary.Report.MAX_NUMBER_OF_EXPENSES));
+        setIsLoading(false);
+        return;
+      }
+      if (currentReport.isAbroad && expenseCount >= 50) {
+        toast.error(t(Dictionary.Report.MAX_NUMBER_OF_EXPENSES));
+        setIsLoading(false);
+        return;
+      }
     }
 
     form.validate();
@@ -380,7 +420,15 @@ function Expenses() {
       createUserFullName: auth.currentUserFullName,
     });
 
+    const currentDeclarantId = form.values.declarantId;
+    const currentProjectId = form.values.projectId;
+
     form.reset();
+
+    form.setValues({
+      declarantId: currentDeclarantId,
+      projectId: currentProjectId,
+    });
 
     toast.success(t(Dictionary.Expense.ADDED));
 
@@ -420,66 +468,6 @@ function Expenses() {
         />
       ),
     });
-  };
-
-  const createNewReport = async (value: string) => {
-    setIsLoading(true);
-
-    if (!value) {
-      toast.error(t(Dictionary.Report.NAME_MIN_LENGTH));
-      setIsLoading(false);
-      return;
-    }
-
-    const request: ReportRequest = {
-      name: value.trim(),
-      isAbroad: false,
-      title: null,
-      department: null,
-      requestedAdvanceAmount: null,
-      travelPlace: null,
-      departureAndReturnDates: null,
-      purposeOfTravel: null,
-      advanceReceivedAmount: null,
-      advanceReceivedAmountCurrency: null,
-      amountToBeRefunded: null,
-      amountToBeRefundedCurrency: null,
-      amountToBePaid: null,
-      amountToBePaidCurrency: null,
-      declarant: null,
-      departmentManager: null,
-      departmentHead: null,
-      financeOfficer: null,
-      tlIban: null,
-      eurIban: null,
-    };
-
-    const response = await handleDataRequest<ReportRequest, Report>(
-      urls.report,
-      RequestType.Post,
-      request,
-    );
-
-    if (!response.isSuccess) {
-      setIsLoading(false);
-      return;
-    }
-
-    setSelectedReport(response.value.id);
-    setNewReportName(response.value.name);
-
-    const newReport = {
-      label: response.value.name,
-      value: response.value.id,
-    };
-
-    setReportSelectData([...reportSelectData, newReport]);
-
-    combobox.closeDropdown();
-
-    toast.success(t(Dictionary.Report.CREATED));
-
-    setIsLoading(false);
   };
 
   const filteredReportSelectData = reportSelectData.filter((x) =>
@@ -567,6 +555,7 @@ function Expenses() {
                   onClick={() => openEditExpense(x)}
                   variant="light"
                   radius={5}
+                  loading={isLoading}
                   leftSection={<IconEdit size={18} />}
                 >
                   {t(Dictionary.Common.EDIT)}
@@ -575,6 +564,7 @@ function Expenses() {
                   onClick={() => openDeleteExpenseModal(x.id)}
                   variant="light"
                   radius={5}
+                  loading={isLoading}
                   style={{ color: "red", backgroundColor: "#ffeeee" }}
                   leftSection={<IconTrash size={18} />}
                 >
@@ -585,6 +575,7 @@ function Expenses() {
           </Table.Tr>
         )),
     [
+      isLoading,
       expenses,
       searchQuery,
       selectedUser,
@@ -628,20 +619,10 @@ function Expenses() {
     combobox.openDropdown();
   };
 
-  const handleCreateAbroadReport = () => {
-    openCreateAbroadReportModal();
+  const handleCreateReport = () => {
+    openCreateReportModal();
     combobox.closeDropdown();
   };
-
-  const clearDescriptionIfFoodExpense = () => {
-    if (form.values.expenseType === ExpenseType.Food) {
-      form.setFieldValue("description", "");
-    }
-  };
-
-  useEffect(() => {
-    clearDescriptionIfFoodExpense();
-  }, [form.values.expenseType]);
 
   useEffect(() => {
     getActiveUsers();
@@ -687,22 +668,14 @@ function Expenses() {
               </Combobox.Options>
               <Combobox.Footer>
                 <Button
-                  mt={3}
-                  variant="light"
-                  fullWidth
-                  leftSection={<PiPlusCircle size={22} />}
-                  onClick={() => createNewReport(newReportName)}
-                >
-                  {t(Dictionary.Report.CREATE_NEW)}
-                </Button>
-                <Button
                   mt={10}
                   variant="light"
                   fullWidth
-                  leftSection={<FaPlaneDeparture />}
-                  onClick={handleCreateAbroadReport}
+                  loading={isLoading}
+                  leftSection={<PiPlusCircle size={22} />}
+                  onClick={handleCreateReport}
                 >
-                  {t(Dictionary.AbroadReport.CREATE)}
+                  {t(Dictionary.Report.CREATE_NEW)}
                 </Button>
               </Combobox.Footer>
             </Combobox.Dropdown>
@@ -747,8 +720,10 @@ function Expenses() {
                     w={INPUT_WIDTH}
                     {...form.getInputProps("expenseDate")}
                     withAsterisk
-                    valueFormat="DD MMMM YYYY"
+                    valueFormat="DD.MM.YYYY"
+                    dateParser={dateParse}
                     label={t(Dictionary.Expense.DATE)}
+                    maxLength={10}
                     popoverProps={{ withinPortal: false, position: "bottom" }}
                   />
                 </DatesProvider>
@@ -797,13 +772,14 @@ function Expenses() {
                     form.values.expenseType === ExpenseType.Transportation ||
                     form.values.expenseType === ExpenseType.Other
                   }
-                  disabled={form.values.expenseType === ExpenseType.Food}
+                  maxLength={128}
                 />
 
                 <Button
                   w={INPUT_WIDTH}
                   mt={25}
                   variant="light"
+                  loading={isLoading}
                   onClick={() => addOvertimeMember()}
                   leftSection={<PiPlusCircle size={22} />}
                 >

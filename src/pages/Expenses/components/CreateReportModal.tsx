@@ -1,8 +1,15 @@
 import { useForm } from "@mantine/form";
-import { Button, Flex, Group, Radio, TextInput } from "@mantine/core";
+import {
+  Button,
+  Checkbox,
+  Flex,
+  Group,
+  Radio,
+  Select,
+  TextInput,
+} from "@mantine/core";
 import Dictionary from "../../../helpers/translation/dictionary";
 import { useTranslation } from "react-i18next";
-import { PiPlusCircle } from "react-icons/pi";
 import { currencyTypes } from "../../../constants/static-data";
 import { zod4Resolver } from "mantine-form-zod-resolver";
 import reportSchema, {
@@ -12,13 +19,15 @@ import reportSchema, {
 import urls from "../../../constants/urls";
 import RequestType from "../../../request-handler/request-type";
 import useRequestHandler from "../../../hooks/useRequestHandler";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { format, subDays } from "date-fns";
 import { modals } from "@mantine/modals";
 import CurrencyType from "../../../enums/currency-type";
 import { formatIban } from "../../../helpers/IbanFormatter";
 import { SelectItem } from "../../../types/select-item.types";
+import { User } from "../../../types/user.types";
+import Role from "../../../enums/role";
 
 const TEXT_INPUT_MIN_HEIGHT = 90;
 
@@ -28,7 +37,7 @@ interface CreateAbroadReportModalProps {
   currentUserFullName: string;
 }
 
-function CreateAbroadReportModal({
+function CreateReportModal({
   addReport,
   checkIfReportIsValid,
   currentUserFullName,
@@ -39,11 +48,17 @@ function CreateAbroadReportModal({
 
   const [isLoading, setIsLoading] = useState(false);
 
+  const [activeUserSelectData, setActiveUserSelectData] = useState<
+    SelectItem[]
+  >([]);
+
+  const [managerSelectData, setManagerSelectData] = useState<SelectItem[]>([]);
+
   const form = useForm({
     initialValues: {
       id: crypto.randomUUID(),
       name: "",
-      isAbroad: true,
+      isAbroad: false,
       title: "",
       department: "",
       requestedAdvanceAmount: "",
@@ -134,54 +149,86 @@ function CreateAbroadReportModal({
       x.value !== CurrencyType.MalaysianRinggit,
   );
 
-  const handleAdvanceReceivedAmountCurrencyDeselect = (
+  const handleCurrencyDeselect = (
+    field: keyof typeof form.values,
     selectItem: SelectItem,
   ) => {
-    if (form.values.advanceReceivedAmountCurrency === selectItem.value) {
-      form.setFieldValue("advanceReceivedAmountCurrency", null);
+    if (form.values[field] === selectItem.value) {
+      form.setFieldValue(field, null);
     }
   };
 
-  const handleAmountToBeRefundedCurrencyDeselect = (selectItem: SelectItem) => {
-    if (form.values.amountToBeRefundedCurrency === selectItem.value) {
-      form.setFieldValue("amountToBeRefundedCurrency", null);
-    }
+  const getActiveUsers = async () => {
+    const response = await handleDataRequest<never, User[]>(
+      urls.user,
+      RequestType.Get,
+      undefined,
+      { isActive: true },
+    );
+
+    if (!response.isSuccess) return;
+
+    setActiveUserSelectData(
+      response.value.map((x) => ({
+        value: x.id.toLowerCase(),
+        label: `${x.name} ${x.surname}`,
+      })),
+    );
+
+    setManagerSelectData(
+      response.value
+        .filter((x) => x.role.toString() !== Role.User)
+        .map((x) => ({
+          value: x.id.toLowerCase(),
+          label: `${x.name} ${x.surname}`,
+        })),
+    );
   };
 
-  const handleAmountToBePaidCurrencyDeselect = (selectItem: SelectItem) => {
-    if (form.values.amountToBePaidCurrency === selectItem.value) {
-      form.setFieldValue("amountToBePaidCurrency", null);
-    }
-  };
+  useEffect(() => {
+    getActiveUsers();
+  }, []);
 
   return (
     <Flex direction="column" mih={TEXT_INPUT_MIN_HEIGHT}>
       <Flex gap={20}>
+        <Flex flex={1} gap={10} align="center">
+          <TextInput
+            label={t(Dictionary.Report.NAME)}
+            mih={TEXT_INPUT_MIN_HEIGHT}
+            withAsterisk
+            flex={1}
+            {...form.getInputProps("name")}
+          />
+          <Checkbox
+            labelPosition="left"
+            label={t(Dictionary.Report.ABROAD)}
+            type="checkbox"
+            mb={10}
+            {...form.getInputProps("isAbroad")}
+          />
+        </Flex>
         <TextInput
-          label={t(Dictionary.AbroadReport.DECLARANT)}
-          flex={1}
+          label={t(Dictionary.Report.REQUESTED_ADVANCE_AMOUNT)}
           mih={TEXT_INPUT_MIN_HEIGHT}
-          {...form.getInputProps("declarant")}
-        />
-        <TextInput
-          label={t(Dictionary.Report.NAME)}
           flex={1}
-          mih={TEXT_INPUT_MIN_HEIGHT}
-          withAsterisk
-          {...form.getInputProps("name")}
+          {...form.getInputProps("requestedAdvanceAmount")}
         />
       </Flex>
       <Flex gap={20}>
-        <TextInput
-          label={t(Dictionary.AbroadReport.TITLE)}
-          flex={2}
+        <Select
+          {...form.getInputProps("declarant")}
           mih={TEXT_INPUT_MIN_HEIGHT}
-          {...form.getInputProps("title")}
+          data={activeUserSelectData}
+          flex={2}
+          searchable
+          label={t(Dictionary.Report.DECLARANT)}
+          comboboxProps={{ withinPortal: false }}
         />
         <Flex gap={20} flex={2} align="center">
           <TextInput
-            label={t(Dictionary.AbroadReport.ADVANCE_RECEIVED_AMOUNT)}
-            flex={2}
+            label={t(Dictionary.Report.ADVANCE_RECEIVED_AMOUNT)}
+            flex={1}
             mih={TEXT_INPUT_MIN_HEIGHT}
             {...form.getInputProps("advanceReceivedAmount")}
           />
@@ -191,7 +238,9 @@ function CreateAbroadReportModal({
                 <Radio
                   value={x.value}
                   label={x.label}
-                  onClick={() => handleAdvanceReceivedAmountCurrencyDeselect(x)}
+                  onClick={() =>
+                    handleCurrencyDeselect("advanceReceivedAmountCurrency", x)
+                  }
                 ></Radio>
               ))}
             </Group>
@@ -200,14 +249,14 @@ function CreateAbroadReportModal({
       </Flex>
       <Flex gap={20}>
         <TextInput
-          label={t(Dictionary.AbroadReport.DEPARTMENT)}
+          label={t(Dictionary.Report.TITLE)}
           flex={2}
           mih={TEXT_INPUT_MIN_HEIGHT}
-          {...form.getInputProps("department")}
+          {...form.getInputProps("title")}
         />
         <Flex gap={20} flex={2} align="center">
           <TextInput
-            label={t(Dictionary.AbroadReport.AMOUNT_TO_BE_REFUNDED)}
+            label={t(Dictionary.Report.AMOUNT_TO_BE_REFUNDED)}
             mih={TEXT_INPUT_MIN_HEIGHT}
             flex={2}
             {...form.getInputProps("amountToBeRefunded")}
@@ -218,7 +267,9 @@ function CreateAbroadReportModal({
                 <Radio
                   value={x.value}
                   label={x.label}
-                  onClick={() => handleAmountToBeRefundedCurrencyDeselect(x)}
+                  onClick={() =>
+                    handleCurrencyDeselect("amountToBeRefundedCurrency", x)
+                  }
                 ></Radio>
               ))}
             </Group>
@@ -227,14 +278,14 @@ function CreateAbroadReportModal({
       </Flex>
       <Flex gap={20}>
         <TextInput
-          label={t(Dictionary.AbroadReport.TRAVEL_PLACE)}
+          label={t(Dictionary.Report.DEPARTMENT)}
           flex={2}
           mih={TEXT_INPUT_MIN_HEIGHT}
-          {...form.getInputProps("travelPlace")}
+          {...form.getInputProps("department")}
         />
         <Flex gap={20} flex={2} align="center">
           <TextInput
-            label={t(Dictionary.AbroadReport.AMOUNT_TO_BE_PAID)}
+            label={t(Dictionary.Report.AMOUNT_TO_BE_PAID)}
             flex={2}
             mih={TEXT_INPUT_MIN_HEIGHT}
             {...form.getInputProps("amountToBePaid")}
@@ -245,7 +296,9 @@ function CreateAbroadReportModal({
                 <Radio
                   value={x.value}
                   label={x.label}
-                  onClick={() => handleAmountToBePaidCurrencyDeselect(x)}
+                  onClick={() =>
+                    handleCurrencyDeselect("amountToBePaidCurrency", x)
+                  }
                 ></Radio>
               ))}
             </Group>
@@ -254,22 +307,41 @@ function CreateAbroadReportModal({
       </Flex>
       <Flex gap={20}>
         <TextInput
-          label={t(Dictionary.AbroadReport.PURPOSE_OF_TRAVEL)}
+          label={t(Dictionary.Report.TRAVEL_PLACE)}
           flex={1}
           mih={TEXT_INPUT_MIN_HEIGHT}
-          {...form.getInputProps("purposeOfTravel")}
+          {...form.getInputProps("travelPlace")}
         />
-
-        <TextInput
-          label={t(Dictionary.AbroadReport.DEPARTMENT_MANAGER)}
-          flex={1}
-          mih={TEXT_INPUT_MIN_HEIGHT}
+        <Select
           {...form.getInputProps("departmentManager")}
+          mih={TEXT_INPUT_MIN_HEIGHT}
+          data={managerSelectData}
+          flex={1}
+          searchable
+          label={t(Dictionary.Report.DEPARTMENT_MANAGER)}
+          comboboxProps={{ withinPortal: false }}
         />
       </Flex>
       <Flex gap={20}>
         <TextInput
-          label={t(Dictionary.AbroadReport.DEPARTURE_AND_RETURN_DATES)}
+          label={t(Dictionary.Report.PURPOSE_OF_TRAVEL)}
+          flex={1}
+          mih={TEXT_INPUT_MIN_HEIGHT}
+          {...form.getInputProps("purposeOfTravel")}
+        />
+        <Select
+          {...form.getInputProps("departmentHead")}
+          mih={TEXT_INPUT_MIN_HEIGHT}
+          data={managerSelectData}
+          flex={1}
+          searchable
+          label={t(Dictionary.Report.DEPARTMENT_HEAD)}
+          comboboxProps={{ withinPortal: false }}
+        />
+      </Flex>
+      <Flex gap={20}>
+        <TextInput
+          label={t(Dictionary.Report.DEPARTURE_AND_RETURN_DATES)}
           flex={1}
           mih={TEXT_INPUT_MIN_HEIGHT}
           placeholder={`${format(subDays(new Date(), 10), "dd.MM.yyyy")} - ${format(new Date(), "dd.MM.yyyy")}`}
@@ -277,21 +349,7 @@ function CreateAbroadReportModal({
           {...form.getInputProps("departureAndReturnDates")}
         />
         <TextInput
-          label={t(Dictionary.AbroadReport.DEPARTMENT_HEAD)}
-          flex={1}
-          mih={TEXT_INPUT_MIN_HEIGHT}
-          {...form.getInputProps("departmentHead")}
-        />
-      </Flex>
-      <Flex gap={20}>
-        <TextInput
-          label={t(Dictionary.AbroadReport.REQUESTED_ADVANCE_AMOUNT)}
-          flex={1}
-          mih={TEXT_INPUT_MIN_HEIGHT}
-          {...form.getInputProps("requestedAdvanceAmount")}
-        />
-        <TextInput
-          label={t(Dictionary.AbroadReport.FINANCE_OFFICER)}
+          label={t(Dictionary.Report.FINANCE_OFFICER)}
           flex={1}
           mih={TEXT_INPUT_MIN_HEIGHT}
           {...form.getInputProps("financeOfficer")}
@@ -299,7 +357,7 @@ function CreateAbroadReportModal({
       </Flex>
       <Flex gap={20}>
         <TextInput
-          label={t(Dictionary.AbroadReport.TL_IBAN)}
+          label={t(Dictionary.Report.TL_IBAN)}
           mih={TEXT_INPUT_MIN_HEIGHT}
           flex={2}
           {...form.getInputProps("tlIban")}
@@ -308,7 +366,7 @@ function CreateAbroadReportModal({
           }
         />
         <TextInput
-          label={t(Dictionary.AbroadReport.EUR_IBAN)}
+          label={t(Dictionary.Report.EUR_IBAN)}
           mih={TEXT_INPUT_MIN_HEIGHT}
           flex={2}
           {...form.getInputProps("eurIban")}
@@ -321,7 +379,7 @@ function CreateAbroadReportModal({
         variant="light"
         loading={isLoading}
         onClick={handleSave}
-        leftSection={<PiPlusCircle size={22} />}
+        disabled={!form.isDirty()}
       >
         {t(Dictionary.Report.CREATE_NEW)}
       </Button>
@@ -329,4 +387,4 @@ function CreateAbroadReportModal({
   );
 }
 
-export default CreateAbroadReportModal;
+export default CreateReportModal;
