@@ -148,6 +148,7 @@ const AddOvertimeMemberModal = ({
             label={t(Dictionary.OvertimeMember.PRICE)}
             hideControls
             flex={1}
+            allowLeadingZeros={false}
           />
 
           <Button

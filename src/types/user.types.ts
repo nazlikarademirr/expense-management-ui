@@ -11,9 +11,11 @@ type User = {
   teamName: string;
   gender: string | null;
   cardNumber: string | null;
+  title: string | null;
   email: string;
   password: string;
   role: string;
+  iban: string | null;
   temporaryPassword: string | null;
   hasTemporaryPassword: boolean;
   isActive: boolean;
@@ -29,9 +31,11 @@ type UserRequest = {
   teamId: string;
   gender: number | null;
   cardNumber: string | null;
+  title: string | null;
   email: string;
   password: string;
   role: number;
+  iban: string | null;
   temporaryPassword: string | null;
   hasTemporaryPassword: boolean;
   isActive: boolean;
@@ -45,9 +49,11 @@ type UserResponse = {
   teamName: string;
   gender: number | null;
   cardNumber: string | null;
+  title: string | null;
   email: string;
   password: string;
   role: number;
+  iban: string | null;
   temporaryPassword: string | null;
   hasTemporaryPassword: boolean;
   isActive: boolean;
@@ -89,6 +95,14 @@ const userSchema = z.object({
     .max(32, t(Dictionary.User.PASSWORD_MAX_LENGTH))
     .optional(),
   role: z.enum(Role, t(Dictionary.User.ROLE_MUST_BE_SELECTED)),
+  iban: z
+    .string()
+    .nullable()
+    .optional()
+    .refine((val) => {
+      if (!val || val.trim() === "") return true;
+      return val.replace(/\s/g, "").length === 26;
+    }, t(Dictionary.Report.INVALID_IBAN)),
 });
 
 export default userSchema;

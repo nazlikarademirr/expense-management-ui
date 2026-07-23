@@ -15,7 +15,6 @@
     "male": "Erkek",
     "female": "Kadın",
     "admin": "Yönetici",
-    "manager": "Müdür",
     "user": "Kullanıcı",
     "expenseManagement": "Masraf Yönetimi",
     "status": "Durum",
@@ -112,7 +111,9 @@
     "changePassword": "Şifre Değiştir",
     "activityQuestion": "Kullanıcı hesabı etkinleştirilecek, onaylıyor musunuz?",
     "deactivityQuestion": "Kullanıcı hesabı devre dışı bırakılacak, onaylıyor musunuz?",
-    "deactivityRule": "Kullanıcı kendisini pasifleyemez."
+    "deactivityRule": "Kullanıcı kendisini pasifleyemez.",
+    "title": "Unvan",
+    "iban": "IBAN"
   },
 
   "team": {
@@ -131,7 +132,12 @@
     "nameMaxLength": "İsim 128 karakteri geçemez.",
     "updated": "Ekip başarıyla güncellendi.",
     "activityQuestion": "Ekip etkinleştirilecek, onaylıyor musunuz?",
-    "deactivityQuestion": "Ekip devre dışı bırakılacak, onaylıyor musunuz?"
+    "deactivityQuestion": "Ekip devre dışı bırakılacak, onaylıyor musunuz?",
+    "department": "Bölümü",
+    "departmentManager": "Bölüm Yöneticisi",
+    "departmentHead": "Bölüm Üst Yöneticisi",
+    "departmentMinLength": "Bölüm en az 2 harften oluşmalıdır.",
+    "departmentMaxLength": "Bölüm 128 karakteri geçemez."
   },
 
   "project": {
@@ -170,7 +176,6 @@
     "description": "Açıklama",
     "currency": "Para Birimi",
     "addNew": "Yeni Masraf Ekle",
-    "selectUser": "Kullanıcı Seçiniz",
     "selectReport": "Rapor Seçiniz",
     "reportName": "Rapor Adı",
     "food": "Yemek",
@@ -197,7 +202,9 @@
     "ocrRequestTimedOut": "OCR isteği zaman aşımına uğradı. Lütfen tekrar deneyin.",
     "fileSize": "Dosya boyutu {{fileSize}}MB'dan küçük olmalıdır.",
     "noFound": "Masraf bulunamadı.",
-    "textCouldNotBeDetected": "Metin algılanamadı."
+    "textCouldNotBeDetected": "Metin algılanamadı.",
+    "ocrError": "Üzgünüz, bir şeyler ters gitti.",
+    "selectDeclarant": "Beyan eden kişi seçiniz."
   },
 
   "overtimeMember": {
@@ -231,7 +238,6 @@
     "abroad": "Yurtdışı Raporu",
     "showAbroad": "Yurtdışı Raporlarını Göster",
     "title": "Görevi",
-    "department": "Bölümü",
     "requestedAdvanceAmount": "Talep Edilen Avans Tutarı",
     "travelPlace": "Seyahat Yeri",
     "departureAndReturnDates": "Gidiş Dönüş Tarihi",
@@ -243,14 +249,12 @@
     "amountToBePaid": "Ödenecek Tutar",
     "amountToBePaidCurrency": "Ödenecek Tutar Para Birimi",
     "declarant": "Beyan Eden",
-    "departmentManager": "Bölüm Yöneticisi",
-    "departmentHead": "Bölüm Üst Yöneticisi",
     "financeOfficer": "Mali İşler",
     "tlIban": "TL Iban",
     "eurIban": "EUR Iban",
     "invalidIban": "Hatalı veya eksik IBAN girdiniz.",
     "new": "Yeni Rapor",
     "purposeOfTravelPlaceholder": "Bir proje seçin veya seyahat amacınızı girin.",
-    "maxNumberOfExpenses": "Rapordaki masraf alanları doldu, lütfen yeni bir rapor oluşturun."
+    "selectDeclarant": "Beyan eden kişi seçiniz."
   }
 }

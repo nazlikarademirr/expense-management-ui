@@ -3,6 +3,7 @@ import teamSchema, { Team, TeamRequest } from "../../types/team.types";
 import { modals } from "@mantine/modals";
 import useTeams from "../../hooks/useTeams";
 import {
+  Autocomplete,
   Badge,
   Button,
   Card,
@@ -38,6 +39,7 @@ import { useAuthentication } from "../../contexts/AuthenticationContext/Authenti
 import { useTranslation } from "react-i18next";
 import Dictionary from "../../helpers/translation/dictionary";
 import { PiPlusCircle } from "react-icons/pi";
+import Role from "../../enums/role";
 
 function Teams() {
   const { teams, addTeam, updateTeam, replaceTeams } = useTeams();
@@ -60,6 +62,9 @@ function Teams() {
     initialValues: {
       id: crypto.randomUUID(),
       name: "",
+      department: "",
+      departmentManager: "",
+      departmentHead: "",
       searchText: "",
       isActive: false,
       createUserId: "",
@@ -78,6 +83,7 @@ function Teams() {
           team={team}
           updateTeam={updateTeam}
           checkIfTeamIsValid={checkIfTeamIsValid}
+          managerSelectData={managerSelectData}
         />
       ),
     });
@@ -134,7 +140,9 @@ function Teams() {
     }
 
     const request: TeamRequest = {
+      ...form.values,
       name: form.values.name.trim(),
+      department: form.values.department.trim(),
     };
 
     const response = await handleDataRequest<TeamRequest, Team>(
@@ -163,7 +171,9 @@ function Teams() {
   const changeTeamActivity = async (team: Team) => {
     setIsLoading(true);
 
-    if (users.find((x) => team.isActive && x.teamId === team.id)) {
+    if (
+      users.find((x) => team.isActive && x.isActive && x.teamId === team.id)
+    ) {
       toast.error(t(Dictionary.Team.ACTIVITY_CHECK));
       setIsLoading(false);
       return;
@@ -247,6 +257,9 @@ function Teams() {
         .map((x: Team) => (
           <Table.Tr key={x.id}>
             <Table.Td> {x.name} </Table.Td>
+            <Table.Td> {x.department} </Table.Td>
+            <Table.Td> {x.departmentManager} </Table.Td>
+            <Table.Td> {x.departmentHead} </Table.Td>
             <Table.Td>
               <Badge
                 size="md"
@@ -263,6 +276,7 @@ function Teams() {
                 <Flex justify="center" gap={10}>
                   {x.isActive && (
                     <Button
+                      size="sm"
                       onClick={() => openEditTeam(x)}
                       variant="light"
                       color="blue"
@@ -274,6 +288,7 @@ function Teams() {
                   )}
 
                   <Button
+                    size="sm"
                     onClick={() => openTeamActivityModal(x)}
                     variant="light"
                     style={
@@ -302,6 +317,17 @@ function Teams() {
     [teams, showActiveTeams, searchQuery, isLoading, users],
   );
 
+  const managerSelectData = useMemo(
+    () =>
+      users
+        .filter((x) => x.role.toString() === Role.Admin)
+        .map((user) => ({
+          value: user.id,
+          label: `${user.name} ${user.surname}`,
+        })),
+    [users],
+  );
+
   useEffect(() => {
     getActiveUsers();
     getTeams();
@@ -311,14 +337,55 @@ function Teams() {
     <Flex direction="column" h={PAGE_FLEX_HEIGHT}>
       <Title order={3}>{t(Dictionary.Common.TEAMS)}</Title>
       <Divider my={TITLE_DIVIDER_MY} />
-      <Card shadow="xs" radius="md" withBorder>
+      <Card
+        shadow="xs"
+        radius="md"
+        withBorder
+        style={{ overflow: "visible", zIndex: 10 }}
+      >
         <Flex gap="md" direction="column">
-          <TextInput
-            {...form.getInputProps("name")}
-            mih={80}
-            withAsterisk
-            label={t(Dictionary.Team.NAME)}
-          />
+          <Flex gap={20}>
+            <TextInput
+              {...form.getInputProps("name")}
+              mih={80}
+              flex={1}
+              withAsterisk
+              label={t(Dictionary.Team.NAME)}
+            />
+            <TextInput
+              flex={1}
+              mih={80}
+              withAsterisk
+              {...form.getInputProps("department")}
+              label={t(Dictionary.Team.DEPARTMENT)}
+            />
+            <Autocomplete
+              {...form.getInputProps("departmentManager")}
+              mih={80}
+              flex={1}
+              clearable
+              data={managerSelectData}
+              label={t(Dictionary.Team.DEPARTMENT_MANAGER)}
+              limit={100}
+              maxDropdownHeight={200}
+              comboboxProps={{
+                withinPortal: false,
+              }}
+            />
+            <Autocomplete
+              {...form.getInputProps("departmentHead")}
+              mih={80}
+              flex={1}
+              clearable
+              data={managerSelectData}
+              label={t(Dictionary.Team.DEPARTMENT_HEAD)}
+              limit={100}
+              maxDropdownHeight={200}
+              comboboxProps={{
+                withinPortal: false,
+              }}
+            />
+          </Flex>
           <Button
             onClick={handleSave}
             variant="light"
@@ -349,29 +416,27 @@ function Teams() {
             type="checkbox"
           />
         </Flex>
-        {memoizedTeams.length > 0 ? (
-          <ScrollArea flex={1}>
-            <Table
-              striped
-              stickyHeader
-              highlightOnHover
-              withTableBorder
-              withColumnBorders
-              style={{ tableLayout: "fixed" }}
-            >
-              <Table.Thead>
-                <Table.Tr>
-                  <Table.Th>{t(Dictionary.Team.NAME)}</Table.Th>
-                  <Table.Th>{t(Dictionary.Common.STATUS)}</Table.Th>
-                  <Table.Th></Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>{memoizedTeams}</Table.Tbody>
-            </Table>
-          </ScrollArea>
-        ) : (
-          <div></div>
-        )}
+        <ScrollArea flex={1}>
+          <Table
+            striped
+            stickyHeader
+            highlightOnHover
+            withTableBorder
+            withColumnBorders
+          >
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>{t(Dictionary.Team.NAME)}</Table.Th>
+                <Table.Th>{t(Dictionary.Team.DEPARTMENT)}</Table.Th>
+                <Table.Th>{t(Dictionary.Team.DEPARTMENT_MANAGER)}</Table.Th>
+                <Table.Th>{t(Dictionary.Team.DEPARTMENT_HEAD)}</Table.Th>
+                <Table.Th w={80}>{t(Dictionary.Common.STATUS)}</Table.Th>
+                <Table.Th w={380}></Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>{memoizedTeams}</Table.Tbody>
+          </Table>
+        </ScrollArea>
       </Card>
     </Flex>
   );

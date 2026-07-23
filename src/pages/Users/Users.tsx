@@ -48,6 +48,7 @@ import { useAuthentication } from "../../contexts/AuthenticationContext/Authenti
 import Dictionary from "../../helpers/translation/dictionary.ts";
 import { useTranslation } from "react-i18next";
 import { PiPlusCircle } from "react-icons/pi";
+import { formatIban } from "../../helpers/IbanFormatter.ts";
 
 const MIN_INPUT_HEIGHT = 80;
 const MIN_INPUT_WIDTH = 250;
@@ -83,9 +84,11 @@ function Users() {
       teamName: "",
       gender: null,
       cardNumber: null,
+      title: null,
       email: "",
       password: "",
       role: "",
+      iban: null,
       temporaryPassword: "",
       hasTemporaryPassword: false,
       isActive: false,
@@ -103,7 +106,7 @@ function Users() {
       size: "lg",
       styles: {
         content: {
-          minHeight: 750,
+          minHeight: 840,
         },
       },
       children: (
@@ -117,7 +120,7 @@ function Users() {
     });
   };
 
-  const getActiveTeamsSelectData = async () => {
+  const getActiveTeams = async () => {
     const activeTeamResponse = await handleDataRequest<never, Team[]>(
       urls.team,
       RequestType.Get,
@@ -195,13 +198,12 @@ function Users() {
     }
 
     const userRequest: UserRequest = {
+      ...form.values,
       name: form.values.name.trim(),
       surname: form.values.surname.trim(),
       teamId: form.values.teamId ?? "",
       gender: form.values.gender !== null ? Number(form.values.gender) : null,
-      cardNumber: form.values.cardNumber,
       email: form.values.email.trim(),
-      password: form.values.password,
       role: Number(form.values.role),
       temporaryPassword: null,
       hasTemporaryPassword: false,
@@ -343,6 +345,7 @@ function Users() {
           <Table.Tr key={x.id}>
             <Table.Td> {x.name} </Table.Td>
             <Table.Td> {x.surname} </Table.Td>
+            <Table.Td> {x.title ? x.title : "-"} </Table.Td>
             <Table.Td>{x.teamName}</Table.Td>
             <Table.Td>
               {x.gender !== null ? genders[Number(x.gender)]?.label : "-"}
@@ -431,7 +434,7 @@ function Users() {
 
   useEffect(() => {
     getUsers();
-    getActiveTeamsSelectData();
+    getActiveTeams();
   }, []);
 
   return (
@@ -449,35 +452,6 @@ function Users() {
               miw={MIN_INPUT_WIDTH}
               label={t(Dictionary.User.NAME)}
             />
-
-            <TextInput
-              {...form.getInputProps("cardNumber")}
-              flex={1}
-              mih={MIN_INPUT_HEIGHT}
-              miw={MIN_INPUT_WIDTH}
-              label={t(Dictionary.User.CARD_NUMBER)}
-            />
-          </Flex>
-          <Flex gap="xl" direction="column" flex={1}>
-            <TextInput
-              {...form.getInputProps("surname")}
-              withAsterisk
-              flex={1}
-              mih={MIN_INPUT_HEIGHT}
-              miw={MIN_INPUT_WIDTH}
-              label={t(Dictionary.User.SURNAME)}
-            />
-
-            <TextInput
-              {...form.getInputProps("email")}
-              withAsterisk
-              flex={1}
-              mih={MIN_INPUT_HEIGHT}
-              miw={MIN_INPUT_WIDTH}
-              label={t(Dictionary.User.EMAIL)}
-            />
-          </Flex>
-          <Flex gap="xl" direction="column" flex={1}>
             <Select
               {...form.getInputProps("teamId")}
               withAsterisk
@@ -489,7 +463,33 @@ function Users() {
               miw={MIN_INPUT_WIDTH}
               label={t(Dictionary.User.TEAM_NAME)}
             />
-
+          </Flex>
+          <Flex gap="xl" direction="column" flex={1}>
+            <TextInput
+              {...form.getInputProps("surname")}
+              withAsterisk
+              flex={1}
+              mih={MIN_INPUT_HEIGHT}
+              miw={MIN_INPUT_WIDTH}
+              label={t(Dictionary.User.SURNAME)}
+            />
+            <TextInput
+              {...form.getInputProps("email")}
+              withAsterisk
+              flex={1}
+              mih={MIN_INPUT_HEIGHT}
+              miw={MIN_INPUT_WIDTH}
+              label={t(Dictionary.User.EMAIL)}
+            />
+          </Flex>
+          <Flex gap="xl" direction="column" flex={1}>
+            <TextInput
+              {...form.getInputProps("title")}
+              flex={1}
+              mih={MIN_INPUT_HEIGHT}
+              miw={MIN_INPUT_WIDTH}
+              label={t(Dictionary.User.TITLE)}
+            />
             <PasswordInput
               {...form.getInputProps("password")}
               withAsterisk
@@ -497,6 +497,25 @@ function Users() {
               mih={MIN_INPUT_HEIGHT}
               miw={MIN_INPUT_WIDTH}
               label={t(Dictionary.User.PASSWORD)}
+            />
+          </Flex>
+          <Flex gap="xl" direction="column" flex={1}>
+            <TextInput
+              {...form.getInputProps("cardNumber")}
+              flex={1}
+              mih={MIN_INPUT_HEIGHT}
+              miw={MIN_INPUT_WIDTH}
+              label={t(Dictionary.User.CARD_NUMBER)}
+            />
+            <TextInput
+              {...form.getInputProps("iban")}
+              flex={1}
+              mih={MIN_INPUT_HEIGHT}
+              miw={MIN_INPUT_WIDTH}
+              onChange={(e) =>
+                form.setFieldValue("iban", formatIban(e.currentTarget.value))
+              }
+              label={t(Dictionary.User.IBAN)}
             />
           </Flex>
           <Flex gap="xl" direction="column" flex={1}>
@@ -517,7 +536,6 @@ function Users() {
                 ))}
               </Group>
             </Radio.Group>
-
             <Radio.Group
               label={t(Dictionary.User.ROLE)}
               withAsterisk
@@ -594,13 +612,14 @@ function Users() {
               <Table.Tr>
                 <Table.Th>{t(Dictionary.User.NAME)}</Table.Th>
                 <Table.Th>{t(Dictionary.User.SURNAME)}</Table.Th>
+                <Table.Th>{t(Dictionary.User.TITLE)}</Table.Th>
                 <Table.Th>{t(Dictionary.User.TEAM_NAME)}</Table.Th>
-                <Table.Th>{t(Dictionary.User.GENDER)}</Table.Th>
+                <Table.Th w={100}>{t(Dictionary.User.GENDER)}</Table.Th>
                 <Table.Th>{t(Dictionary.User.CARD_NUMBER)}</Table.Th>
                 <Table.Th>{t(Dictionary.User.EMAIL)}</Table.Th>
                 <Table.Th>{t(Dictionary.User.ROLE)}</Table.Th>
-                <Table.Th>{t(Dictionary.Common.STATUS)}</Table.Th>
-                <Table.Th></Table.Th>
+                <Table.Th w={80}>{t(Dictionary.Common.STATUS)}</Table.Th>
+                <Table.Th w={400}></Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>{memoizedUsers}</Table.Tbody>

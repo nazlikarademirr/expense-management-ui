@@ -24,6 +24,7 @@ import { SelectItem } from "../../../types/select-item.types";
 import { zod4Resolver } from "mantine-form-zod-resolver";
 import { useTranslation } from "react-i18next";
 import Dictionary from "../../../helpers/translation/dictionary";
+import { formatIban } from "../../../helpers/IbanFormatter";
 
 interface EditUserProps {
   user: User;
@@ -32,7 +33,7 @@ interface EditUserProps {
   checkIfUserIsValid: (user: User) => boolean;
 }
 
-const MIN_INPUT_HEIGHT = 80;
+const MIN_INPUT_HEIGHT = 70;
 
 function EditUserModal({
   user,
@@ -77,18 +78,14 @@ function EditUserModal({
     }
 
     const userRequest: UserRequest = {
-      name: userForm.values.name,
-      surname: userForm.values.surname,
+      ...userForm.values,
       teamId: userForm.values.teamId ? userForm.values.teamId : "",
       gender:
         userForm.values.gender !== null ? Number(userForm.values.gender) : null,
-      cardNumber: userForm.values.cardNumber,
-      email: userForm.values.email,
       password: initialValues.current.password,
       role: Number(userForm.values.role),
       temporaryPassword: null,
       hasTemporaryPassword: false,
-      isActive: userForm.values.isActive,
     };
 
     const response = await handleDataRequest<UserRequest, UserResponse>(
@@ -180,6 +177,12 @@ function EditUserModal({
         label={t(Dictionary.User.CARD_NUMBER)}
       />
       <TextInput
+        {...userForm.getInputProps("title")}
+        flex={1}
+        mih={MIN_INPUT_HEIGHT}
+        label={t(Dictionary.User.TITLE)}
+      />
+      <TextInput
         {...userForm.getInputProps("email")}
         mih={MIN_INPUT_HEIGHT}
         withAsterisk
@@ -198,6 +201,15 @@ function EditUserModal({
           ))}
         </Group>
       </Radio.Group>
+      <TextInput
+        {...userForm.getInputProps("iban")}
+        flex={1}
+        mih={MIN_INPUT_HEIGHT}
+        onChange={(e) =>
+          userForm.setFieldValue("iban", formatIban(e.currentTarget.value))
+        }
+        label={t(Dictionary.User.IBAN)}
+      />
 
       <Button
         variant="light"

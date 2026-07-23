@@ -22,10 +22,6 @@ const roles = [
     label: t(Dictionary.Common.USER),
   },
   {
-    value: Role.Manager,
-    label: t(Dictionary.Common.MANAGER),
-  },
-  {
     value: Role.Admin,
     label: t(Dictionary.Common.ADMIN),
   },

@@ -80,6 +80,14 @@ function ReceiptDropzone({
             </div>
           )}
 
+          {status === "error" && (
+            <div className={styles.unreadableOverlay}>
+              <Text fw={500} size="md" className={styles.unreadableText}>
+                {t(Dictionary.Expense.OCR_ERROR)}
+              </Text>
+            </div>
+          )}
+
           {isLoading && (
             <Flex
               className={styles.overlay}

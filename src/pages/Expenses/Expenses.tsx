@@ -117,7 +117,9 @@ function Expenses() {
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  const [selectedUser, setSelectedUser] = useState<string | null>(null);
+  const [selectedDeclarant, setSelectedDeclarant] = useState<string | null>(
+    null,
+  );
 
   const [selectedReport, setSelectedReport] = useState<string | null>(null);
 
@@ -210,6 +212,7 @@ function Expenses() {
     modals.open({
       title: <Title order={4}>{t(Dictionary.Report.NEW)}</Title>,
       size: "60%",
+      centered: true,
       returnFocus: false,
       styles: {
         content: {
@@ -221,6 +224,7 @@ function Expenses() {
           addReport={handleAddReport}
           checkIfReportIsValid={checkIfReportIsValid}
           currentUserFullName={auth.currentUserFullName}
+          activeProjectSelectData={activeProjectSelectData}
         />
       ),
     });
@@ -240,20 +244,6 @@ function Expenses() {
 
     if (reportName === "HEPSI" || reportName === "ALL") {
       toast.error(t(Dictionary.Report.ALL_NAME));
-      return false;
-    }
-
-    const expenseCount = expenses.filter(
-      (x) => x.reportId === report.id,
-    ).length;
-
-    if (!report.isAbroad && expenseCount > 15) {
-      toast.error(t(Dictionary.Report.MAX_NUMBER_OF_EXPENSES));
-      return false;
-    }
-
-    if (report.isAbroad && expenseCount > 50) {
-      toast.error(t(Dictionary.Report.MAX_NUMBER_OF_EXPENSES));
       return false;
     }
 
@@ -348,23 +338,6 @@ function Expenses() {
       toast.error(t(Dictionary.Report.SELECT));
       setIsLoading(false);
       return;
-    }
-
-    const currentReport = reports.find((x) => x.id === selectedReport);
-    if (currentReport) {
-      const expenseCount = expenses.filter(
-        (x) => x.reportId === selectedReport,
-      ).length;
-      if (!currentReport.isAbroad && expenseCount >= 15) {
-        toast.error(t(Dictionary.Report.MAX_NUMBER_OF_EXPENSES));
-        setIsLoading(false);
-        return;
-      }
-      if (currentReport.isAbroad && expenseCount >= 50) {
-        toast.error(t(Dictionary.Report.MAX_NUMBER_OF_EXPENSES));
-        setIsLoading(false);
-        return;
-      }
     }
 
     form.validate();
@@ -525,7 +498,9 @@ function Expenses() {
           x.searchText.toLowerCase().includes(searchQuery.toLowerCase()),
         )
         .filter((x) => (selectedReport ? x.reportId === selectedReport : true))
-        .filter((x) => (selectedUser ? x.declarantId === selectedUser : true))
+        .filter((x) =>
+          selectedDeclarant ? x.declarantId === selectedDeclarant : true,
+        )
         .filter(
           (x) =>
             activeUserSelectData.find((y) => y.value === x.declarantId)?.label,
@@ -547,8 +522,6 @@ function Expenses() {
             </Table.Td>
 
             <Table.Td>{x.reportName}</Table.Td>
-            <Table.Td> {x.createUserFullName} </Table.Td>
-            <Table.Td>{format(x.createDate, "dd/MM/yyyy - HH.mm")}</Table.Td>
             <Table.Td>
               <Flex justify="center" gap={5}>
                 <Button
@@ -578,7 +551,7 @@ function Expenses() {
       isLoading,
       expenses,
       searchQuery,
-      selectedUser,
+      selectedDeclarant,
       selectedReport,
       activeUserSelectData,
       activeProjectSelectData,
@@ -662,7 +635,12 @@ function Expenses() {
                 </Combobox.Option>
                 {filteredReportSelectData.map((x) => (
                   <Combobox.Option key={x.value} value={x.value}>
-                    {x.label}
+                    <Flex justify="space-between" align="center">
+                      {x.label}
+                      <Text size="sm" c="dimmed">
+                        {expenses.filter((e) => e.reportId === x.value).length}
+                      </Text>
+                    </Flex>
                   </Combobox.Option>
                 ))}
               </Combobox.Options>
@@ -748,6 +726,7 @@ function Expenses() {
                   withAsterisk
                   label={t(Dictionary.Expense.TOTAL_PRICE)}
                   hideControls
+                  allowLeadingZeros={false}
                 />
 
                 <Radio.Group
@@ -821,10 +800,10 @@ function Expenses() {
           <Select
             data={activeUserSelectData}
             searchable
-            placeholder={t(Dictionary.Expense.SELECT_USER)}
+            placeholder={t(Dictionary.Expense.SELECT_DECLARANT)}
             clearable
             flex={1}
-            onChange={(e) => setSelectedUser(e)}
+            onChange={(e) => setSelectedDeclarant(e)}
             comboboxProps={{ withinPortal: false }}
           />
         </Flex>
@@ -840,15 +819,13 @@ function Expenses() {
               <Table.Tr>
                 <Table.Th>{t(Dictionary.Expense.DECLARANT)}</Table.Th>
                 <Table.Th>{t(Dictionary.Expense.PROJECT_NAME)}</Table.Th>
-                <Table.Th>{t(Dictionary.Expense.TYPE)}</Table.Th>
-                <Table.Th>{t(Dictionary.Expense.DATE)}</Table.Th>
-                <Table.Th>{t(Dictionary.Expense.TOTAL_PRICE)}</Table.Th>
-                <Table.Th>{t(Dictionary.Expense.CURRENCY)}</Table.Th>
+                <Table.Th w={80}>{t(Dictionary.Expense.TYPE)}</Table.Th>
+                <Table.Th w={100}>{t(Dictionary.Expense.DATE)}</Table.Th>
+                <Table.Th w={90}>{t(Dictionary.Expense.TOTAL_PRICE)}</Table.Th>
+                <Table.Th w={70}>{t(Dictionary.Expense.CURRENCY)}</Table.Th>
                 <Table.Th>{t(Dictionary.Expense.DESCRIPTION)}</Table.Th>
                 <Table.Th>{t(Dictionary.Expense.REPORT_NAME)}</Table.Th>
-                <Table.Th>{t(Dictionary.Common.CREATE_USER)}</Table.Th>
-                <Table.Th>{t(Dictionary.Common.CREATE_DATE)}</Table.Th>
-                <Table.Th></Table.Th>
+                <Table.Th w={250}></Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>{memoizedExpenses}</Table.Tbody>

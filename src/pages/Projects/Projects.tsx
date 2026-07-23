@@ -364,8 +364,8 @@ function Projects() {
               <Table.Tr>
                 <Table.Th>{t(Dictionary.Project.NAME)}</Table.Th>
                 <Table.Th>{t(Dictionary.Project.CODE)}</Table.Th>
-                <Table.Th>{t(Dictionary.Common.STATUS)}</Table.Th>
-                <Table.Th></Table.Th>
+                <Table.Th w={150}>{t(Dictionary.Common.STATUS)}</Table.Th>
+                <Table.Th w={450}></Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>{memoizedProjects}</Table.Tbody>
