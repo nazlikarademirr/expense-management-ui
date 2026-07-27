@@ -41,6 +41,8 @@ import Dictionary from "../../helpers/translation/dictionary";
 import { PiPlusCircle } from "react-icons/pi";
 import Role from "../../enums/role";
 
+const MIN_INPUT_HEIGHT = 80;
+
 function Teams() {
   const { teams, addTeam, updateTeam, replaceTeams } = useTeams();
 
@@ -347,21 +349,21 @@ function Teams() {
           <Flex gap={20}>
             <TextInput
               {...form.getInputProps("name")}
-              mih={80}
+              mih={MIN_INPUT_HEIGHT}
               flex={1}
               withAsterisk
               label={t(Dictionary.Team.NAME)}
             />
             <TextInput
               flex={1}
-              mih={80}
+              mih={MIN_INPUT_HEIGHT}
               withAsterisk
               {...form.getInputProps("department")}
               label={t(Dictionary.Team.DEPARTMENT)}
             />
             <Autocomplete
               {...form.getInputProps("departmentManager")}
-              mih={80}
+              mih={MIN_INPUT_HEIGHT}
               flex={1}
               clearable
               data={managerSelectData}
@@ -374,7 +376,7 @@ function Teams() {
             />
             <Autocomplete
               {...form.getInputProps("departmentHead")}
-              mih={80}
+              mih={MIN_INPUT_HEIGHT}
               flex={1}
               clearable
               data={managerSelectData}

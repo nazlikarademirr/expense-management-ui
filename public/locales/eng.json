@@ -113,7 +113,8 @@
     "deactivityQuestion": "The user account will be deactivated, do you approve?",
     "deactivityRule": "The user cannot deactivate themselves.",
     "title": "Title",
-    "iban": "IBAN"
+    "iban": "IBAN",
+    "hideExpenses": "Hide Expenses"
   },
 
   "team": {
@@ -168,7 +169,7 @@
     "added": "Expense has been added successfully.",
     "updated": "Expense updated successfully.",
     "deleted": "Expense has been deleted successfully.",
-    "declarant": "Beyan Eden",
+    "declarant": "Declarant",
     "projectName": "Project Name",
     "date": "Expense Date",
     "totalPrice": "Total Price",

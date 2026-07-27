@@ -16,6 +16,7 @@ type User = {
   password: string;
   role: string;
   iban: string | null;
+  hideExpenses: boolean;
   temporaryPassword: string | null;
   hasTemporaryPassword: boolean;
   isActive: boolean;
@@ -36,6 +37,7 @@ type UserRequest = {
   password: string;
   role: number;
   iban: string | null;
+  hideExpenses: boolean;
   temporaryPassword: string | null;
   hasTemporaryPassword: boolean;
   isActive: boolean;
@@ -54,6 +56,7 @@ type UserResponse = {
   password: string;
   role: number;
   iban: string | null;
+  hideExpenses: boolean;
   temporaryPassword: string | null;
   hasTemporaryPassword: boolean;
   isActive: boolean;

@@ -89,6 +89,7 @@ function Users() {
       password: "",
       role: "",
       iban: null,
+      hideExpenses: false,
       temporaryPassword: "",
       hasTemporaryPassword: false,
       isActive: false,

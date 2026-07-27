@@ -120,6 +120,7 @@ abstract class Dictionary {
     static readonly DEACTIVITY_RULE = "user.deactivityRule";
     static readonly TITLE = "user.title";
     static readonly IBAN = "user.iban";
+    static readonly HIDE_EXPENSES = "user.hideExpenses";
   };
 
   static Team = class {

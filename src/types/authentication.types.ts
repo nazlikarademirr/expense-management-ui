@@ -10,11 +10,12 @@ type AuthenticationResponse = {
 };
 
 const TokenDataSchema = z.object({
-  UserId: z.uuid(),
+  UserId: z.string().uuid(),
   Name: z.string(),
   Surname: z.string(),
   Email: z.string(),
   Role: z.string(),
+  HideExpenses: z.string(),
   HasTemporaryPassword: z.string(),
 });
 
@@ -24,6 +25,7 @@ type CurrentUser = {
   surname: string;
   email: string;
   role: string;
+  hideExpenses: string;
   hasTemporaryPassword: string;
 };
 

@@ -113,7 +113,8 @@
     "deactivityQuestion": "Kullanıcı hesabı devre dışı bırakılacak, onaylıyor musunuz?",
     "deactivityRule": "Kullanıcı kendisini pasifleyemez.",
     "title": "Unvan",
-    "iban": "IBAN"
+    "iban": "IBAN",
+    "hideExpenses": "Masrafları Gizle"
   },
 
   "team": {
