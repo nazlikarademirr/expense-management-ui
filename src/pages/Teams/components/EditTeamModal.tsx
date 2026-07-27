@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import teamSchema, { Team } from "../../../types/team.types";
-import { Button, Flex, TextInput } from "@mantine/core";
+import { Autocomplete, Button, Flex, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import {
   createJsonPatchDocumentFromDirtyForm,
@@ -14,17 +14,22 @@ import { modals } from "@mantine/modals";
 import { zod4Resolver } from "mantine-form-zod-resolver";
 import { useTranslation } from "react-i18next";
 import Dictionary from "../../../helpers/translation/dictionary";
+import { SelectItem } from "../../../types/select-item.types";
+
+const MIN_INPUT_HEIGHT = 80;
 
 interface EditTeamProps {
   team: Team;
   updateTeam: (teamForm: Team) => void;
   checkIfTeamIsValid: (team: Team) => boolean;
+  managerSelectData: SelectItem[];
 }
 
 function EditTeamModal({
   team,
   updateTeam,
   checkIfTeamIsValid,
+  managerSelectData,
 }: EditTeamProps) {
   const { handleDataRequest } = useRequestHandler();
 
@@ -104,11 +109,36 @@ function EditTeamModal({
       <TextInput
         ref={nameInputRef}
         {...teamForm.getInputProps("name")}
-        mih={80}
+        mih={MIN_INPUT_HEIGHT}
+        flex={1}
         withAsterisk
         label={t(Dictionary.Team.NAME)}
       />
-
+      <TextInput
+        flex={1}
+        mih={MIN_INPUT_HEIGHT}
+        withAsterisk
+        {...teamForm.getInputProps("department")}
+        label={t(Dictionary.Team.DEPARTMENT)}
+      />
+      <Autocomplete
+        {...teamForm.getInputProps("departmentManager")}
+        mih={MIN_INPUT_HEIGHT}
+        flex={1}
+        clearable
+        data={managerSelectData}
+        label={t(Dictionary.Team.DEPARTMENT_MANAGER)}
+        comboboxProps={{ withinPortal: true, middlewares: { flip: false } }}
+      />
+      <Autocomplete
+        {...teamForm.getInputProps("departmentHead")}
+        mih={MIN_INPUT_HEIGHT}
+        flex={1}
+        clearable
+        data={managerSelectData}
+        label={t(Dictionary.Team.DEPARTMENT_HEAD)}
+        comboboxProps={{ withinPortal: true, middlewares: { flip: false } }}
+      />
       <Button
         variant="light"
         disabled={!teamForm.isDirty()}

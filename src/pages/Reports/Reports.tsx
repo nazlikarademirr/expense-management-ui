@@ -1,5 +1,6 @@
 import { useForm } from "@mantine/form";
 import reportSchema, { Report, ReportRequest } from "../../types/report.types";
+import { Team } from "../../types/team.types";
 import { useEffect, useMemo, useState, Fragment } from "react";
 import {
   Button,
@@ -45,13 +46,12 @@ import { PiPlusCircle } from "react-icons/pi";
 import { Expense } from "../../types/expense.types";
 import { currencyTypes, expenseTypes } from "../../constants/static-data";
 import ExpenseType from "../../enums/expense-type";
-import { SelectItem } from "../../types/select-item.types";
 import CurrencyType from "../../enums/currency-type";
 import { formatIban } from "../../helpers/IbanFormatter";
 import { User } from "../../types/user.types";
 import { Project } from "../../types/project.types";
-import Role from "../../enums/role";
 import EditReportModal from "./components/EditReportModal";
+import Role from "../../enums/role";
 
 const TEXT_INPUT_MIN_HEIGHT = 85;
 
@@ -79,13 +79,15 @@ function Reports() {
   const currentYear = new Date().getFullYear();
   const namePlaceholder = `${auth.currentUserFullName} - ${currentMonth} ${currentYear}`;
 
-  const [activeUserSelectData, setActiveUserSelectData] = useState<
-    SelectItem[]
-  >([]);
+  const [activeUsers, setActiveUsers] = useState<User[]>([]);
 
-  const [managerSelectData, setManagerSelectData] = useState<SelectItem[]>([]);
+  const [selectedDeclarant, setSelectedDeclarant] = useState<string | null>(
+    null,
+  );
 
   const [projectSelectData, setProjectSelectData] = useState<string[]>([]);
+
+  const [teams, setTeams] = useState<Team[]>([]);
 
   const [expandedReportIds, setExpandedReportIds] = useState<string[]>([]);
 
@@ -130,17 +132,18 @@ function Reports() {
     modals.open({
       title: <Title order={4}>{t(Dictionary.Report.EDIT)}</Title>,
       size: "60%",
-      styles: { content: { minHeight: 840 } },
+      yOffset: 20,
+      styles: { content: { minHeight: 930 } },
       children: (
         <EditReportModal
           report={report}
           updateReport={updateReport}
           checkIfReportIsValid={checkIfReportIsValid}
+          activeUsers={activeUsers}
           activeUserSelectData={activeUserSelectData}
           managerSelectData={managerSelectData}
           projectSelectData={projectSelectData}
           namePlaceholder={namePlaceholder}
-          handleCurrencyDeselect={handleCurrencyDeselect}
         />
       ),
     });
@@ -229,20 +232,6 @@ function Reports() {
 
     if (reportName === "HEPSI" || reportName === "ALL") {
       toast.error(t(Dictionary.Report.ALL_NAME));
-      return false;
-    }
-
-    const expenseCount = expenses.filter(
-      (x) => x.reportId === report.id,
-    ).length;
-
-    if (!report.isAbroad && expenseCount > 15) {
-      toast.error(t(Dictionary.Report.MAX_NUMBER_OF_EXPENSES));
-      return false;
-    }
-
-    if (report.isAbroad && expenseCount > 50) {
-      toast.error(t(Dictionary.Report.MAX_NUMBER_OF_EXPENSES));
       return false;
     }
 
@@ -341,6 +330,26 @@ function Reports() {
     setIsLoading(false);
   };
 
+  const activeUserSelectData = useMemo(
+    () =>
+      activeUsers.map((user) => ({
+        value: user.id,
+        label: `${user.name} ${user.surname}`,
+      })),
+    [activeUsers],
+  );
+
+  const managerSelectData = useMemo(
+    () =>
+      activeUsers
+        .filter((x) => x.role.toString() === Role.Admin)
+        .map((user) => ({
+          value: user.id,
+          label: `${user.name} ${user.surname}`,
+        })),
+    [activeUsers],
+  );
+
   const filteredCurrency = currencyTypes.filter(
     (x) =>
       x.value !== CurrencyType.MacedonianDenar &&
@@ -349,11 +358,29 @@ function Reports() {
 
   const handleCurrencyDeselect = (
     field: keyof typeof form.values,
-    selectItem: SelectItem,
+    selectItem: { value: CurrencyType; label: string },
   ) => {
     if (form.values[field] === selectItem.value) {
       form.setFieldValue(field, null);
     }
+  };
+
+  const handleDeclarantChange = (value: string | null) => {
+    const declarant = value ?? "";
+
+    const selectedUser = activeUsers.find((x) => x.id === declarant);
+    const selectedTeam = selectedUser?.teamId
+      ? teams.find((x) => x.id === selectedUser.teamId)
+      : null;
+
+    form.setValues({
+      declarant,
+      title: selectedUser?.title ?? "",
+      tlIban: selectedUser?.iban ? formatIban(selectedUser.iban) : "",
+      department: selectedTeam?.department ?? "",
+      departmentManager: selectedTeam?.departmentManager ?? "",
+      departmentHead: selectedTeam?.departmentHead ?? "",
+    });
   };
 
   const getProjects = async () => {
@@ -379,21 +406,16 @@ function Reports() {
 
     if (!response.isSuccess) return;
 
-    setActiveUserSelectData(
-      response.value.map((x) => ({
-        value: x.id,
-        label: `${x.name} ${x.surname}`,
-      })),
-    );
+    setActiveUsers(response.value);
+  };
 
-    setManagerSelectData(
-      response.value
-        .filter((x) => x.role.toString() !== Role.User)
-        .map((x) => ({
-          value: x.id,
-          label: `${x.name} ${x.surname}`,
-        })),
+  const getReportsTeams = async () => {
+    const response = await handleDataRequest<never, Team[]>(
+      urls.team,
+      RequestType.Get,
     );
+    if (!response.isSuccess) return;
+    setTeams(response.value);
   };
 
   const memoizedReports = useMemo(
@@ -403,9 +425,17 @@ function Reports() {
         .filter((x) =>
           x.searchText.toLowerCase().includes(searchQuery.toLowerCase()),
         )
+        .filter((x) =>
+          selectedDeclarant ? x.declarant === selectedDeclarant : x,
+        )
         .map((x: Report) => {
           const isExpanded = expandedReportIds.includes(x.id);
           const reportExpenses = expenses.filter((e) => e.reportId === x.id);
+
+          const declarantUser = activeUsers.find((u) => u.id === x.declarant);
+          const declarantName = declarantUser
+            ? `${declarantUser.name} ${declarantUser.surname}`
+            : "-";
 
           return (
             <Fragment key={x.id}>
@@ -418,6 +448,7 @@ function Reports() {
                     </Text>
                   </Flex>
                 </Table.Td>
+                <Table.Td>{declarantName}</Table.Td>
                 <Table.Td>
                   <Badge
                     size="md"
@@ -428,10 +459,6 @@ function Reports() {
                       ? t(Dictionary.Common.YES)
                       : t(Dictionary.Common.NO)}
                   </Badge>
-                </Table.Td>
-                <Table.Td> {x.createUserFullName} </Table.Td>
-                <Table.Td>
-                  {format(x.createDate, "dd/MM/yyyy - HH.mm")}
                 </Table.Td>
                 <Table.Td onClick={(e) => e.stopPropagation()}>
                   <Flex justify="center" gap={10} align="center">
@@ -468,7 +495,7 @@ function Reports() {
                 </Table.Td>
               </Table.Tr>
               <Table.Tr>
-                <Table.Td colSpan={5} p={0}>
+                <Table.Td colSpan={4} p={0}>
                   <Collapse in={isExpanded} transitionDuration={200}>
                     <Card
                       style={{
@@ -500,17 +527,17 @@ function Reports() {
                             {reportExpenses.map((e) => (
                               <Table.Tr key={e.id}>
                                 <Table.Td>{e.declarantFullName}</Table.Td>
-                                <Table.Td>
+                                <Table.Td w={200}>
                                   {expenseTypes[Number(e.expenseType)]?.label}
                                 </Table.Td>
-                                <Table.Td>
+                                <Table.Td w={200}>
                                   {format(
                                     new Date(e.expenseDate),
                                     "dd/MM/yyyy",
                                   )}
                                 </Table.Td>
-                                <Table.Td>{e.totalPrice}</Table.Td>
-                                <Table.Td>
+                                <Table.Td w={200}>{e.totalPrice}</Table.Td>
+                                <Table.Td w={200}>
                                   {currencyTypes[Number(e.currency)]?.label}
                                 </Table.Td>
                                 <Table.Td>
@@ -542,14 +569,17 @@ function Reports() {
       isLoading,
       expandedReportIds,
       expenses,
+      activeUsers,
+      selectedDeclarant,
     ],
   );
 
   useEffect(() => {
     getReports();
     getExpenses();
-    getActiveUsers();
     getProjects();
+    getActiveUsers();
+    getReportsTeams();
   }, []);
 
   return (
@@ -606,25 +636,28 @@ function Reports() {
                 </Group>
               </Radio.Group>
             </Flex>
-            <Select
+            <Autocomplete
               {...form.getInputProps("departmentManager")}
               mih={TEXT_INPUT_MIN_HEIGHT}
               data={managerSelectData}
               flex={1}
-              searchable
-              label={t(Dictionary.Report.DEPARTMENT_MANAGER)}
+              clearable
+              label={t(Dictionary.Team.DEPARTMENT_MANAGER)}
               comboboxProps={{ withinPortal: false }}
             />
           </Flex>
           <Flex gap={20}>
             <Select
               {...form.getInputProps("declarant")}
+              value={form.values.declarant || null}
               mih={TEXT_INPUT_MIN_HEIGHT}
               data={activeUserSelectData}
               flex={1}
               searchable
+              clearable
               label={t(Dictionary.Report.DECLARANT)}
               comboboxProps={{ withinPortal: false }}
+              onChange={handleDeclarantChange}
             />
             <Autocomplete
               label={t(Dictionary.Report.PURPOSE_OF_TRAVEL)}
@@ -659,13 +692,13 @@ function Reports() {
                 </Group>
               </Radio.Group>
             </Flex>
-            <Select
+            <Autocomplete
               {...form.getInputProps("departmentHead")}
               mih={TEXT_INPUT_MIN_HEIGHT}
               data={managerSelectData}
               flex={1}
-              searchable
-              label={t(Dictionary.Report.DEPARTMENT_HEAD)}
+              clearable
+              label={t(Dictionary.Team.DEPARTMENT_HEAD)}
               comboboxProps={{ withinPortal: false }}
             />
           </Flex>
@@ -717,7 +750,7 @@ function Reports() {
           </Flex>
           <Flex gap={20}>
             <TextInput
-              label={t(Dictionary.Report.DEPARTMENT)}
+              label={t(Dictionary.Team.DEPARTMENT)}
               flex={1}
               mih={TEXT_INPUT_MIN_HEIGHT}
               {...form.getInputProps("department")}
@@ -760,10 +793,20 @@ function Reports() {
             size="xs"
             radius="xl"
             rightSection={<IconSearch size={SEARCH_ICON_SIZE}></IconSearch>}
-            flex={1}
+            flex={5}
             {...form.getInputProps("searchText")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.currentTarget.value)}
+          />
+          <Select
+            comboboxProps={{ withinPortal: false }}
+            data={activeUserSelectData}
+            value={selectedDeclarant}
+            onChange={setSelectedDeclarant}
+            placeholder={t(Dictionary.Report.SELECT_DECLARANT)}
+            clearable
+            searchable
+            flex={1}
           />
           <Checkbox
             ml="10px"
@@ -786,10 +829,9 @@ function Reports() {
             <Table.Thead>
               <Table.Tr>
                 <Table.Th>{t(Dictionary.Report.NAME)}</Table.Th>
-                <Table.Th>{t(Dictionary.Report.ABROAD)}</Table.Th>
-                <Table.Th>{t(Dictionary.Common.CREATE_USER)}</Table.Th>
-                <Table.Th>{t(Dictionary.Common.CREATE_DATE)}</Table.Th>
-                <Table.Th></Table.Th>
+                <Table.Th w={500}>{t(Dictionary.Report.DECLARANT)}</Table.Th>
+                <Table.Th w={200}>{t(Dictionary.Report.ABROAD)}</Table.Th>
+                <Table.Th w={400}></Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>{memoizedReports}</Table.Tbody>

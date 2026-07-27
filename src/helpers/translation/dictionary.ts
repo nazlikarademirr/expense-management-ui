@@ -15,7 +15,6 @@ abstract class Dictionary {
     static readonly MALE = "common.male";
     static readonly FEMALE = "common.female";
     static readonly ADMIN = "common.admin";
-    static readonly MANAGER = "common.manager";
     static readonly USER = "common.user";
     static readonly EXPENSE_MANAGEMENT = "common.expenseManagement";
     static readonly STATUS = "common.status";
@@ -119,6 +118,9 @@ abstract class Dictionary {
     static readonly ACTIVITY_QUESTION = "user.activityQuestion";
     static readonly DEACTIVITY_QUESTION = "user.deactivityQuestion";
     static readonly DEACTIVITY_RULE = "user.deactivityRule";
+    static readonly TITLE = "user.title";
+    static readonly IBAN = "user.iban";
+    static readonly HIDE_EXPENSES = "user.hideExpenses";
   };
 
   static Team = class {
@@ -138,6 +140,11 @@ abstract class Dictionary {
     static readonly UPDATED = "team.updated";
     static readonly ACTIVITY_QUESTION = "team.activityQuestion";
     static readonly DEACTIVITY_QUESTION = "team.deactivityQuestion";
+    static readonly DEPARTMENT = "team.department";
+    static readonly DEPARTMENT_MANAGER = "team.departmentManager";
+    static readonly DEPARTMENT_HEAD = "team.departmentHead";
+    static readonly DEPARTMENT_MIN_LENGTH = "team.departmentMinLength";
+    static readonly DEPARTMENT_MAX_LENGTH = "team.departmentMaxLength";
   };
 
   static Project = class {
@@ -174,7 +181,6 @@ abstract class Dictionary {
     static readonly DESCRIPTION = "expense.description";
     static readonly CURRENCY = "expense.currency";
     static readonly ADD_NEW = "expense.addNew";
-    static readonly SELECT_USER = "expense.selectUser";
     static readonly SELECT_REPORT = "expense.selectReport";
     static readonly REPORT_NAME = "expense.reportName";
     static readonly TOTAL_PRICE = "expense.totalPrice";
@@ -209,6 +215,8 @@ abstract class Dictionary {
     static readonly NO_FOUND = "expense.noFound";
     static readonly TEXT_COULD_NOT_BE_DETECTED =
       "expense.textCouldNotBeDetected";
+    static readonly OCR_ERROR = "expense.ocrError";
+    static readonly SELECT_DECLARANT = "expense.selectDeclarant";
   };
 
   static OvertimeMember = class {
@@ -243,7 +251,6 @@ abstract class Dictionary {
     static readonly ABROAD = "report.abroad";
     static readonly SHOW_ABROAD = "report.showAbroad";
     static readonly TITLE = "report.title";
-    static readonly DEPARTMENT = "report.department";
     static readonly REQUESTED_ADVANCE_AMOUNT = "report.requestedAdvanceAmount";
     static readonly TRAVEL_PLACE = "report.travelPlace";
     static readonly DEPARTURE_AND_RETURN_DATES =
@@ -258,8 +265,6 @@ abstract class Dictionary {
     static readonly AMOUNT_TO_BE_PAID = "report.amountToBePaid";
     static readonly AMOUNT_TO_BE_PAID_CURRENY = "report.amountToBePaidCurrency";
     static readonly DECLARANT = "report.declarant";
-    static readonly DEPARTMENT_MANAGER = "report.departmentManager";
-    static readonly DEPARTMENT_HEAD = "report.departmentHead";
     static readonly FINANCE_OFFICER = "report.financeOfficer";
     static readonly TL_IBAN = "report.tlIban";
     static readonly EUR_IBAN = "report.eurIban";
@@ -267,7 +272,7 @@ abstract class Dictionary {
     static readonly NEW = "report.new";
     static readonly PURPOSE_OF_TRAVEL_PLACEHOLDER =
       "report.purposeOfTravelPlaceholder";
-    static readonly MAX_NUMBER_OF_EXPENSES = "report.maxNumberOfExpenses";
+    static readonly SELECT_DECLARANT = "report.selectDeclarant";
   };
 }
 

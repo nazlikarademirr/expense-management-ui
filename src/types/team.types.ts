@@ -5,6 +5,9 @@ import Dictionary from "../helpers/translation/dictionary";
 type Team = {
   id: string;
   name: string;
+  department: string;
+  departmentManager: string | null;
+  departmentHead: string | null;
   searchText: string;
   isActive: boolean;
   createUserId: string;
@@ -14,6 +17,9 @@ type Team = {
 
 type TeamRequest = {
   name: string;
+  department: string;
+  departmentManager: string | null;
+  departmentHead: string | null;
 };
 
 const teamSchema = z.object({
@@ -22,6 +28,11 @@ const teamSchema = z.object({
     .trim()
     .min(2, t(Dictionary.Team.NAME_MIN_LENGTH))
     .max(128, t(Dictionary.Team.NAME_MAX_LENGTH)),
+  department: z
+    .string()
+    .trim()
+    .min(2, t(Dictionary.Team.DEPARTMENT_MIN_LENGTH))
+    .max(128, t(Dictionary.Team.DEPARTMENT_MAX_LENGTH)),
 });
 
 export default teamSchema;

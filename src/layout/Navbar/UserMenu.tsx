@@ -1,4 +1,12 @@
-import { Anchor, Avatar, Divider, Menu, Select, Title } from "@mantine/core";
+import {
+  Anchor,
+  Avatar,
+  Checkbox,
+  Divider,
+  Menu,
+  Select,
+  Title,
+} from "@mantine/core";
 import { useAuthentication } from "../../contexts/AuthenticationContext/AuthenticationProvider";
 import { useNavigate } from "react-router";
 import routes from "../../constants/routes";
@@ -8,6 +16,12 @@ import i18n from "../../helpers/translation/i18n";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Dictionary from "../../helpers/translation/dictionary";
+import useRequestHandler from "../../hooks/useRequestHandler";
+import urls from "../../constants/urls";
+import RequestType from "../../request-handler/request-type";
+import { UserResponse } from "../../types/user.types";
+import toast from "react-hot-toast";
+import { JsonPatchKeyValuePair } from "../../types/json-patch-document";
 
 function UserMenu() {
   const auth = useAuthentication();
@@ -15,6 +29,12 @@ function UserMenu() {
   const { t } = useTranslation();
 
   const [language, setLanguage] = useState<string | null>("");
+
+  const { handleDataRequest } = useRequestHandler();
+
+  const [hideExpenses, setHideExpenses] = useState(false);
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const currentUserName = auth.currentUser
     ? auth.currentUser.name.toUpperCase()
@@ -38,9 +58,40 @@ function UserMenu() {
     setLanguage(value);
   };
 
+  const handleChangeHideExpenses = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    setIsLoading(true);
+
+    const newValue = event.currentTarget.checked;
+
+    const response = await handleDataRequest<
+      JsonPatchKeyValuePair[],
+      UserResponse
+    >(`${urls.user}/${auth.currentUser?.id}`, RequestType.Patch, [
+      { path: "hideExpenses", value: String(newValue) },
+    ]);
+
+    if (!response.isSuccess) {
+      toast.error(t(Dictionary.Common.UNEXPECTED_ERROR));
+    }
+
+    setHideExpenses(newValue);
+
+    setIsLoading(false);
+  };
+
   useEffect(() => {
+    setHideExpenses(
+      auth.currentUser?.hideExpenses
+        ? auth.currentUser?.hideExpenses === "true"
+          ? true
+          : false
+        : false,
+    );
+
     setLanguage(localStorage.getItem("lang"));
-  }, []);
+  }, [auth.currentUser]);
 
   return (
     <Menu shadow="md" withinPortal={false}>
@@ -64,6 +115,14 @@ function UserMenu() {
         >
           {t(Dictionary.UserMenu.CHANGE_PASSWORD)}
         </Anchor>
+        <Checkbox
+          ml={10}
+          my={10}
+          label={t(Dictionary.User.HIDE_EXPENSES)}
+          checked={hideExpenses}
+          onChange={handleChangeHideExpenses}
+          disabled={isLoading}
+        />
         <Select
           mx={5}
           my={10}
@@ -78,6 +137,7 @@ function UserMenu() {
             { value: "tr", label: t(Dictionary.UserMenu.TURKISH) },
           ]}
         />
+
         <Divider my={4} />
         <Menu.Item
           onClick={() => {

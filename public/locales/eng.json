@@ -15,7 +15,6 @@
     "male": "Male",
     "female": "Female",
     "admin": "Admin",
-    "manager": "Manager",
     "user": "User",
     "expenseManagement": "Expense Management",
     "status": "Status",
@@ -112,7 +111,10 @@
     "changePassword": "Change Password",
     "activityQuestion": "The user account will be activated, do you approve?",
     "deactivityQuestion": "The user account will be deactivated, do you approve?",
-    "deactivityRule": "The user cannot deactivate themselves."
+    "deactivityRule": "The user cannot deactivate themselves.",
+    "title": "Title",
+    "iban": "IBAN",
+    "hideExpenses": "Hide Expenses"
   },
 
   "team": {
@@ -131,7 +133,12 @@
     "nameMaxLength": "Name cannot exceed 128 characters.",
     "updated": "Team has been updated successfully.",
     "activityQuestion": "The team will be activated, do you approve?",
-    "deactivityQuestion": "The team will be deactivated, do you approve?"
+    "deactivityQuestion": "The team will be deactivated, do you approve?",
+    "department": "Department",
+    "departmentManager": "Department Manager",
+    "departmentHead": "Department Head",
+    "departmentMinLength": "Department must have at least 2 letters.",
+    "departmentMaxLength": "Department cannot exceed 128 characters."
   },
 
   "project": {
@@ -162,7 +169,7 @@
     "added": "Expense has been added successfully.",
     "updated": "Expense updated successfully.",
     "deleted": "Expense has been deleted successfully.",
-    "declarant": "Beyan Eden",
+    "declarant": "Declarant",
     "projectName": "Project Name",
     "date": "Expense Date",
     "totalPrice": "Total Price",
@@ -170,7 +177,6 @@
     "description": "Description",
     "currency": "Currency",
     "addNew": "Add New Expense",
-    "selectUser": "Select User",
     "selectReport": "Select Report",
     "reportName": "Report Name",
     "food": "Food",
@@ -197,7 +203,9 @@
     "ocrRequestTimedOut": "The OCR request timed out. Please try again.",
     "fileSize": "The file size must be less than {{fileSize}}MB.",
     "noFound": "No expenses found.",
-    "textCouldNotBeDetected": "Text could not be detected."
+    "textCouldNotBeDetected": "Text could not be detected.",
+    "ocrError": "Sorry, something went wrong.",
+    "selectDeclarant": "Please select the declarant."
   },
 
   "overtimeMember": {
@@ -231,7 +239,6 @@
     "abroad": "Abroad Report",
     "showAbroad": "Show Abroad Reports",
     "title": "Title",
-    "department": "Department",
     "requestedAdvanceAmount": "Requested Advance Amount",
     "travelPlace": "Travel Place",
     "departureAndReturnDates": "Departure and Return Dates",
@@ -243,14 +250,12 @@
     "amountToBePaid": "Amount To Be Paid",
     "amountToBePaidCurrency": "Amount To Be Paid Currency",
     "declarant": "Declarant",
-    "departmentManager": "Department Manager",
-    "departmentHead": "Department Head",
     "financeOfficer": "Finance Officer",
     "tlIban": "TL Iban",
     "eurIban": "EUR Iban",
     "invalidIban": "You entered an incomplete or invalid IBAN.",
     "new": "New Report",
     "purposeOfTravelPlaceholder": "Choose a project or enter your travel purpose.",
-    "maxNumberOfExpenses": "The expense fields in the report are full; please generate a new report."
+    "selectDeclarant": "Please select the declarant."
   }
 }

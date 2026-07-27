@@ -1,5 +1,6 @@
 import { useForm } from "@mantine/form";
 import {
+  Autocomplete,
   Button,
   Checkbox,
   Flex,
@@ -19,7 +20,8 @@ import reportSchema, {
 import urls from "../../../constants/urls";
 import RequestType from "../../../request-handler/request-type";
 import useRequestHandler from "../../../hooks/useRequestHandler";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Team } from "../../../types/team.types";
 import toast from "react-hot-toast";
 import { format, subDays } from "date-fns";
 import { modals } from "@mantine/modals";
@@ -35,12 +37,14 @@ interface CreateAbroadReportModalProps {
   addReport: (report: Report) => void;
   checkIfReportIsValid: (report: Report) => boolean;
   currentUserFullName: string;
+  activeProjectSelectData: SelectItem[];
 }
 
 function CreateReportModal({
   addReport,
   checkIfReportIsValid,
   currentUserFullName,
+  activeProjectSelectData,
 }: CreateAbroadReportModalProps) {
   const { t } = useTranslation();
 
@@ -48,11 +52,8 @@ function CreateReportModal({
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const [activeUserSelectData, setActiveUserSelectData] = useState<
-    SelectItem[]
-  >([]);
-
-  const [managerSelectData, setManagerSelectData] = useState<SelectItem[]>([]);
+  const [activeUsers, setActiveUsers] = useState<User[]>([]);
+  const [teams, setTeams] = useState<Team[]>([]);
 
   const form = useForm({
     initialValues: {
@@ -143,6 +144,26 @@ function CreateReportModal({
     setIsLoading(false);
   };
 
+  const activeUserSelectData = useMemo(
+    () =>
+      activeUsers.map((user) => ({
+        value: user.id,
+        label: `${user.name} ${user.surname}`,
+      })),
+    [activeUsers],
+  );
+
+  const managerSelectData = useMemo(
+    () =>
+      activeUsers
+        .filter((x) => x.role.toString() === Role.Admin)
+        .map((user) => ({
+          value: user.id,
+          label: `${user.name} ${user.surname}`,
+        })),
+    [activeUsers],
+  );
+
   const filteredCurrency = currencyTypes.filter(
     (x) =>
       x.value !== CurrencyType.MacedonianDenar &&
@@ -151,11 +172,43 @@ function CreateReportModal({
 
   const handleCurrencyDeselect = (
     field: keyof typeof form.values,
-    selectItem: SelectItem,
+    selectItem: { value: CurrencyType; label: string },
   ) => {
     if (form.values[field] === selectItem.value) {
       form.setFieldValue(field, null);
     }
+  };
+
+  const handleDeclarantChange = (value: string | null) => {
+    const declarant = value ?? "";
+
+    if (!declarant) {
+      form.setValues({
+        declarant,
+        title: "",
+        tlIban: "",
+        department: "",
+        departmentManager: "",
+        departmentHead: "",
+      });
+      return;
+    }
+
+    const selectedUser = activeUsers.find((x) => x.id === declarant);
+    const selectedTeam = selectedUser?.teamId
+      ? teams.find((x) => x.id === selectedUser.teamId)
+      : null;
+
+    form.setValues({
+      declarant,
+      title: selectedUser?.title ?? "",
+      tlIban: selectedUser?.iban ? formatIban(selectedUser.iban) : "",
+      department: selectedTeam?.department ?? form.values.department,
+      departmentManager:
+        selectedTeam?.departmentManager ?? form.values.departmentManager,
+      departmentHead:
+        selectedTeam?.departmentHead ?? form.values.departmentHead,
+    });
   };
 
   const getActiveUsers = async () => {
@@ -168,25 +221,21 @@ function CreateReportModal({
 
     if (!response.isSuccess) return;
 
-    setActiveUserSelectData(
-      response.value.map((x) => ({
-        value: x.id.toLowerCase(),
-        label: `${x.name} ${x.surname}`,
-      })),
-    );
+    setActiveUsers(response.value);
+  };
 
-    setManagerSelectData(
-      response.value
-        .filter((x) => x.role.toString() !== Role.User)
-        .map((x) => ({
-          value: x.id.toLowerCase(),
-          label: `${x.name} ${x.surname}`,
-        })),
+  const getTeams = async () => {
+    const response = await handleDataRequest<never, Team[]>(
+      urls.team,
+      RequestType.Get,
     );
+    if (!response.isSuccess) return;
+    setTeams(response.value);
   };
 
   useEffect(() => {
     getActiveUsers();
+    getTeams();
   }, []);
 
   return (
@@ -218,12 +267,15 @@ function CreateReportModal({
       <Flex gap={20}>
         <Select
           {...form.getInputProps("declarant")}
+          value={form.values.declarant || null}
           mih={TEXT_INPUT_MIN_HEIGHT}
           data={activeUserSelectData}
           flex={2}
           searchable
+          clearable
           label={t(Dictionary.Report.DECLARANT)}
           comboboxProps={{ withinPortal: false }}
+          onChange={handleDeclarantChange}
         />
         <Flex gap={20} flex={2} align="center">
           <TextInput
@@ -278,7 +330,7 @@ function CreateReportModal({
       </Flex>
       <Flex gap={20}>
         <TextInput
-          label={t(Dictionary.Report.DEPARTMENT)}
+          label={t(Dictionary.Team.DEPARTMENT)}
           flex={2}
           mih={TEXT_INPUT_MIN_HEIGHT}
           {...form.getInputProps("department")}
@@ -312,30 +364,34 @@ function CreateReportModal({
           mih={TEXT_INPUT_MIN_HEIGHT}
           {...form.getInputProps("travelPlace")}
         />
-        <Select
+        <Autocomplete
           {...form.getInputProps("departmentManager")}
           mih={TEXT_INPUT_MIN_HEIGHT}
           data={managerSelectData}
           flex={1}
-          searchable
-          label={t(Dictionary.Report.DEPARTMENT_MANAGER)}
+          clearable
+          label={t(Dictionary.Team.DEPARTMENT_MANAGER)}
           comboboxProps={{ withinPortal: false }}
         />
       </Flex>
       <Flex gap={20}>
-        <TextInput
+        <Autocomplete
           label={t(Dictionary.Report.PURPOSE_OF_TRAVEL)}
           flex={1}
           mih={TEXT_INPUT_MIN_HEIGHT}
+          data={activeProjectSelectData}
+          clearable
+          comboboxProps={{ withinPortal: false }}
+          placeholder={t(Dictionary.Report.PURPOSE_OF_TRAVEL_PLACEHOLDER)}
           {...form.getInputProps("purposeOfTravel")}
         />
-        <Select
+        <Autocomplete
           {...form.getInputProps("departmentHead")}
           mih={TEXT_INPUT_MIN_HEIGHT}
           data={managerSelectData}
           flex={1}
-          searchable
-          label={t(Dictionary.Report.DEPARTMENT_HEAD)}
+          clearable
+          label={t(Dictionary.Team.DEPARTMENT_HEAD)}
           comboboxProps={{ withinPortal: false }}
         />
       </Flex>

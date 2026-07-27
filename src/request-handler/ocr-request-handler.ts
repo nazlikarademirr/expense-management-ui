@@ -3,7 +3,7 @@ import { t } from "i18next";
 import Dictionary from "../helpers/translation/dictionary";
 
 const OCR_BASE_URL =
-  import.meta.env.VITE_OCR_API_URL ?? "http://localhost:8000";
+  import.meta.env.VITE_OCR_API_URL ?? "http://10.150.0.73:8000";
 
 export async function extractReceiptData(file: File): Promise<OcrResult> {
   const formData = new FormData();

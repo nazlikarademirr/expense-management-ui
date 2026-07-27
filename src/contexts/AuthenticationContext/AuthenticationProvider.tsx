@@ -43,6 +43,7 @@ export function AuthenticationProvider({
       surname: tokenData.Surname,
       email: tokenData.Email,
       role: tokenData.Role,
+      hideExpenses: tokenData.HideExpenses,
       hasTemporaryPassword: tokenData.HasTemporaryPassword,
     };
 

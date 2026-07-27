@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next";
 import Dictionary from "../../../helpers/translation/dictionary";
 import { useForm } from "@mantine/form";
 import reportSchema, { Report } from "../../../types/report.types";
+import { Team } from "../../../types/team.types";
 import { zod4Resolver } from "mantine-form-zod-resolver";
 import { currencyTypes } from "../../../constants/static-data";
 import { useEffect, useRef, useState } from "react";
@@ -28,6 +29,7 @@ import { format, subDays } from "date-fns";
 import CurrencyType from "../../../enums/currency-type";
 import { formatIban } from "../../../helpers/IbanFormatter";
 import { SelectItem } from "../../../types/select-item.types";
+import { User } from "../../../types/user.types";
 
 const TEXT_INPUT_MIN_HEIGHT = 90;
 
@@ -35,22 +37,22 @@ interface EditAbroadReportModalProps {
   report: Report;
   updateReport: (formEditedReport: Report) => void;
   checkIfReportIsValid: (report: Report) => boolean;
+  activeUsers: User[];
   activeUserSelectData: SelectItem[];
   managerSelectData: SelectItem[];
   projectSelectData: string[];
   namePlaceholder: string;
-  handleCurrencyDeselect: (field: keyof Report, selectItem: SelectItem) => void;
 }
 
 function EditAbroadReportModal({
   report,
   updateReport,
   checkIfReportIsValid,
+  activeUsers,
   activeUserSelectData,
   managerSelectData,
   projectSelectData,
   namePlaceholder,
-  handleCurrencyDeselect,
 }: EditAbroadReportModalProps) {
   const { t } = useTranslation();
 
@@ -58,7 +60,9 @@ function EditAbroadReportModal({
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const reportForm = useForm({
+  const [teams, setTeams] = useState<Team[]>([]);
+
+  const reportForm = useForm<Report>({
     initialValues: {
       ...report,
     },
@@ -119,7 +123,58 @@ function EditAbroadReportModal({
       x.value !== CurrencyType.MalaysianRinggit,
   );
 
+  const handleCurrencyDeselect = (
+    field: keyof typeof reportForm.values,
+    selectItem: { value: CurrencyType; label: string },
+  ) => {
+    if (reportForm.values[field] === selectItem.value) {
+      reportForm.setFieldValue(field, null);
+    }
+  };
+
+  const handleDeclarantChange = (value: string | null) => {
+    const declarant = value ?? "";
+
+    if (!declarant) {
+      reportForm.setValues({
+        declarant,
+        title: "",
+        tlIban: "",
+        department: "",
+        departmentManager: "",
+        departmentHead: "",
+      });
+      return;
+    }
+
+    const selectedUser = activeUsers.find((x) => x.id === declarant);
+    const selectedTeam = selectedUser?.teamId
+      ? teams.find((x) => x.id === selectedUser.teamId)
+      : null;
+
+    reportForm.setValues({
+      declarant,
+      title: selectedUser?.title ?? "",
+      tlIban: selectedUser?.iban ? formatIban(selectedUser.iban) : "",
+      department: selectedTeam?.department ?? reportForm.values.department,
+      departmentManager:
+        selectedTeam?.departmentManager ?? reportForm.values.departmentManager,
+      departmentHead:
+        selectedTeam?.departmentHead ?? reportForm.values.departmentHead,
+    });
+  };
+
+  const getTeams = async () => {
+    const response = await handleDataRequest<never, Team[]>(
+      urls.team,
+      RequestType.Get,
+    );
+    if (!response.isSuccess) return;
+    setTeams(response.value);
+  };
+
   useEffect(() => {
+    getTeams();
     if (nameInputRef.current) {
       nameInputRef.current.focus();
     }
@@ -158,8 +213,10 @@ function EditAbroadReportModal({
           data={activeUserSelectData}
           flex={2}
           searchable
+          clearable
           label={t(Dictionary.Report.DECLARANT)}
           comboboxProps={{ withinPortal: false }}
+          onChange={handleDeclarantChange}
         />
         <Flex gap={20} flex={2} align="center">
           <TextInput
@@ -218,7 +275,7 @@ function EditAbroadReportModal({
       </Flex>
       <Flex gap={20}>
         <TextInput
-          label={t(Dictionary.Report.DEPARTMENT)}
+          label={t(Dictionary.Team.DEPARTMENT)}
           flex={2}
           mih={TEXT_INPUT_MIN_HEIGHT}
           {...reportForm.getInputProps("department")}
@@ -252,13 +309,13 @@ function EditAbroadReportModal({
           mih={TEXT_INPUT_MIN_HEIGHT}
           {...reportForm.getInputProps("travelPlace")}
         />
-        <Select
+        <Autocomplete
           {...reportForm.getInputProps("departmentManager")}
           mih={TEXT_INPUT_MIN_HEIGHT}
           data={managerSelectData}
           flex={1}
-          searchable
-          label={t(Dictionary.Report.DEPARTMENT_MANAGER)}
+          clearable
+          label={t(Dictionary.Team.DEPARTMENT_MANAGER)}
           comboboxProps={{ withinPortal: false }}
         />
       </Flex>
@@ -272,13 +329,13 @@ function EditAbroadReportModal({
           clearable
           {...reportForm.getInputProps("purposeOfTravel")}
         />
-        <Select
+        <Autocomplete
           {...reportForm.getInputProps("departmentHead")}
           mih={TEXT_INPUT_MIN_HEIGHT}
           data={managerSelectData}
           flex={1}
-          searchable
-          label={t(Dictionary.Report.DEPARTMENT_HEAD)}
+          clearable
+          label={t(Dictionary.Team.DEPARTMENT_HEAD)}
           comboboxProps={{ withinPortal: false }}
         />
       </Flex>
@@ -302,7 +359,7 @@ function EditAbroadReportModal({
         <TextInput
           label={t(Dictionary.Report.TL_IBAN)}
           mih={TEXT_INPUT_MIN_HEIGHT}
-          flex={2}
+          flex={1}
           {...reportForm.getInputProps("tlIban")}
           onChange={(e) =>
             reportForm.setFieldValue(
@@ -314,7 +371,7 @@ function EditAbroadReportModal({
         <TextInput
           label={t(Dictionary.Report.EUR_IBAN)}
           mih={TEXT_INPUT_MIN_HEIGHT}
-          flex={2}
+          flex={1}
           {...reportForm.getInputProps("eurIban")}
           onChange={(e) =>
             reportForm.setFieldValue(
@@ -322,6 +379,22 @@ function EditAbroadReportModal({
               formatIban(e.currentTarget.value),
             )
           }
+        />
+      </Flex>
+      <Flex gap={20}>
+        <TextInput
+          label={t(Dictionary.Common.CREATE_USER)}
+          value={report.createUserFullName}
+          mih={TEXT_INPUT_MIN_HEIGHT}
+          disabled
+          flex={1}
+        />
+        <TextInput
+          label={t(Dictionary.Common.CREATE_DATE)}
+          value={format(report.createDate, "dd/MM/yyyy - HH.mm")}
+          mih={TEXT_INPUT_MIN_HEIGHT}
+          disabled
+          flex={1}
         />
       </Flex>
       <Button

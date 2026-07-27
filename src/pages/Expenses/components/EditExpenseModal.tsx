@@ -329,6 +329,7 @@ function EditExpenseModal({
               label={t(Dictionary.Expense.TOTAL_PRICE)}
               hideControls
               flex={1}
+              allowLeadingZeros={false}
             />
 
             <Radio.Group
@@ -373,6 +374,22 @@ function EditExpenseModal({
               flex={1}
             />
           </Flex>
+          <Flex gap="sm" flex={1} mih={MIN_FLEX_HEIGHT}>
+            <TextInput
+              w={INPUT_WIDTH}
+              label={t(Dictionary.Common.CREATE_USER)}
+              value={expense.createUserFullName}
+              disabled
+              flex={1}
+            />
+            <TextInput
+              w={INPUT_WIDTH}
+              label={t(Dictionary.Common.CREATE_DATE)}
+              value={format(expense.createDate, "dd/MM/yyyy - HH.mm")}
+              disabled
+              flex={1}
+            />
+          </Flex>
         </Flex>
         <Flex w="50%">
           <Card shadow="xs" radius="md" withBorder padding={10} w="100%">
@@ -393,6 +410,7 @@ function EditExpenseModal({
                 label={t(Dictionary.OvertimeMember.PRICE)}
                 hideControls
                 flex={1}
+                allowLeadingZeros={false}
               />
               <Button onClick={saveOvertimeMember} variant="light" mt={25}>
                 {t(Dictionary.OvertimeMember.ADD_NEW)}
@@ -407,7 +425,7 @@ function EditExpenseModal({
               withColumnBorders
               mt={15}
             >
-              <ScrollArea h={250}>
+              <ScrollArea h={350}>
                 <Table.Thead>
                   <Table.Tr>
                     <Table.Th>
