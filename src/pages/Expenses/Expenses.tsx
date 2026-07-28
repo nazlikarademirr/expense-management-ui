@@ -17,6 +17,7 @@ import {
   useCombobox,
   InputBase,
   Box,
+  Checkbox,
 } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import expenseSchema, {
@@ -124,6 +125,10 @@ function Expenses() {
   const [selectedReport, setSelectedReport] = useState<string | null>(null);
 
   const [newReportName, setNewReportName] = useState("");
+
+  const [isSelectionMode, setIsSelectionMode] = useState<boolean>(false);
+
+  const [selectedExpenses, setSelectedExpenses] = useState<string[]>([]);
 
   const combobox = useCombobox();
 
@@ -429,6 +434,70 @@ function Expenses() {
 
     setIsLoading(false);
   };
+
+  const handleBulkDelete = async () => {
+    setIsLoading(true);
+
+    const response = await handleDataRequest<string[], never>(
+      urls.expenseBulkDelete,
+      RequestType.Post,
+      selectedExpenses,
+    );
+
+    if (!response.isSuccess) {
+      setIsLoading(false);
+      return;
+    }
+
+    selectedExpenses.forEach((id) => deleteExpense(id));
+    setSelectedExpenses([]);
+    setIsSelectionMode(false);
+
+    toast.success(t(Dictionary.Expense.DELETED));
+
+    setIsLoading(false);
+  };
+
+  const openBulkDeleteModal = () => {
+    if (selectedExpenses.length === 0) return;
+    modals.open({
+      title: <Title order={5}>{t(Dictionary.Expense.DELETE)}</Title>,
+      size: "md",
+      children: (
+        <Flex direction="column" gap={20}>
+          <Text>
+            {t(Dictionary.Expense.BULK_DELETE, {
+              selectedExpenses: selectedExpenses.length,
+            })}
+          </Text>
+          <Flex direction="row" gap={10}>
+            <Button
+              loading={isLoading}
+              onClick={() => {
+                handleBulkDelete();
+                modals.closeAll();
+              }}
+              variant="light"
+              flex={1}
+              style={{ color: "red", backgroundColor: "#ffeeee" }}
+            >
+              {t(Dictionary.Common.DELETE)}
+            </Button>
+            <Button onClick={() => modals.closeAll()} flex={1} variant="light">
+              {t(Dictionary.Common.CANCEL)}
+            </Button>
+          </Flex>
+        </Flex>
+      ),
+    });
+  };
+
+  const toggleExpenseSelection = (id: string) => {
+    setSelectedExpenses((prev) =>
+      prev.includes(id) ? prev.filter((e) => e !== id) : [...prev, id],
+    );
+  };
+
   const addOvertimeMember = () => {
     modals.open({
       title: <Title order={5}>{t(Dictionary.OvertimeMember.ADD_NEW)}</Title>,
@@ -491,71 +560,82 @@ function Expenses() {
       form.setFieldValue("totalPrice", parseFloat(result.totalPrice));
   };
 
+  const filteredExpenses = useMemo(() => {
+    return expenses
+      .filter((x) =>
+        x.searchText.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
+      .filter((x) => (selectedReport ? x.reportId === selectedReport : true))
+      .filter((x) =>
+        selectedDeclarant ? x.declarantId === selectedDeclarant : true,
+      )
+      .filter(
+        (x) =>
+          activeUserSelectData.find((y) => y.value === x.declarantId)?.label,
+      )
+      .filter(
+        (x) =>
+          activeProjectSelectData.find((y) => y.value === x.projectId)?.label,
+      );
+  }, [
+    expenses,
+    searchQuery,
+    selectedDeclarant,
+    selectedReport,
+    activeUserSelectData,
+    activeProjectSelectData,
+  ]);
+
   const memoizedExpenses = useMemo(
     () =>
-      expenses
-        .filter((x) =>
-          x.searchText.toLowerCase().includes(searchQuery.toLowerCase()),
-        )
-        .filter((x) => (selectedReport ? x.reportId === selectedReport : true))
-        .filter((x) =>
-          selectedDeclarant ? x.declarantId === selectedDeclarant : true,
-        )
-        .filter(
-          (x) =>
-            activeUserSelectData.find((y) => y.value === x.declarantId)?.label,
-        )
-        .filter(
-          (x) =>
-            activeProjectSelectData.find((y) => y.value === x.projectId)?.label,
-        )
-        .map((x: Expense) => (
-          <Table.Tr key={x.id}>
-            <Table.Td>{x.declarantFullName}</Table.Td>
-            <Table.Td>{x.projectName}</Table.Td>
-            <Table.Td>{expenseTypes[Number(x.expenseType)].label}</Table.Td>
-            <Table.Td>{format(x.expenseDate, "dd/MM/yyyy")}</Table.Td>
-            <Table.Td> {x.totalPrice} </Table.Td>
-            <Table.Td>{currencyTypes[Number(x.currency)].label}</Table.Td>
+      filteredExpenses.map((x: Expense) => (
+        <Table.Tr key={x.id}>
+          {isSelectionMode && (
             <Table.Td>
-              {x.expenseType !== ExpenseType.Food ? x.description : "-"}
+              <Checkbox
+                radius="xl"
+                checked={selectedExpenses.includes(x.id)}
+                onChange={() => toggleExpenseSelection(x.id)}
+              />
             </Table.Td>
+          )}
+          <Table.Td>{x.declarantFullName}</Table.Td>
+          <Table.Td>{x.projectName}</Table.Td>
+          <Table.Td>{expenseTypes[Number(x.expenseType)].label}</Table.Td>
+          <Table.Td>{format(x.expenseDate, "dd/MM/yyyy")}</Table.Td>
+          <Table.Td> {x.totalPrice} </Table.Td>
+          <Table.Td>{currencyTypes[Number(x.currency)].label}</Table.Td>
+          <Table.Td>
+            {x.expenseType !== ExpenseType.Food ? x.description : "-"}
+          </Table.Td>
 
-            <Table.Td>{x.reportName}</Table.Td>
-            <Table.Td>
-              <Flex justify="center" gap={5}>
-                <Button
-                  onClick={() => openEditExpense(x)}
-                  variant="light"
-                  radius={5}
-                  loading={isLoading}
-                  leftSection={<IconEdit size={18} />}
-                >
-                  {t(Dictionary.Common.EDIT)}
-                </Button>
-                <Button
-                  onClick={() => openDeleteExpenseModal(x.id)}
-                  variant="light"
-                  radius={5}
-                  loading={isLoading}
-                  style={{ color: "red", backgroundColor: "#ffeeee" }}
-                  leftSection={<IconTrash size={18} />}
-                >
-                  {t(Dictionary.Common.DELETE)}
-                </Button>
-              </Flex>
-            </Table.Td>
-          </Table.Tr>
-        )),
-    [
-      isLoading,
-      expenses,
-      searchQuery,
-      selectedDeclarant,
-      selectedReport,
-      activeUserSelectData,
-      activeProjectSelectData,
-    ],
+          <Table.Td>{x.reportName}</Table.Td>
+          <Table.Td>
+            <Flex justify="center" gap={5}>
+              <Button
+                onClick={() => openEditExpense(x)}
+                variant="light"
+                radius={5}
+                loading={isLoading}
+                leftSection={<IconEdit size={18} />}
+              >
+                {t(Dictionary.Common.EDIT)}
+              </Button>
+              <Button
+                onClick={() => openDeleteExpenseModal(x.id)}
+                variant="light"
+                radius={5}
+                loading={isLoading}
+                style={{ color: "red", backgroundColor: "#ffeeee" }}
+                leftSection={<IconTrash size={18} />}
+              >
+                {t(Dictionary.Common.DELETE)}
+              </Button>
+            </Flex>
+          </Table.Td>
+        </Table.Tr>
+      )),
+    [isLoading, filteredExpenses, isSelectionMode, selectedExpenses],
   );
 
   const ocrMapping = useMemo(
@@ -806,6 +886,39 @@ function Expenses() {
             onChange={(e) => setSelectedDeclarant(e)}
             comboboxProps={{ withinPortal: false }}
           />
+          {!isSelectionMode ? (
+            <Button variant="light" onClick={() => setIsSelectionMode(true)}>
+              {t(Dictionary.Common.SELECT)}
+            </Button>
+          ) : (
+            <Group gap="xs">
+              <Button
+                variant="light"
+                onClick={() => {
+                  setSelectedExpenses(filteredExpenses.map((x) => x.id));
+                }}
+              >
+                {t(Dictionary.Common.SELECT_ALL)}
+              </Button>
+              <Button
+                variant="light"
+                style={{ color: "red", backgroundColor: "#ffeeee" }}
+                onClick={openBulkDeleteModal}
+                disabled={selectedExpenses.length === 0}
+              >
+                {t(Dictionary.Common.DELETE)}
+              </Button>
+              <Button
+                variant="light"
+                onClick={() => {
+                  setIsSelectionMode(false);
+                  setSelectedExpenses([]);
+                }}
+              >
+                {t(Dictionary.Common.CANCEL)}
+              </Button>
+            </Group>
+          )}
         </Flex>
         <ScrollArea flex={1}>
           <Table
@@ -817,6 +930,7 @@ function Expenses() {
           >
             <Table.Thead>
               <Table.Tr>
+                {isSelectionMode && <Table.Th w={40}></Table.Th>}
                 <Table.Th>{t(Dictionary.Expense.DECLARANT)}</Table.Th>
                 <Table.Th>{t(Dictionary.Expense.PROJECT_NAME)}</Table.Th>
                 <Table.Th w={80}>{t(Dictionary.Expense.TYPE)}</Table.Th>

@@ -368,7 +368,6 @@ function Teams() {
               clearable
               data={managerSelectData}
               label={t(Dictionary.Team.DEPARTMENT_MANAGER)}
-              limit={100}
               maxDropdownHeight={200}
               comboboxProps={{
                 withinPortal: false,
@@ -381,7 +380,6 @@ function Teams() {
               clearable
               data={managerSelectData}
               label={t(Dictionary.Team.DEPARTMENT_HEAD)}
-              limit={100}
               maxDropdownHeight={200}
               comboboxProps={{
                 withinPortal: false,
