@@ -91,6 +91,10 @@ function Reports() {
 
   const [expandedReportIds, setExpandedReportIds] = useState<string[]>([]);
 
+  const [isSelectionMode, setIsSelectionMode] = useState<boolean>(false);
+
+  const [selectedReports, setSelectedReports] = useState<string[]>([]);
+
   const toggleRow = (id: string) => {
     setExpandedReportIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
@@ -143,6 +147,7 @@ function Reports() {
           activeUserSelectData={activeUserSelectData}
           managerSelectData={managerSelectData}
           projectSelectData={projectSelectData}
+          travelPlaceSelectData={travelPlaceSelectData}
           namePlaceholder={namePlaceholder}
         />
       ),
@@ -330,25 +335,35 @@ function Reports() {
     setIsLoading(false);
   };
 
-  const activeUserSelectData = useMemo(
-    () =>
-      activeUsers.map((user) => ({
+  const travelPlaceSelectData = useMemo(() => {
+    return [
+      ...new Map(
+        reports.map((report) => [
+          report.travelPlace,
+          { value: report.id, label: report.travelPlace },
+        ]),
+      ).values(),
+    ];
+  }, [reports]);
+
+  const { activeUserSelectData, managerSelectData } = useMemo(() => {
+    const activeUserSelectData = activeUsers.map((user) => ({
+      value: user.id,
+      label: `${user.name} ${user.surname}`,
+    }));
+
+    const managerSelectData = activeUsers
+      .filter((user) => user.role.toString() === Role.Admin)
+      .map((user) => ({
         value: user.id,
         label: `${user.name} ${user.surname}`,
-      })),
-    [activeUsers],
-  );
+      }));
 
-  const managerSelectData = useMemo(
-    () =>
-      activeUsers
-        .filter((x) => x.role.toString() === Role.Admin)
-        .map((user) => ({
-          value: user.id,
-          label: `${user.name} ${user.surname}`,
-        })),
-    [activeUsers],
-  );
+    return {
+      activeUserSelectData,
+      managerSelectData,
+    };
+  }, [activeUsers]);
 
   const filteredCurrency = currencyTypes.filter(
     (x) =>
@@ -381,6 +396,69 @@ function Reports() {
       departmentManager: selectedTeam?.departmentManager ?? "",
       departmentHead: selectedTeam?.departmentHead ?? "",
     });
+  };
+
+  const handleBulkDelete = async () => {
+    setIsLoading(true);
+
+    const response = await handleDataRequest<string[], never>(
+      urls.reportBulkDelete,
+      RequestType.Post,
+      selectedReports,
+    );
+
+    if (!response.isSuccess) {
+      setIsLoading(false);
+      return;
+    }
+
+    selectedReports.forEach((id) => deleteReport(id));
+    setSelectedReports([]);
+    setIsSelectionMode(false);
+
+    toast.success(t(Dictionary.Report.DELETED));
+
+    setIsLoading(false);
+  };
+
+  const openBulkDeleteModal = () => {
+    if (selectedReports.length === 0) return;
+    modals.open({
+      title: <Title order={5}>{t(Dictionary.Report.DELETE)}</Title>,
+      size: "md",
+      children: (
+        <Flex direction="column" gap={20}>
+          <Text>
+            {t(Dictionary.Report.BULK_DELETE, {
+              selectedReports: selectedReports.length,
+            })}
+          </Text>
+          <Flex direction="row" gap={10}>
+            <Button
+              loading={isLoading}
+              onClick={() => {
+                handleBulkDelete();
+                modals.closeAll();
+              }}
+              variant="light"
+              flex={1}
+              style={{ color: "red", backgroundColor: "#ffeeee" }}
+            >
+              {t(Dictionary.Common.DELETE)}
+            </Button>
+            <Button onClick={() => modals.closeAll()} flex={1} variant="light">
+              {t(Dictionary.Common.CANCEL)}
+            </Button>
+          </Flex>
+        </Flex>
+      ),
+    });
+  };
+
+  const toggleReportSelection = (id: string) => {
+    setSelectedReports((prev) =>
+      prev.includes(id) ? prev.filter((e) => e !== id) : [...prev, id],
+    );
   };
 
   const getProjects = async () => {
@@ -418,159 +496,167 @@ function Reports() {
     setTeams(response.value);
   };
 
+  const filteredReports = useMemo(() => {
+    return reports
+      .filter((x) => (showAbroadReports === true ? x.isAbroad : x))
+      .filter((x) =>
+        x.searchText.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
+      .filter((x) =>
+        selectedDeclarant ? x.declarant === selectedDeclarant : x,
+      );
+  }, [reports, showAbroadReports, searchQuery, selectedDeclarant]);
+
   const memoizedReports = useMemo(
     () =>
-      reports
-        .filter((x) => (showAbroadReports === true ? x.isAbroad : x))
-        .filter((x) =>
-          x.searchText.toLowerCase().includes(searchQuery.toLowerCase()),
-        )
-        .filter((x) =>
-          selectedDeclarant ? x.declarant === selectedDeclarant : x,
-        )
-        .map((x: Report) => {
-          const isExpanded = expandedReportIds.includes(x.id);
-          const reportExpenses = expenses.filter((e) => e.reportId === x.id);
+      filteredReports.map((x: Report) => {
+        const isExpanded = expandedReportIds.includes(x.id);
+        const reportExpenses = expenses.filter((e) => e.reportId === x.id);
 
-          const declarantUser = activeUsers.find((u) => u.id === x.declarant);
-          const declarantName = declarantUser
-            ? `${declarantUser.name} ${declarantUser.surname}`
-            : "-";
+        const declarantUser = activeUsers.find((u) => u.id === x.declarant);
+        const declarantName = declarantUser
+          ? `${declarantUser.name} ${declarantUser.surname}`
+          : "-";
 
-          return (
-            <Fragment key={x.id}>
-              <Table.Tr onClick={() => toggleRow(x.id)}>
-                <Table.Td>
-                  <Flex justify="space-between" align="center">
-                    {x.name}
-                    <Text size="sm" c="dimmed">
-                      {reportExpenses.length}
-                    </Text>
-                  </Flex>
+        return (
+          <Fragment key={x.id}>
+            <Table.Tr onClick={() => toggleRow(x.id)}>
+              {isSelectionMode && (
+                <Table.Td onClick={(e) => e.stopPropagation()} w={50}>
+                  <Checkbox
+                    radius="xl"
+                    checked={selectedReports.includes(x.id)}
+                    onChange={() => toggleReportSelection(x.id)}
+                  />
                 </Table.Td>
-                <Table.Td>{declarantName}</Table.Td>
-                <Table.Td>
-                  <Badge
-                    size="md"
-                    color={x.isAbroad ? "green" : "gray"}
+              )}
+              <Table.Td>
+                <Flex justify="space-between" align="center">
+                  {x.name}
+                  <Text size="sm" c="dimmed">
+                    {reportExpenses.length}
+                  </Text>
+                </Flex>
+              </Table.Td>
+              <Table.Td>{declarantName}</Table.Td>
+              <Table.Td>
+                <Badge
+                  size="md"
+                  color={x.isAbroad ? "green" : "gray"}
+                  variant="light"
+                >
+                  {x.isAbroad
+                    ? t(Dictionary.Common.YES)
+                    : t(Dictionary.Common.NO)}
+                </Badge>
+              </Table.Td>
+              <Table.Td onClick={(e) => e.stopPropagation()}>
+                <Flex justify="center" gap={10} align="center">
+                  <Button
+                    size="xs"
+                    onClick={() => downloadReport(x)}
                     variant="light"
+                    color="blue"
+                    loading={isLoading}
+                    leftSection={<IconDownload size={16} />}
                   >
-                    {x.isAbroad
-                      ? t(Dictionary.Common.YES)
-                      : t(Dictionary.Common.NO)}
-                  </Badge>
-                </Table.Td>
-                <Table.Td onClick={(e) => e.stopPropagation()}>
-                  <Flex justify="center" gap={10} align="center">
-                    <Button
-                      size="xs"
-                      onClick={() => downloadReport(x)}
-                      variant="light"
-                      color="blue"
-                      loading={isLoading}
-                      leftSection={<IconDownload size={16} />}
-                    >
-                      {t(Dictionary.Report.DOWNLOAD)}
-                    </Button>
-                    <Button
-                      size="xs"
-                      onClick={() => openEditReport(x)}
-                      variant="light"
-                      loading={isLoading}
-                      leftSection={<IconEdit size={16} />}
-                    >
-                      {t(Dictionary.Common.EDIT)}
-                    </Button>
-                    <Button
-                      size="xs"
-                      onClick={() => openDeleteReportModal(x.id)}
-                      variant="light"
-                      leftSection={<IconTrash size={16} />}
-                      loading={isLoading}
-                      style={{ color: "red", backgroundColor: "#ffeeee" }}
-                    >
-                      {t(Dictionary.Common.DELETE)}
-                    </Button>
-                  </Flex>
-                </Table.Td>
-              </Table.Tr>
-              <Table.Tr>
-                <Table.Td colSpan={4} p={0}>
-                  <Collapse in={isExpanded} transitionDuration={200}>
-                    <Card
-                      style={{
-                        borderRadius: 0,
-                        boxShadow: "none",
-                      }}
-                    >
-                      {reportExpenses.length > 0 ? (
-                        <Table striped highlightOnHover withColumnBorders>
-                          <Table.Thead>
-                            <Table.Tr>
-                              <Table.Th>
-                                {t(Dictionary.Expense.DECLARANT)}
-                              </Table.Th>
-                              <Table.Th>{t(Dictionary.Expense.TYPE)}</Table.Th>
-                              <Table.Th>{t(Dictionary.Expense.DATE)}</Table.Th>
-                              <Table.Th>
-                                {t(Dictionary.Expense.TOTAL_PRICE)}
-                              </Table.Th>
-                              <Table.Th>
-                                {t(Dictionary.Expense.CURRENCY)}
-                              </Table.Th>
-                              <Table.Th>
-                                {t(Dictionary.Expense.DESCRIPTION)}
-                              </Table.Th>
+                    {t(Dictionary.Report.DOWNLOAD)}
+                  </Button>
+                  <Button
+                    size="xs"
+                    onClick={() => openEditReport(x)}
+                    variant="light"
+                    loading={isLoading}
+                    leftSection={<IconEdit size={16} />}
+                  >
+                    {t(Dictionary.Common.EDIT)}
+                  </Button>
+                  <Button
+                    size="xs"
+                    onClick={() => openDeleteReportModal(x.id)}
+                    variant="light"
+                    leftSection={<IconTrash size={16} />}
+                    loading={isLoading}
+                    style={{ color: "red", backgroundColor: "#ffeeee" }}
+                  >
+                    {t(Dictionary.Common.DELETE)}
+                  </Button>
+                </Flex>
+              </Table.Td>
+            </Table.Tr>
+            <Table.Tr>
+              <Table.Td colSpan={isSelectionMode ? 5 : 4} p={0}>
+                <Collapse in={isExpanded} transitionDuration={200}>
+                  <Card
+                    style={{
+                      borderRadius: 0,
+                      boxShadow: "none",
+                    }}
+                  >
+                    {reportExpenses.length > 0 ? (
+                      <Table striped highlightOnHover withColumnBorders>
+                        <Table.Thead>
+                          <Table.Tr>
+                            <Table.Th>
+                              {t(Dictionary.Expense.DECLARANT)}
+                            </Table.Th>
+                            <Table.Th>{t(Dictionary.Expense.TYPE)}</Table.Th>
+                            <Table.Th>{t(Dictionary.Expense.DATE)}</Table.Th>
+                            <Table.Th>
+                              {t(Dictionary.Expense.TOTAL_PRICE)}
+                            </Table.Th>
+                            <Table.Th>
+                              {t(Dictionary.Expense.CURRENCY)}
+                            </Table.Th>
+                            <Table.Th>
+                              {t(Dictionary.Expense.DESCRIPTION)}
+                            </Table.Th>
+                          </Table.Tr>
+                        </Table.Thead>
+                        <Table.Tbody>
+                          {reportExpenses.map((e) => (
+                            <Table.Tr key={e.id}>
+                              <Table.Td>{e.declarantFullName}</Table.Td>
+                              <Table.Td w={200}>
+                                {expenseTypes[Number(e.expenseType)]?.label}
+                              </Table.Td>
+                              <Table.Td w={200}>
+                                {format(new Date(e.expenseDate), "dd/MM/yyyy")}
+                              </Table.Td>
+                              <Table.Td w={200}>{e.totalPrice}</Table.Td>
+                              <Table.Td w={200}>
+                                {currencyTypes[Number(e.currency)]?.label}
+                              </Table.Td>
+                              <Table.Td>
+                                {Number(e.expenseType) !==
+                                Number(ExpenseType.Food)
+                                  ? e.description
+                                  : "-"}
+                              </Table.Td>
                             </Table.Tr>
-                          </Table.Thead>
-                          <Table.Tbody>
-                            {reportExpenses.map((e) => (
-                              <Table.Tr key={e.id}>
-                                <Table.Td>{e.declarantFullName}</Table.Td>
-                                <Table.Td w={200}>
-                                  {expenseTypes[Number(e.expenseType)]?.label}
-                                </Table.Td>
-                                <Table.Td w={200}>
-                                  {format(
-                                    new Date(e.expenseDate),
-                                    "dd/MM/yyyy",
-                                  )}
-                                </Table.Td>
-                                <Table.Td w={200}>{e.totalPrice}</Table.Td>
-                                <Table.Td w={200}>
-                                  {currencyTypes[Number(e.currency)]?.label}
-                                </Table.Td>
-                                <Table.Td>
-                                  {Number(e.expenseType) !==
-                                  Number(ExpenseType.Food)
-                                    ? e.description
-                                    : "-"}
-                                </Table.Td>
-                              </Table.Tr>
-                            ))}
-                          </Table.Tbody>
-                        </Table>
-                      ) : (
-                        <Text size="sm" c="dimmed" ta="center">
-                          {t(Dictionary.Expense.NO_FOUND)}
-                        </Text>
-                      )}
-                    </Card>
-                  </Collapse>
-                </Table.Td>
-              </Table.Tr>
-            </Fragment>
-          );
-        }),
+                          ))}
+                        </Table.Tbody>
+                      </Table>
+                    ) : (
+                      <Text size="sm" c="dimmed" ta="center">
+                        {t(Dictionary.Expense.NO_FOUND)}
+                      </Text>
+                    )}
+                  </Card>
+                </Collapse>
+              </Table.Td>
+            </Table.Tr>
+          </Fragment>
+        );
+      }),
     [
-      reports,
-      showAbroadReports,
-      searchQuery,
+      filteredReports,
       isLoading,
       expandedReportIds,
       expenses,
       activeUsers,
-      selectedDeclarant,
+      isSelectionMode,
+      selectedReports,
     ],
   );
 
@@ -604,11 +690,13 @@ function Reports() {
                 label={t(Dictionary.Report.ABROAD)}
               />
             </Flex>
-            <TextInput
+            <Autocomplete
               label={t(Dictionary.Report.TRAVEL_PLACE)}
               flex={1}
               mih={TEXT_INPUT_MIN_HEIGHT}
               {...form.getInputProps("travelPlace")}
+              data={travelPlaceSelectData}
+              comboboxProps={{ withinPortal: false }}
             />
             <Flex gap={20} flex={1} align="center">
               <TextInput
@@ -816,6 +904,39 @@ function Reports() {
             onChange={() => setShowAbroadReports(!showAbroadReports)}
             type="checkbox"
           />
+          {!isSelectionMode ? (
+            <Button variant="light" onClick={() => setIsSelectionMode(true)}>
+              {t(Dictionary.Common.SELECT)}
+            </Button>
+          ) : (
+            <Group gap="xs">
+              <Button
+                variant="light"
+                onClick={() => {
+                  setSelectedReports(filteredReports.map((x) => x.id));
+                }}
+              >
+                {t(Dictionary.Common.SELECT_ALL)}
+              </Button>
+              <Button
+                variant="light"
+                style={{ color: "red", backgroundColor: "#ffeeee" }}
+                onClick={openBulkDeleteModal}
+                disabled={selectedReports.length === 0}
+              >
+                {t(Dictionary.Common.DELETE)}
+              </Button>
+              <Button
+                variant="light"
+                onClick={() => {
+                  setIsSelectionMode(false);
+                  setSelectedReports([]);
+                }}
+              >
+                {t(Dictionary.Common.CANCEL)}
+              </Button>
+            </Group>
+          )}
         </Flex>
         <ScrollArea flex={1}>
           <Table
@@ -828,6 +949,7 @@ function Reports() {
           >
             <Table.Thead>
               <Table.Tr>
+                {isSelectionMode && <Table.Th w={50}></Table.Th>}
                 <Table.Th>{t(Dictionary.Report.NAME)}</Table.Th>
                 <Table.Th w={500}>{t(Dictionary.Report.DECLARANT)}</Table.Th>
                 <Table.Th w={200}>{t(Dictionary.Report.ABROAD)}</Table.Th>

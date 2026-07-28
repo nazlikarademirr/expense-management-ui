@@ -3,6 +3,8 @@ abstract class Dictionary {
     static readonly EDIT = "common.edit";
     static readonly DELETE = "common.delete";
     static readonly APPROVE = "common.approve";
+    static readonly SELECT = "common.select";
+    static readonly SELECT_ALL = "common.selectAll";
     static readonly CANCEL = "common.cancel";
     static readonly CLOSE = "common.close";
     static readonly CREATE_USER = "common.createUser";
@@ -217,6 +219,7 @@ abstract class Dictionary {
       "expense.textCouldNotBeDetected";
     static readonly OCR_ERROR = "expense.ocrError";
     static readonly SELECT_DECLARANT = "expense.selectDeclarant";
+    static readonly BULK_DELETE = "expense.bulkDelete";
   };
 
   static OvertimeMember = class {
@@ -273,6 +276,7 @@ abstract class Dictionary {
     static readonly PURPOSE_OF_TRAVEL_PLACEHOLDER =
       "report.purposeOfTravelPlaceholder";
     static readonly SELECT_DECLARANT = "report.selectDeclarant";
+    static readonly BULK_DELETE = "report.bulkDelete";
   };
 }
 

@@ -3,6 +3,8 @@
     "edit": "Edit",
     "delete": "Delete",
     "approve": "Approve",
+    "select": "Select",
+    "selectAll": "Select All",
     "cancel": "Cancel",
     "close": "Close",
     "createUser": "Create User",
@@ -205,7 +207,8 @@
     "noFound": "No expenses found.",
     "textCouldNotBeDetected": "Text could not be detected.",
     "ocrError": "Sorry, something went wrong.",
-    "selectDeclarant": "Please select the declarant."
+    "selectDeclarant": "Please select the declarant.",
+    "bulkDelete": "{{selectedExpenses}} number of expenses will be deleted, do you approve?"
   },
 
   "overtimeMember": {
@@ -251,11 +254,12 @@
     "amountToBePaidCurrency": "Amount To Be Paid Currency",
     "declarant": "Declarant",
     "financeOfficer": "Finance Officer",
-    "tlIban": "TL Iban",
-    "eurIban": "EUR Iban",
+    "tlIban": "TL IBAN",
+    "eurIban": "EUR IBAN",
     "invalidIban": "You entered an incomplete or invalid IBAN.",
     "new": "New Report",
     "purposeOfTravelPlaceholder": "Choose a project or enter your travel purpose.",
-    "selectDeclarant": "Please select the declarant."
+    "selectDeclarant": "Please select the declarant.",
+    "bulkDelete": "{{selectedReports}} number of reports will be deleted, do you approve?"
   }
 }

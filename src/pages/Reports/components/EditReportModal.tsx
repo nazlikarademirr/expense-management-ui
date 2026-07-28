@@ -41,6 +41,7 @@ interface EditAbroadReportModalProps {
   activeUserSelectData: SelectItem[];
   managerSelectData: SelectItem[];
   projectSelectData: string[];
+  travelPlaceSelectData: { value: string; label: string | null }[];
   namePlaceholder: string;
 }
 
@@ -52,6 +53,7 @@ function EditAbroadReportModal({
   activeUserSelectData,
   managerSelectData,
   projectSelectData,
+  travelPlaceSelectData,
   namePlaceholder,
 }: EditAbroadReportModalProps) {
   const { t } = useTranslation();
@@ -303,11 +305,14 @@ function EditAbroadReportModal({
         </Flex>
       </Flex>
       <Flex gap={20}>
-        <TextInput
+        <Autocomplete
           label={t(Dictionary.Report.TRAVEL_PLACE)}
           flex={1}
+          clearable
           mih={TEXT_INPUT_MIN_HEIGHT}
           {...reportForm.getInputProps("travelPlace")}
+          data={travelPlaceSelectData}
+          comboboxProps={{ withinPortal: false }}
         />
         <Autocomplete
           {...reportForm.getInputProps("departmentManager")}

@@ -5,7 +5,9 @@ interface Urls {
   userPassword: string;
   temporaryPassword: string;
   expense: string;
+  expenseBulkDelete: string;
   report: string;
+  reportBulkDelete: string;
   expenseExcel: string;
   login: string;
 }
@@ -18,7 +20,11 @@ interface Urls {
 //   temporaryPassword:
 //     "https://10.150.0.73/expense/company-service/api/temporary-password",
 //   expense: "https://10.150.0.73/expense/expense-service/api/expense",
+//   expenseBulkDelete:
+//     "https://10.150.0.73/expense/expense-service/api/expense/bulk-delete",
 //   report: "https://10.150.0.73/expense/report-service/api/report",
+//   reportBulkDelete:
+//     "https://10.150.0.73/expense/report-service/api/report/bulk-delete",
 //   expenseExcel: "https://10.150.0.73/expense/report-service/api/expense-excel",
 //   login: "https://10.150.0.73/expense/core-service/api/authenticate",
 // } as const;
@@ -30,7 +36,9 @@ const urls: Urls = {
   userPassword: "https://localhost:7004/api/user-password",
   temporaryPassword: "https://localhost:7004/api/temporary-password",
   expense: "https://localhost:7165/api/expense",
+  expenseBulkDelete: "https://localhost:7165/api/expense/bulk-delete",
   report: "https://localhost:7214/api/report",
+  reportBulkDelete: "https://localhost:7214/api/report/bulk-delete",
   expenseExcel: "https://localhost:7214/api/expense-excel",
   login: "https://localhost:7192/api/authenticate",
 } as const;

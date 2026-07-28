@@ -5,6 +5,7 @@ import userSchema, {
 } from "../../types/user.types.ts";
 import EditUserModal from "./components/EditUserModal.tsx";
 import {
+  Autocomplete,
   Badge,
   Button,
   Card,
@@ -116,6 +117,7 @@ function Users() {
           activeTeamSelectData={activeTeamSelectData}
           updateUser={updateUser}
           checkIfUserIsValid={checkIfUserIsValid}
+          titleSelectData={titleSelectData}
         />
       ),
     });
@@ -333,6 +335,17 @@ function Users() {
     });
   };
 
+  const titleSelectData = useMemo(() => {
+    return [
+      ...new Map(
+        users.map((user) => [
+          user.title,
+          { value: user.id, label: user.title },
+        ]),
+      ).values(),
+    ];
+  }, [users]);
+
   const memoizedUsers = useMemo(
     () =>
       users
@@ -484,12 +497,18 @@ function Users() {
             />
           </Flex>
           <Flex gap="xl" direction="column" flex={1}>
-            <TextInput
+            <Autocomplete
               {...form.getInputProps("title")}
               flex={1}
               mih={MIN_INPUT_HEIGHT}
               miw={MIN_INPUT_WIDTH}
               label={t(Dictionary.User.TITLE)}
+              data={titleSelectData}
+              clearable
+              maxDropdownHeight={100}
+              comboboxProps={{
+                withinPortal: false,
+              }}
             />
             <PasswordInput
               {...form.getInputProps("password")}

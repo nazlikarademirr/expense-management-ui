@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { modals } from "@mantine/modals";
 import {
+  Autocomplete,
   Button,
   ComboboxItem,
   Flex,
@@ -31,6 +32,7 @@ interface EditUserProps {
   activeTeamSelectData: SelectItem[];
   updateUser: (userForm: User) => void;
   checkIfUserIsValid: (user: User) => boolean;
+  titleSelectData: { value: string; label: string | null }[];
 }
 
 const MIN_INPUT_HEIGHT = 70;
@@ -40,6 +42,7 @@ function EditUserModal({
   activeTeamSelectData,
   updateUser,
   checkIfUserIsValid,
+  titleSelectData,
 }: EditUserProps) {
   const { handleDataRequest } = useRequestHandler();
 
@@ -176,11 +179,13 @@ function EditUserModal({
         mih={MIN_INPUT_HEIGHT}
         label={t(Dictionary.User.CARD_NUMBER)}
       />
-      <TextInput
+      <Autocomplete
         {...userForm.getInputProps("title")}
         flex={1}
         mih={MIN_INPUT_HEIGHT}
         label={t(Dictionary.User.TITLE)}
+        data={titleSelectData}
+        comboboxProps={{ withinPortal: false }}
       />
       <TextInput
         {...userForm.getInputProps("email")}

@@ -3,6 +3,8 @@
     "edit": "Düzenle",
     "delete": "Sil",
     "approve": "Onayla",
+    "select": "Seç",
+    "selectAll": "Tümünü Seç",
     "cancel": "Vazgeç",
     "close": "Kapat",
     "createUser": "Oluşturan Kullanıcı",
@@ -205,7 +207,8 @@
     "noFound": "Masraf bulunamadı.",
     "textCouldNotBeDetected": "Metin algılanamadı.",
     "ocrError": "Üzgünüz, bir şeyler ters gitti.",
-    "selectDeclarant": "Beyan eden kişi seçiniz."
+    "selectDeclarant": "Beyan eden kişi seçiniz.",
+    "bulkDelete": "{{selectedExpenses}} masraf silinecektir, onaylıyor musunuz?"
   },
 
   "overtimeMember": {
@@ -251,11 +254,12 @@
     "amountToBePaidCurrency": "Ödenecek Tutar Para Birimi",
     "declarant": "Beyan Eden",
     "financeOfficer": "Mali İşler",
-    "tlIban": "TL Iban",
-    "eurIban": "EUR Iban",
+    "tlIban": "TL IBAN",
+    "eurIban": "EUR IBAN",
     "invalidIban": "Hatalı veya eksik IBAN girdiniz.",
     "new": "Yeni Rapor",
     "purposeOfTravelPlaceholder": "Bir proje seçin veya seyahat amacınızı girin.",
-    "selectDeclarant": "Beyan eden kişi seçiniz."
+    "selectDeclarant": "Beyan eden kişi seçiniz.",
+    "bulkDelete": "{{selectedReports}} rapor silinecektir, onaylıyor musunuz?"
   }
 }
