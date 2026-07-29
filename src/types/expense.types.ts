@@ -12,7 +12,7 @@ type Expense = {
   projectId: string | null;
   projectName: string;
   expenseType: string;
-  expenseDate: Date;
+  expenseDate: Date | null;
   totalPrice: number;
   currency: string | null;
   description: string;

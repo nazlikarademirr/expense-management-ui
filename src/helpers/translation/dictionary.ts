@@ -220,6 +220,7 @@ abstract class Dictionary {
     static readonly OCR_ERROR = "expense.ocrError";
     static readonly SELECT_DECLARANT = "expense.selectDeclarant";
     static readonly BULK_DELETE = "expense.bulkDelete";
+    static readonly SIMILARITY_WARNING = "expense.similarityWarning";
   };
 
   static OvertimeMember = class {
