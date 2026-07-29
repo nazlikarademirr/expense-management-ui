@@ -621,7 +621,8 @@ function Reports() {
                                 {expenseTypes[Number(e.expenseType)]?.label}
                               </Table.Td>
                               <Table.Td w={200}>
-                                {format(new Date(e.expenseDate), "dd/MM/yyyy")}
+                                {e.expenseDate &&
+                                  format(new Date(e.expenseDate), "dd/MM/yyyy")}
                               </Table.Td>
                               <Table.Td w={200}>{e.totalPrice}</Table.Td>
                               <Table.Td w={200}>

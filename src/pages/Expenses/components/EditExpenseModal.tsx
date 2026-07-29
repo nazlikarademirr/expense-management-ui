@@ -70,7 +70,7 @@ function EditExpenseModal({
   const expenseForm = useForm<Expense>({
     initialValues: {
       ...expense,
-      expenseDate: new Date(expense.expenseDate),
+      expenseDate: expense.expenseDate ? new Date(expense.expenseDate) : null,
     },
     validate: zod4Resolver(expenseSchema),
   });
@@ -130,7 +130,7 @@ function EditExpenseModal({
       declarantId: expenseForm.values.declarantId ?? "",
       projectId: expenseForm.values.projectId ?? "",
       expenseType: Number(expenseForm.values.expenseType),
-      expenseDate: expenseForm.values.expenseDate,
+      expenseDate: expenseForm.values.expenseDate as Date,
       totalPrice: expenseForm.values.totalPrice,
       currency: Number(expenseForm.values.currency),
       description: expenseForm.values.description,

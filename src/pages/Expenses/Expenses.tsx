@@ -48,13 +48,14 @@ import { useAuthentication } from "../../contexts/AuthenticationContext/Authenti
 import { useTranslation } from "react-i18next";
 import Dictionary from "../../helpers/translation/dictionary";
 import { OcrResult } from "../../types/ocr.types";
-import { PiPlusCircle } from "react-icons/pi";
+import { PiPlusCircle, PiWarningCircle } from "react-icons/pi";
 import ReceiptUploader from "../../components/ReceiptUploader/ReceiptUploader";
 import normalizeText from "../../helpers/NormalizeText";
 import useReports from "../../hooks/useReports";
 import i18n from "../../helpers/translation/i18n";
 import CreateReportModal from "./components/CreateReportModal";
 import { dateParse } from "../../helpers/DateParser";
+import CurrencyType from "../../enums/currency-type";
 
 const INPUT_WIDTH = "25%";
 const MIN_FLEX_HEIGHT = 120;
@@ -124,6 +125,8 @@ function Expenses() {
 
   const [selectedReport, setSelectedReport] = useState<string | null>(null);
 
+  const [showReportError, setShowReportError] = useState(false);
+
   const [newReportName, setNewReportName] = useState("");
 
   const [isSelectionMode, setIsSelectionMode] = useState<boolean>(false);
@@ -142,9 +145,9 @@ function Expenses() {
       projectId: null,
       projectName: "",
       expenseType: "",
-      expenseDate: new Date(),
+      expenseDate: null,
       totalPrice: 0,
-      currency: null,
+      currency: CurrencyType.TL,
       description: "",
       reportId: "",
       reportName: "",
@@ -317,7 +320,7 @@ function Expenses() {
   };
 
   const checkIfExpenseIsValid = (expense: Expense) => {
-    if (expense.expenseDate > new Date()) {
+    if (expense.expenseDate && expense.expenseDate > new Date()) {
       toast.error(t(Dictionary.Expense.DATE_VALID));
       return false;
     }
@@ -340,10 +343,13 @@ function Expenses() {
     setIsLoading(true);
 
     if (!selectedReport) {
+      setShowReportError(true);
       toast.error(t(Dictionary.Report.SELECT));
       setIsLoading(false);
       return;
     }
+
+    setShowReportError(false);
 
     form.validate();
 
@@ -376,6 +382,7 @@ function Expenses() {
       declarantId: form.values.declarantId ?? "",
       projectId: form.values.projectId ?? "",
       expenseType: Number(form.values.expenseType),
+      expenseDate: form.values.expenseDate!,
       currency: Number(form.values.currency),
       reportId: selectedReport,
     };
@@ -400,13 +407,38 @@ function Expenses() {
 
     const currentDeclarantId = form.values.declarantId;
     const currentProjectId = form.values.projectId;
+    const currentCurrency = form.values.currency;
+    const currentExpenseType = form.values.expenseType;
 
     form.reset();
 
     form.setValues({
       declarantId: currentDeclarantId,
       projectId: currentProjectId,
+      currency: currentCurrency,
+      expenseType: currentExpenseType,
     });
+
+    if (
+      expenses.find(
+        (x) =>
+          x.expenseDate &&
+          format(x.expenseDate, "dd/MM/yyyy") ===
+            format(form.values.expenseDate!, "dd/MM/yyyy") &&
+          x.declarantId === form.values.declarantId &&
+          x.projectId === form.values.projectId &&
+          x.expenseType === form.values.expenseType &&
+          x.totalPrice === form.values.totalPrice &&
+          x.currency === form.values.currency,
+      )
+    ) {
+      toast(t(Dictionary.Expense.SIMILARITY_WARNING), {
+        icon: <PiWarningCircle size={70} color="green" />,
+        duration: 5000,
+      });
+      setIsLoading(false);
+      return;
+    }
 
     toast.success(t(Dictionary.Expense.ADDED));
 
@@ -602,7 +634,9 @@ function Expenses() {
           <Table.Td>{x.declarantFullName}</Table.Td>
           <Table.Td>{x.projectName}</Table.Td>
           <Table.Td>{expenseTypes[Number(x.expenseType)].label}</Table.Td>
-          <Table.Td>{format(x.expenseDate, "dd/MM/yyyy")}</Table.Td>
+          <Table.Td>
+            {x.expenseDate && format(x.expenseDate, "dd/MM/yyyy")}
+          </Table.Td>
           <Table.Td> {x.totalPrice} </Table.Td>
           <Table.Td>{currencyTypes[Number(x.currency)].label}</Table.Td>
           <Table.Td>
@@ -646,6 +680,7 @@ function Expenses() {
   );
 
   const handleReportSelect = (value: string) => {
+    setShowReportError(false);
     setSearchQuery("");
     if (value === "all") {
       setSelectedReport(null);
@@ -662,6 +697,7 @@ function Expenses() {
   };
 
   const handleReportNameChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setShowReportError(false);
     setNewReportName(event.currentTarget.value);
     setSearchQuery(event.currentTarget.value);
     setSelectedReport(null);
@@ -700,6 +736,12 @@ function Expenses() {
               <InputBase
                 w="100%"
                 value={newReportName}
+                error={showReportError}
+                styles={{
+                  input: {
+                    borderColor: showReportError ? "red" : undefined,
+                  },
+                }}
                 rightSection={<Combobox.Chevron />}
                 onClick={handleOpenReportDropdown}
                 onFocus={handleOpenReportDropdown}

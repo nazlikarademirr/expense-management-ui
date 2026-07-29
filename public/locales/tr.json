@@ -208,7 +208,8 @@
     "textCouldNotBeDetected": "Metin algılanamadı.",
     "ocrError": "Üzgünüz, bir şeyler ters gitti.",
     "selectDeclarant": "Beyan eden kişi seçiniz.",
-    "bulkDelete": "{{selectedExpenses}} masraf silinecektir, onaylıyor musunuz?"
+    "bulkDelete": "{{selectedExpenses}} masraf silinecektir, onaylıyor musunuz?",
+    "similarityWarning": "Masraf başarıyla eklendi. (Benzer bir masraf zaten mevcut, lütfen bilgileri kontrol ediniz.)"
   },
 
   "overtimeMember": {

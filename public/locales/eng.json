@@ -208,7 +208,8 @@
     "textCouldNotBeDetected": "Text could not be detected.",
     "ocrError": "Sorry, something went wrong.",
     "selectDeclarant": "Please select the declarant.",
-    "bulkDelete": "{{selectedExpenses}} number of expenses will be deleted, do you approve?"
+    "bulkDelete": "{{selectedExpenses}} number of expenses will be deleted, do you approve?",
+    "similarityWarning": "The expense has been added successfully. (A similar expense already exists, please check the details.)"
   },
 
   "overtimeMember": {
