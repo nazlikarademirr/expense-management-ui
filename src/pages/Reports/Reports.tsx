@@ -61,7 +61,7 @@ function Reports() {
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  const [showAbroadReports, setShowAbroadReports] = useState(false);
+  const [showTravelReports, setShowTravelReports] = useState(false);
 
   const { handleDataRequest, downloadFile } = useRequestHandler();
 
@@ -72,12 +72,6 @@ function Reports() {
   const auth = useAuthentication();
 
   const { t, i18n } = useTranslation();
-
-  const currentMonth = new Intl.DateTimeFormat(i18n.language, {
-    month: "long",
-  }).format(new Date());
-  const currentYear = new Date().getFullYear();
-  const namePlaceholder = `${auth.currentUserFullName} - ${currentMonth} ${currentYear}`;
 
   const [activeUsers, setActiveUsers] = useState<User[]>([]);
 
@@ -95,6 +89,8 @@ function Reports() {
 
   const [selectedReports, setSelectedReports] = useState<string[]>([]);
 
+  const [isInitialDeclarantSet, setIsInitialDeclarantSet] = useState(false);
+
   const toggleRow = (id: string) => {
     setExpandedReportIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
@@ -105,7 +101,7 @@ function Reports() {
     initialValues: {
       id: crypto.randomUUID(),
       name: "",
-      isAbroad: false,
+      isTravel: false,
       title: "",
       department: "",
       requestedAdvanceAmount: "",
@@ -132,12 +128,28 @@ function Reports() {
     validate: zod4Resolver(reportSchema),
   });
 
+  const declarantUser = activeUsers.find((x) => x.id === form.values.declarant);
+
+  const declarantFullName = declarantUser
+    ? `${declarantUser.name} ${declarantUser.surname}`
+    : auth.currentUserFullName;
+
+  const currentMonth = new Intl.DateTimeFormat(i18n.language, {
+    month: "long",
+  }).format(new Date());
+  const currentYear = new Date().getFullYear();
+
+  const namePlaceholder = form.values.travelPlace
+    ? `${declarantFullName} - ${form.values.travelPlace} (${currentMonth} ${currentYear})`
+    : `${declarantFullName} - ${currentMonth} ${currentYear}`;
+
   const openEditReport = (report: Report) => {
     modals.open({
       title: <Title order={4}>{t(Dictionary.Report.EDIT)}</Title>,
       size: "60%",
       yOffset: 20,
       styles: { content: { minHeight: 930 } },
+      closeOnClickOutside: false,
       children: (
         <EditReportModal
           report={report}
@@ -155,12 +167,17 @@ function Reports() {
   };
 
   const openDeleteReportModal = (id: string) => {
+    const reportName = reports.find((x) => x.id === id)?.name || "";
+
     modals.open({
       title: <Title order={5}>{t(Dictionary.Report.DELETE)}</Title>,
       size: "md",
+      closeOnClickOutside: false,
       children: (
         <Flex direction="column" gap={20}>
-          <Text>{t(Dictionary.Report.DELETE_QUESTION)}</Text>
+          <Text>
+            {t(Dictionary.Report.DELETE_QUESTION, { name: reportName })}
+          </Text>
           <Flex direction="row" gap={10}>
             <Button
               flex={1}
@@ -229,7 +246,10 @@ function Reports() {
         (x) => x.id !== report.id && x.name.trim() === report.name.trim(),
       )
     ) {
-      toast.error(t(Dictionary.Report.SAME_NAME));
+      toast.error(
+        t(Dictionary.Report.SAME_NAME, { name: report.name.trim() }),
+        { duration: 4000 },
+      );
       return false;
     }
 
@@ -246,21 +266,43 @@ function Reports() {
   const handleSave = async () => {
     setIsLoading(true);
 
-    form.validate();
+    let resolvedName = form.values.name.trim()
+      ? form.values.name.trim()
+      : namePlaceholder;
 
-    if (!form.isValid()) {
+    if (resolvedName === namePlaceholder) {
+      const nameExists = (nameToCheck: string) =>
+        reports.some((x) => x.name.trim() === nameToCheck.trim());
+
+      if (nameExists(resolvedName)) {
+        let counter = 1;
+
+        while (nameExists(`${resolvedName} (${counter})`)) {
+          counter++;
+        }
+
+        resolvedName = `${resolvedName} (${counter})`;
+      }
+    }
+
+    const enteredName = form.values.name;
+    form.values.name = resolvedName;
+    const validateResult = form.validate();
+    form.values.name = enteredName;
+
+    if (validateResult.hasErrors) {
       setIsLoading(false);
       return;
     }
 
-    if (!checkIfReportIsValid(form.values)) {
+    if (!checkIfReportIsValid({ ...form.values, name: resolvedName })) {
       setIsLoading(false);
       return;
     }
 
     const request: ReportRequest = {
       ...form.values,
-      name: form.values.name.trim(),
+      name: resolvedName,
     };
 
     const response = await handleDataRequest<ReportRequest, Report>(
@@ -279,9 +321,27 @@ function Reports() {
       createUserFullName: auth.currentUserFullName,
     });
 
+    const currentDeclarant = form.values.declarant;
+    const currentTitle = form.values.title;
+    const currentTlIban = form.values.tlIban;
+    const currentDepartment = form.values.department;
+    const currentDepartmentManager = form.values.departmentManager;
+    const currentDepartmentHead = form.values.departmentHead;
+
     form.reset();
 
-    toast.success(t(Dictionary.Report.CREATED));
+    form.setValues({
+      declarant: currentDeclarant,
+      title: currentTitle,
+      tlIban: currentTlIban,
+      department: currentDepartment,
+      departmentManager: currentDepartmentManager,
+      departmentHead: currentDepartmentHead,
+    });
+
+    toast.success(t(Dictionary.Report.CREATED, { name: resolvedName }), {
+      duration: 4000,
+    });
 
     setIsLoading(false);
   };
@@ -323,7 +383,7 @@ function Reports() {
       undefined,
       {
         reportId: report.id,
-        isAbroad: report.isAbroad,
+        isTravel: report.isTravel,
       },
     );
 
@@ -338,10 +398,14 @@ function Reports() {
   const travelPlaceSelectData = useMemo(() => {
     return [
       ...new Map(
-        reports.map((report) => [
-          report.travelPlace,
-          { value: report.id, label: report.travelPlace },
-        ]),
+        reports
+          .filter(
+            (report) => report.travelPlace && report.travelPlace.trim() !== "",
+          )
+          .map((report) => [
+            report.travelPlace,
+            { value: report.id, label: report.travelPlace },
+          ]),
       ).values(),
     ];
   }, [reports]);
@@ -426,11 +490,12 @@ function Reports() {
     modals.open({
       title: <Title order={5}>{t(Dictionary.Report.DELETE)}</Title>,
       size: "md",
+      closeOnClickOutside: false,
       children: (
         <Flex direction="column" gap={20}>
           <Text>
             {t(Dictionary.Report.BULK_DELETE, {
-              selectedReports: selectedReports.length,
+              selectedReportsLength: selectedReports.length,
             })}
           </Text>
           <Flex direction="row" gap={10}>
@@ -498,14 +563,14 @@ function Reports() {
 
   const filteredReports = useMemo(() => {
     return reports
-      .filter((x) => (showAbroadReports === true ? x.isAbroad : x))
+      .filter((x) => (showTravelReports === true ? x.isTravel : x))
       .filter((x) =>
         x.searchText.toLowerCase().includes(searchQuery.toLowerCase()),
       )
       .filter((x) =>
         selectedDeclarant ? x.declarant === selectedDeclarant : x,
       );
-  }, [reports, showAbroadReports, searchQuery, selectedDeclarant]);
+  }, [reports, showTravelReports, searchQuery, selectedDeclarant]);
 
   const memoizedReports = useMemo(
     () =>
@@ -542,10 +607,10 @@ function Reports() {
               <Table.Td>
                 <Badge
                   size="md"
-                  color={x.isAbroad ? "green" : "gray"}
+                  color={x.isTravel ? "green" : "gray"}
                   variant="light"
                 >
-                  {x.isAbroad
+                  {x.isTravel
                     ? t(Dictionary.Common.YES)
                     : t(Dictionary.Common.NO)}
                 </Badge>
@@ -662,6 +727,18 @@ function Reports() {
   );
 
   useEffect(() => {
+    if (
+      !isInitialDeclarantSet &&
+      auth.currentUser &&
+      activeUsers.length > 0 &&
+      teams.length > 0
+    ) {
+      handleDeclarantChange(auth.currentUser.id);
+      setIsInitialDeclarantSet(true);
+    }
+  }, [auth.currentUser, activeUsers, teams, isInitialDeclarantSet]);
+
+  useEffect(() => {
     getReports();
     getExpenses();
     getProjects();
@@ -686,14 +763,15 @@ function Reports() {
                 {...form.getInputProps("name")}
               />
               <Checkbox
-                {...form.getInputProps("isAbroad", { type: "checkbox" })}
+                {...form.getInputProps("isTravel", { type: "checkbox" })}
                 labelPosition="left"
-                label={t(Dictionary.Report.ABROAD)}
+                label={t(Dictionary.Report.TRAVEL)}
               />
             </Flex>
             <Autocomplete
               label={t(Dictionary.Report.TRAVEL_PLACE)}
               flex={1}
+              clearable
               mih={TEXT_INPUT_MIN_HEIGHT}
               {...form.getInputProps("travelPlace")}
               data={travelPlaceSelectData}
@@ -878,33 +956,6 @@ function Reports() {
       </Card>
       <Card mt="sm" radius="md" withBorder padding="sm" flex={1}>
         <Flex gap="xs" mb="md" align="center">
-          <TextInput
-            size="xs"
-            radius="xl"
-            rightSection={<IconSearch size={SEARCH_ICON_SIZE}></IconSearch>}
-            flex={5}
-            {...form.getInputProps("searchText")}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.currentTarget.value)}
-          />
-          <Select
-            comboboxProps={{ withinPortal: false }}
-            data={activeUserSelectData}
-            value={selectedDeclarant}
-            onChange={setSelectedDeclarant}
-            placeholder={t(Dictionary.Report.SELECT_DECLARANT)}
-            clearable
-            searchable
-            flex={1}
-          />
-          <Checkbox
-            ml="10px"
-            labelPosition="left"
-            label={t(Dictionary.Report.SHOW_ABROAD)}
-            checked={showAbroadReports}
-            onChange={() => setShowAbroadReports(!showAbroadReports)}
-            type="checkbox"
-          />
           {!isSelectionMode ? (
             <Button variant="light" onClick={() => setIsSelectionMode(true)}>
               {t(Dictionary.Common.SELECT)}
@@ -938,6 +989,32 @@ function Reports() {
               </Button>
             </Group>
           )}
+          <TextInput
+            radius="xl"
+            rightSection={<IconSearch size={SEARCH_ICON_SIZE}></IconSearch>}
+            flex={5}
+            {...form.getInputProps("searchText")}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.currentTarget.value)}
+          />
+          <Select
+            comboboxProps={{ withinPortal: false }}
+            data={activeUserSelectData}
+            value={selectedDeclarant}
+            onChange={setSelectedDeclarant}
+            placeholder={t(Dictionary.Report.SELECT_DECLARANT)}
+            clearable
+            searchable
+            flex={1}
+          />
+          <Checkbox
+            ml="10px"
+            labelPosition="left"
+            label={t(Dictionary.Report.SHOW_TRAVEL)}
+            checked={showTravelReports}
+            onChange={() => setShowTravelReports(!showTravelReports)}
+            type="checkbox"
+          />
         </Flex>
         <ScrollArea flex={1}>
           <Table
@@ -953,8 +1030,8 @@ function Reports() {
                 {isSelectionMode && <Table.Th w={50}></Table.Th>}
                 <Table.Th>{t(Dictionary.Report.NAME)}</Table.Th>
                 <Table.Th w={500}>{t(Dictionary.Report.DECLARANT)}</Table.Th>
-                <Table.Th w={200}>{t(Dictionary.Report.ABROAD)}</Table.Th>
-                <Table.Th w={400}></Table.Th>
+                <Table.Th w={200}>{t(Dictionary.Report.TRAVEL)}</Table.Th>
+                <Table.Th w={500}></Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>{memoizedReports}</Table.Tbody>

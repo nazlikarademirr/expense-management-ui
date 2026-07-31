@@ -226,9 +226,9 @@
   "report": {
     "edit": "Raporu Düzenle",
     "delete": "Raporu Sil",
-    "deleteQuestion": "Raporu silmek istediğinizden emin misiniz?",
-    "sameName": "Aynı isimde bir rapor mevcut.",
-    "created": "Rapor başarıyla oluşturuldu.",
+    "deleteQuestion": "{{name}} isimli rapor silinecektir onaylıyor musunuz?",
+    "sameName": "{{name}} adında bir rapor mevcut.",
+    "created": "{{name}} isimli rapor başarıyla oluşturuldu.",
     "deleted": "Rapor başarıyla silindi.",
     "download": "İndir",
     "createNew": "Yeni Rapor Oluştur",
@@ -240,8 +240,8 @@
     "selectMessage": "Lütfen işlem yapmak için bir rapor seçiniz.",
     "select": "İşlem yapmak istediğiniz raporu seçin veya yeni bir tane oluşturun.",
     "allName": "'Hepsi' ismi ile bir rapor oluşturulamaz.",
-    "abroad": "Yurtdışı Raporu",
-    "showAbroad": "Yurtdışı Raporlarını Göster",
+    "travel": "Seyahat Raporu",
+    "showTravel": "Seyahat Raporlarını Göster",
     "title": "Görevi",
     "requestedAdvanceAmount": "Talep Edilen Avans Tutarı",
     "travelPlace": "Seyahat Yeri",
@@ -261,6 +261,6 @@
     "new": "Yeni Rapor",
     "purposeOfTravelPlaceholder": "Bir proje seçin veya seyahat amacınızı girin.",
     "selectDeclarant": "Beyan eden kişi seçiniz.",
-    "bulkDelete": "{{selectedReports}} rapor silinecektir, onaylıyor musunuz?"
+    "bulkDelete": "{{selectedReportsLength}} rapor silinecektir, onaylıyor musunuz?"
   }
 }

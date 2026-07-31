@@ -60,7 +60,7 @@ import CurrencyType from "../../enums/currency-type";
 const INPUT_WIDTH = "25%";
 const MIN_FLEX_HEIGHT = 120;
 const foodSelectorKeywords = ["yiyecek", "icecek", "KDV", "kdv"];
-const tripSelectorKeywords = [
+const travelSelectorKeywords = [
   "maliye",
   "bakanligi",
   "turkiye",
@@ -133,6 +133,8 @@ function Expenses() {
 
   const [selectedExpenses, setSelectedExpenses] = useState<string[]>([]);
 
+  const [isInitialDeclarantSet, setIsInitialDeclarantSet] = useState(false);
+
   const combobox = useCombobox();
 
   const auth = useAuthentication();
@@ -165,6 +167,7 @@ function Expenses() {
     modals.open({
       title: <Title order={4}>{t(Dictionary.Expense.EDIT)}</Title>,
       size: "90%",
+      closeOnClickOutside: false,
       children: (
         <EditExpenseModal
           expense={expense}
@@ -183,6 +186,7 @@ function Expenses() {
     modals.open({
       title: <Title order={5}>{t(Dictionary.Expense.DELETE)}</Title>,
       size: "md",
+      closeOnClickOutside: false,
       children: (
         <Flex direction="column" gap={20}>
           <Text>{t(Dictionary.Expense.DELETION_QUESTION)}</Text>
@@ -214,14 +218,15 @@ function Expenses() {
     setSelectedReport(report.id);
     setNewReportName(report.name);
     setSearchQuery("");
+    setShowReportError(false);
   };
 
   const openCreateReportModal = () => {
     modals.open({
       title: <Title order={4}>{t(Dictionary.Report.NEW)}</Title>,
       size: "60%",
-      centered: true,
       returnFocus: false,
+      closeOnClickOutside: false,
       styles: {
         content: {
           minHeight: 840,
@@ -495,6 +500,7 @@ function Expenses() {
     modals.open({
       title: <Title order={5}>{t(Dictionary.Expense.DELETE)}</Title>,
       size: "md",
+      closeOnClickOutside: false,
       children: (
         <Flex direction="column" gap={20}>
           <Text>
@@ -534,6 +540,7 @@ function Expenses() {
     modals.open({
       title: <Title order={5}>{t(Dictionary.OvertimeMember.ADD_NEW)}</Title>,
       size: "xl",
+      closeOnClickOutside: false,
       children: (
         <AddOvertimeMemberModal
           expenseForm={form}
@@ -557,7 +564,7 @@ function Expenses() {
       return foodValue;
     }
 
-    if (tripSelectorKeywords.some((x) => text.includes(x))) {
+    if (travelSelectorKeywords.some((x) => text.includes(x))) {
       const transportationValue =
         expenseTypes[ExpenseType.Transportation].value;
       form.setFieldValue("expenseType", transportationValue);
@@ -712,6 +719,13 @@ function Expenses() {
     openCreateReportModal();
     combobox.closeDropdown();
   };
+
+  useEffect(() => {
+    if (!isInitialDeclarantSet && auth.currentUser) {
+      form.setFieldValue("declarantId", auth.currentUser.id);
+      setIsInitialDeclarantSet(true);
+    }
+  }, [auth.currentUser, isInitialDeclarantSet, form]);
 
   useEffect(() => {
     getActiveUsers();
@@ -911,23 +925,6 @@ function Expenses() {
       </Flex>
       <Card w="100%" mt="sm" withBorder padding="sm" flex={1}>
         <Flex gap="xs" align="center" mb="md">
-          <TextInput
-            size="xs"
-            radius="xl"
-            rightSection={<IconSearch size={SEARCH_ICON_SIZE}></IconSearch>}
-            value={searchQuery}
-            flex={3}
-            onChange={(e) => setSearchQuery(e.currentTarget.value)}
-          />
-          <Select
-            data={activeUserSelectData}
-            searchable
-            placeholder={t(Dictionary.Expense.SELECT_DECLARANT)}
-            clearable
-            flex={1}
-            onChange={(e) => setSelectedDeclarant(e)}
-            comboboxProps={{ withinPortal: false }}
-          />
           {!isSelectionMode ? (
             <Button variant="light" onClick={() => setIsSelectionMode(true)}>
               {t(Dictionary.Common.SELECT)}
@@ -961,6 +958,22 @@ function Expenses() {
               </Button>
             </Group>
           )}
+          <TextInput
+            radius="xl"
+            rightSection={<IconSearch size={SEARCH_ICON_SIZE}></IconSearch>}
+            value={searchQuery}
+            flex={3}
+            onChange={(e) => setSearchQuery(e.currentTarget.value)}
+          />
+          <Select
+            data={activeUserSelectData}
+            searchable
+            placeholder={t(Dictionary.Expense.SELECT_DECLARANT)}
+            clearable
+            flex={1}
+            onChange={(e) => setSelectedDeclarant(e)}
+            comboboxProps={{ withinPortal: false }}
+          />
         </Flex>
         <ScrollArea flex={1}>
           <Table

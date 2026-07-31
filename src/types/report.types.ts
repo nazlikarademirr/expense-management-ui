@@ -5,7 +5,7 @@ import Dictionary from "../helpers/translation/dictionary";
 type Report = {
   id: string;
   name: string;
-  isAbroad: boolean;
+  isTravel: boolean;
   title: string | null;
   department: string | null;
   requestedAdvanceAmount: string | null;
@@ -32,7 +32,7 @@ type Report = {
 
 type ReportRequest = {
   name: string;
-  isAbroad: boolean;
+  isTravel: boolean;
   title: string | null;
   department: string | null;
   requestedAdvanceAmount: string | null;

@@ -33,7 +33,7 @@ import { User } from "../../../types/user.types";
 
 const TEXT_INPUT_MIN_HEIGHT = 90;
 
-interface EditAbroadReportModalProps {
+interface EditReportModalProps {
   report: Report;
   updateReport: (formEditedReport: Report) => void;
   checkIfReportIsValid: (report: Report) => boolean;
@@ -45,7 +45,7 @@ interface EditAbroadReportModalProps {
   namePlaceholder: string;
 }
 
-function EditAbroadReportModal({
+function EditReportModal({
   report,
   updateReport,
   checkIfReportIsValid,
@@ -55,7 +55,7 @@ function EditAbroadReportModal({
   projectSelectData,
   travelPlaceSelectData,
   namePlaceholder,
-}: EditAbroadReportModalProps) {
+}: EditReportModalProps) {
   const { t } = useTranslation();
 
   const { handleDataRequest } = useRequestHandler();
@@ -196,9 +196,9 @@ function EditAbroadReportModal({
           />
           <Checkbox
             labelPosition="left"
-            label={t(Dictionary.Report.ABROAD)}
+            label={t(Dictionary.Report.TRAVEL)}
             mb={10}
-            {...reportForm.getInputProps("isAbroad", { type: "checkbox" })}
+            {...reportForm.getInputProps("isTravel", { type: "checkbox" })}
           />
         </Flex>
         <TextInput
@@ -414,4 +414,4 @@ function EditAbroadReportModal({
   );
 }
 
-export default EditAbroadReportModal;
+export default EditReportModal;

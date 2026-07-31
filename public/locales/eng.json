@@ -226,9 +226,9 @@
   "report": {
     "edit": "Edit Report",
     "delete": "Delete Report",
-    "deleteQuestion": "Are you sure you want to delete report?",
-    "sameName": "There is a report with the same name.",
-    "created": "Report has been created successfully.",
+    "deleteQuestion": "The report named {{name}} will be deleted. Do you approve?",
+    "sameName": "There is already a report named {{name}}.",
+    "created": "The report named {{name}} was successfully generated.",
     "deleted": "Report has been deleted successfully.",
     "download": "Download",
     "createNew": "Create New Report",
@@ -240,8 +240,8 @@
     "selectMessage": "Please select a report to process.",
     "select": "Select the report you want to work with, or create a new one.",
     "allName": "A report cannot be created with the name 'all'.",
-    "abroad": "Abroad Report",
-    "showAbroad": "Show Abroad Reports",
+    "travel": "Travel Report",
+    "showTravel": "Show Travel Reports",
     "title": "Title",
     "requestedAdvanceAmount": "Requested Advance Amount",
     "travelPlace": "Travel Place",
@@ -261,6 +261,6 @@
     "new": "New Report",
     "purposeOfTravelPlaceholder": "Choose a project or enter your travel purpose.",
     "selectDeclarant": "Please select the declarant.",
-    "bulkDelete": "{{selectedReports}} number of reports will be deleted, do you approve?"
+    "bulkDelete": "{{selectedReportsLength}} number of reports will be deleted, do you approve?"
   }
 }

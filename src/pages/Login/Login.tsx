@@ -62,6 +62,7 @@ function Login() {
       title: <Title order={5}>{t(Dictionary.Login.RESET_PASSWORD)}</Title>,
       size: "md",
       children: <ResetPasswordModal email={form.values.email} />,
+      closeOnClickOutside: false,
     });
   };
 

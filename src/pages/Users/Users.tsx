@@ -111,6 +111,7 @@ function Users() {
           minHeight: 840,
         },
       },
+      closeOnClickOutside: false,
       children: (
         <EditUserModal
           user={user}
@@ -279,6 +280,7 @@ function Users() {
     modals.open({
       title: <Title order={5}>{t(Dictionary.User.TEMPORARY_PASSWORD)}</Title>,
       size: "md",
+      closeOnClickOutside: false,
       children: (
         <Flex direction="column" gap={20}>
           <Badge size="xl" color="purple" variant="dot">
@@ -302,6 +304,7 @@ function Users() {
         <Title order={4}>{t(Dictionary.User.ACTIVATE)}</Title>
       ),
       size: "lg",
+      closeOnClickOutside: false,
       children: (
         <Flex direction="column" gap={20}>
           {user.isActive
@@ -585,7 +588,6 @@ function Users() {
       <Card mt="xs" withBorder radius="md" padding="sm" flex={1}>
         <Flex gap="xs" align="center" mb="md">
           <TextInput
-            size="xs"
             radius="xl"
             rightSection={<IconSearch size={SEARCH_ICON_SIZE} />}
             flex={5}
@@ -638,7 +640,7 @@ function Users() {
                 <Table.Th>{t(Dictionary.User.CARD_NUMBER)}</Table.Th>
                 <Table.Th>{t(Dictionary.User.EMAIL)}</Table.Th>
                 <Table.Th>{t(Dictionary.User.ROLE)}</Table.Th>
-                <Table.Th w={80}>{t(Dictionary.Common.STATUS)}</Table.Th>
+                <Table.Th w={100}>{t(Dictionary.Common.STATUS)}</Table.Th>
                 <Table.Th w={400}></Table.Th>
               </Table.Tr>
             </Table.Thead>

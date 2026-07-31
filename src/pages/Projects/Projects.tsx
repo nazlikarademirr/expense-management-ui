@@ -74,6 +74,7 @@ function Projects() {
     modals.open({
       title: <Title order={4}>{t(Dictionary.Project.EDIT)}</Title>,
       size: "xl",
+      closeOnClickOutside: false,
       children: (
         <EditProjectModal
           project={project}
@@ -199,6 +200,7 @@ function Projects() {
         <Title order={4}>{t(Dictionary.Project.ACTIVATE)}</Title>
       ),
       size: "md",
+      closeOnClickOutside: false,
       children: (
         <Flex direction="column" gap={20}>
           {project.isActive
@@ -335,7 +337,6 @@ function Projects() {
       <Card mt="xs" withBorder padding="sm" flex={1}>
         <Flex gap="xs" mb="md" align="center">
           <TextInput
-            size="xs"
             radius="xl"
             rightSection={<IconSearch size={SEARCH_ICON_SIZE}></IconSearch>}
             flex={1}

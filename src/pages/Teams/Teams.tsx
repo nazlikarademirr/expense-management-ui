@@ -80,6 +80,7 @@ function Teams() {
     modals.open({
       title: <Title order={4}>{t(Dictionary.Team.EDIT)}</Title>,
       size: "xl",
+      closeOnClickOutside: false,
       children: (
         <EditTeamModal
           team={team}
@@ -217,6 +218,7 @@ function Teams() {
         <Title order={4}>{t(Dictionary.Team.ACTIVATE)}</Title>
       ),
       size: "md",
+      closeOnClickOutside: false,
       children: (
         <Flex direction="column" gap={20}>
           {team.isActive
@@ -399,7 +401,6 @@ function Teams() {
       <Card mt="xs" withBorder radius="md" padding="sm" flex={1}>
         <Flex gap="xs" mb="md" align="center">
           <TextInput
-            size="xs"
             radius="xl"
             rightSection={<IconSearch size={SEARCH_ICON_SIZE}></IconSearch>}
             flex={1}
@@ -430,7 +431,7 @@ function Teams() {
                 <Table.Th>{t(Dictionary.Team.DEPARTMENT)}</Table.Th>
                 <Table.Th>{t(Dictionary.Team.DEPARTMENT_MANAGER)}</Table.Th>
                 <Table.Th>{t(Dictionary.Team.DEPARTMENT_HEAD)}</Table.Th>
-                <Table.Th w={80}>{t(Dictionary.Common.STATUS)}</Table.Th>
+                <Table.Th w={100}>{t(Dictionary.Common.STATUS)}</Table.Th>
                 <Table.Th w={380}></Table.Th>
               </Table.Tr>
             </Table.Thead>

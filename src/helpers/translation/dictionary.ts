@@ -252,8 +252,8 @@ abstract class Dictionary {
     static readonly SELECT_MESSAGE = "report.selectMessage";
     static readonly SELECT = "report.select";
     static readonly ALL_NAME = "report.allName";
-    static readonly ABROAD = "report.abroad";
-    static readonly SHOW_ABROAD = "report.showAbroad";
+    static readonly TRAVEL = "report.travel";
+    static readonly SHOW_TRAVEL = "report.showTravel";
     static readonly TITLE = "report.title";
     static readonly REQUESTED_ADVANCE_AMOUNT = "report.requestedAdvanceAmount";
     static readonly TRAVEL_PLACE = "report.travelPlace";

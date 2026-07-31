@@ -48,6 +48,7 @@ function UserMenu() {
       title: <Title order={5}>{t(Dictionary.User.CHANGE_PASSWORD)}</Title>,
       size: "md",
       children: <ChangePasswordModal currentUserId={auth.currentUser?.id} />,
+      closeOnClickOutside: false,
     });
   };
 

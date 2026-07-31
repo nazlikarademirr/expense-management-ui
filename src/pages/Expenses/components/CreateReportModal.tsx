@@ -33,7 +33,7 @@ import Role from "../../../enums/role";
 
 const TEXT_INPUT_MIN_HEIGHT = 90;
 
-interface CreateAbroadReportModalProps {
+interface CreateTravelReportModalProps {
   addReport: (report: Report) => void;
   checkIfReportIsValid: (report: Report) => boolean;
   currentUserFullName: string;
@@ -45,7 +45,7 @@ function CreateReportModal({
   checkIfReportIsValid,
   currentUserFullName,
   activeProjectSelectData,
-}: CreateAbroadReportModalProps) {
+}: CreateTravelReportModalProps) {
   const { t } = useTranslation();
 
   const { handleDataRequest } = useRequestHandler();
@@ -53,13 +53,14 @@ function CreateReportModal({
   const [isLoading, setIsLoading] = useState(false);
 
   const [activeUsers, setActiveUsers] = useState<User[]>([]);
+
   const [teams, setTeams] = useState<Team[]>([]);
 
   const form = useForm({
     initialValues: {
       id: crypto.randomUUID(),
       name: "",
-      isAbroad: false,
+      isTravel: false,
       title: "",
       department: "",
       requestedAdvanceAmount: "",
@@ -104,7 +105,7 @@ function CreateReportModal({
     const request: ReportRequest = {
       ...form.values,
       name: form.values.name.trim(),
-      isAbroad: true,
+      isTravel: true,
     };
 
     const response = await handleDataRequest<ReportRequest, Report>(
@@ -251,10 +252,10 @@ function CreateReportModal({
           />
           <Checkbox
             labelPosition="left"
-            label={t(Dictionary.Report.ABROAD)}
+            label={t(Dictionary.Report.TRAVEL)}
             type="checkbox"
             mb={10}
-            {...form.getInputProps("isAbroad")}
+            {...form.getInputProps("isTravel")}
           />
         </Flex>
         <TextInput
