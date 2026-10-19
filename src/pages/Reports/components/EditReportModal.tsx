@@ -157,7 +157,6 @@ function EditReportModal({
     reportForm.setValues({
       declarant,
       title: selectedUser?.title ?? "",
-      tlIban: selectedUser?.iban ? formatIban(selectedUser.iban) : "",
       department: selectedTeam?.department ?? reportForm.values.department,
       departmentManager:
         selectedTeam?.departmentManager ?? reportForm.values.departmentManager,

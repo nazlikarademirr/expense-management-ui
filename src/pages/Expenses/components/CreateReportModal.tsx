@@ -203,7 +203,6 @@ function CreateReportModal({
     form.setValues({
       declarant,
       title: selectedUser?.title ?? "",
-      tlIban: selectedUser?.iban ? formatIban(selectedUser.iban) : "",
       department: selectedTeam?.department ?? form.values.department,
       departmentManager:
         selectedTeam?.departmentManager ?? form.values.departmentManager,

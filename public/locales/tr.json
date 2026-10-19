@@ -65,14 +65,13 @@
   },
 
   "user": {
-    "activate": "Kullanıcıyı Aktifleştir",
-    "deactivate": "Kullanıcıyı Devre Dışı Bırak",
+    "activate": "Aktifle",
+    "deactivate": "Pasifle",
     "temporaryPassword": "Geçici Şifre",
     "activated": "Kullanıcı başarıyla etkinleştirildi.",
     "deactivated": "Kullanıcı başarıyla devre dışı bırakıldı.",
     "added": "Kullanıcı başarıyla eklendi.",
     "sameEmail": "Aynı e-posta adresine sahip bir kullanıcı var.",
-    "sameCardNumber": "Aynı kart numarasına sahip bir kullanıcı var.",
     "edit": "Kullanıcıyı Düzenle",
     "addNew": "Yeni Kullanıcı Ekle",
     "name": "Ad",
@@ -116,7 +115,9 @@
     "deactivityRule": "Kullanıcı kendisini pasifleyemez.",
     "title": "Unvan",
     "iban": "IBAN",
-    "hideExpenses": "Masrafları Gizle"
+    "hideExpenses": "Masrafları Gizle",
+    "titleMinLength": "Unvan en az 2 karakterden oluşmalıdır.",
+    "titleMaxLength": "Unvan 128 karakteri geçemez."
   },
 
   "team": {
@@ -209,7 +210,8 @@
     "ocrError": "Üzgünüz, bir şeyler ters gitti.",
     "selectDeclarant": "Beyan eden kişi seçiniz.",
     "bulkDelete": "{{selectedExpenses}} masraf silinecektir, onaylıyor musunuz?",
-    "similarityWarning": "Masraf başarıyla eklendi. (Benzer bir masraf zaten mevcut, lütfen bilgileri kontrol ediniz.)"
+    "similarityWarning": "Masraf başarıyla eklendi. (Benzer bir masraf zaten mevcut, lütfen bilgileri kontrol ediniz.)",
+    "report": "Rapor : "
   },
 
   "overtimeMember": {
@@ -230,7 +232,7 @@
     "sameName": "{{name}} adında bir rapor mevcut.",
     "created": "{{name}} isimli rapor başarıyla oluşturuldu.",
     "deleted": "Rapor başarıyla silindi.",
-    "download": "İndir",
+    "download": "Raporu İndir",
     "createNew": "Yeni Rapor Oluştur",
     "name": "Rapor Adı",
     "updated": "Rapor başarıyla güncellendi.",
@@ -261,6 +263,9 @@
     "new": "Yeni Rapor",
     "purposeOfTravelPlaceholder": "Bir proje seçin veya seyahat amacınızı girin.",
     "selectDeclarant": "Beyan eden kişi seçiniz.",
-    "bulkDelete": "{{selectedReportsLength}} rapor silinecektir, onaylıyor musunuz?"
+    "bulkDelete": "{{selectedReportsLength}} rapor silinecektir, onaylıyor musunuz?",
+    "goToExpenses": "Masraflara Git",
+    "selectExchangeRateCurrency": "Çevrimini yapmak istediğiniz döviz türünü seçin :",
+    "exchangeRateInformation": "Döviz Kuru Bilgisi"
   }
 }

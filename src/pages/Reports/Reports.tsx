@@ -14,7 +14,6 @@ import {
   Title,
   Text,
   Badge,
-  Collapse,
   Group,
   Radio,
   Select,
@@ -44,18 +43,22 @@ import { useTranslation } from "react-i18next";
 import Dictionary from "../../helpers/translation/dictionary";
 import { PiPlusCircle } from "react-icons/pi";
 import { Expense } from "../../types/expense.types";
-import { currencyTypes, expenseTypes } from "../../constants/static-data";
-import ExpenseType from "../../enums/expense-type";
+import { currencyTypes } from "../../constants/static-data";
 import CurrencyType from "../../enums/currency-type";
 import { formatIban } from "../../helpers/IbanFormatter";
 import { User } from "../../types/user.types";
 import { Project } from "../../types/project.types";
 import EditReportModal from "./components/EditReportModal";
 import Role from "../../enums/role";
+import { TbMenuDeep } from "react-icons/tb";
+import { useNavigate } from "react-router";
+import routes from "../../constants/routes";
 
 const TEXT_INPUT_MIN_HEIGHT = 85;
 
 function Reports() {
+  const navigate = useNavigate();
+
   const { reports, addReport, updateReport, deleteReport, replaceReports } =
     useReports();
 
@@ -83,19 +86,11 @@ function Reports() {
 
   const [teams, setTeams] = useState<Team[]>([]);
 
-  const [expandedReportIds, setExpandedReportIds] = useState<string[]>([]);
-
   const [isSelectionMode, setIsSelectionMode] = useState<boolean>(false);
 
   const [selectedReports, setSelectedReports] = useState<string[]>([]);
 
   const [isInitialDeclarantSet, setIsInitialDeclarantSet] = useState(false);
-
-  const toggleRow = (id: string) => {
-    setExpandedReportIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-  };
 
   const form = useForm<Report>({
     initialValues: {
@@ -429,6 +424,40 @@ function Reports() {
     };
   }, [activeUsers]);
 
+  const { tlIbanSelectData, eurIbanSelectData } = useMemo(() => {
+    if (!form.values.declarant) {
+      return {
+        tlIbanSelectData: [],
+        eurIbanSelectData: [],
+      };
+    }
+
+    const declarantReports = reports.filter(
+      (x) => x.declarant === form.values.declarant,
+    );
+
+    const tlIbanSelectData = Array.from(
+      new Set(
+        declarantReports
+          .filter((x) => x.tlIban && x.tlIban.trim() !== "")
+          .map((x) => x.tlIban!),
+      ),
+    );
+
+    const eurIbanSelectData = Array.from(
+      new Set(
+        declarantReports
+          .filter((x) => x.eurIban && x.eurIban.trim() !== "")
+          .map((x) => x.eurIban!),
+      ),
+    );
+
+    return {
+      tlIbanSelectData,
+      eurIbanSelectData,
+    };
+  }, [reports, form.values.declarant]);
+
   const filteredCurrency = currencyTypes.filter(
     (x) =>
       x.value !== CurrencyType.MacedonianDenar &&
@@ -455,7 +484,6 @@ function Reports() {
     form.setValues({
       declarant,
       title: selectedUser?.title ?? "",
-      tlIban: selectedUser?.iban ? formatIban(selectedUser.iban) : "",
       department: selectedTeam?.department ?? "",
       departmentManager: selectedTeam?.departmentManager ?? "",
       departmentHead: selectedTeam?.departmentHead ?? "",
@@ -575,7 +603,6 @@ function Reports() {
   const memoizedReports = useMemo(
     () =>
       filteredReports.map((x: Report) => {
-        const isExpanded = expandedReportIds.includes(x.id);
         const reportExpenses = expenses.filter((e) => e.reportId === x.id);
 
         const declarantUser = activeUsers.find((u) => u.id === x.declarant);
@@ -585,7 +612,7 @@ function Reports() {
 
         return (
           <Fragment key={x.id}>
-            <Table.Tr onClick={() => toggleRow(x.id)}>
+            <Table.Tr>
               {isSelectionMode && (
                 <Table.Td onClick={(e) => e.stopPropagation()} w={50}>
                   <Checkbox
@@ -629,6 +656,19 @@ function Reports() {
                   </Button>
                   <Button
                     size="xs"
+                    variant="light"
+                    loading={isLoading}
+                    leftSection={<TbMenuDeep size={16} />}
+                    onClick={() =>
+                      navigate(routes.expenses, {
+                        state: { reportId: x.id, reportName: x.name },
+                      })
+                    }
+                  >
+                    {t(Dictionary.Report.GO_TO_EXPENSES)}
+                  </Button>
+                  <Button
+                    size="xs"
                     onClick={() => openEditReport(x)}
                     variant="light"
                     loading={isLoading}
@@ -649,76 +689,12 @@ function Reports() {
                 </Flex>
               </Table.Td>
             </Table.Tr>
-            <Table.Tr>
-              <Table.Td colSpan={isSelectionMode ? 5 : 4} p={0}>
-                <Collapse in={isExpanded} transitionDuration={200}>
-                  <Card
-                    style={{
-                      borderRadius: 0,
-                      boxShadow: "none",
-                    }}
-                  >
-                    {reportExpenses.length > 0 ? (
-                      <Table striped highlightOnHover withColumnBorders>
-                        <Table.Thead>
-                          <Table.Tr>
-                            <Table.Th>
-                              {t(Dictionary.Expense.DECLARANT)}
-                            </Table.Th>
-                            <Table.Th>{t(Dictionary.Expense.TYPE)}</Table.Th>
-                            <Table.Th>{t(Dictionary.Expense.DATE)}</Table.Th>
-                            <Table.Th>
-                              {t(Dictionary.Expense.TOTAL_PRICE)}
-                            </Table.Th>
-                            <Table.Th>
-                              {t(Dictionary.Expense.CURRENCY)}
-                            </Table.Th>
-                            <Table.Th>
-                              {t(Dictionary.Expense.DESCRIPTION)}
-                            </Table.Th>
-                          </Table.Tr>
-                        </Table.Thead>
-                        <Table.Tbody>
-                          {reportExpenses.map((e) => (
-                            <Table.Tr key={e.id}>
-                              <Table.Td>{e.declarantFullName}</Table.Td>
-                              <Table.Td w={200}>
-                                {expenseTypes[Number(e.expenseType)]?.label}
-                              </Table.Td>
-                              <Table.Td w={200}>
-                                {e.expenseDate &&
-                                  format(new Date(e.expenseDate), "dd/MM/yyyy")}
-                              </Table.Td>
-                              <Table.Td w={200}>{e.totalPrice}</Table.Td>
-                              <Table.Td w={200}>
-                                {currencyTypes[Number(e.currency)]?.label}
-                              </Table.Td>
-                              <Table.Td>
-                                {Number(e.expenseType) !==
-                                Number(ExpenseType.Food)
-                                  ? e.description
-                                  : "-"}
-                              </Table.Td>
-                            </Table.Tr>
-                          ))}
-                        </Table.Tbody>
-                      </Table>
-                    ) : (
-                      <Text size="sm" c="dimmed" ta="center">
-                        {t(Dictionary.Expense.NO_FOUND)}
-                      </Text>
-                    )}
-                  </Card>
-                </Collapse>
-              </Table.Td>
-            </Table.Tr>
           </Fragment>
         );
       }),
     [
       filteredReports,
       isLoading,
-      expandedReportIds,
       expenses,
       activeUsers,
       isSelectionMode,
@@ -905,14 +881,14 @@ function Reports() {
                 </Group>
               </Radio.Group>
             </Flex>
-            <TextInput
+            <Autocomplete
               label={t(Dictionary.Report.TL_IBAN)}
               mih={TEXT_INPUT_MIN_HEIGHT}
               flex={1}
+              data={tlIbanSelectData}
+              comboboxProps={{ withinPortal: false }}
               {...form.getInputProps("tlIban")}
-              onChange={(e) =>
-                form.setFieldValue("tlIban", formatIban(e.currentTarget.value))
-              }
+              onChange={(val) => form.setFieldValue("tlIban", formatIban(val))}
             />
           </Flex>
           <Flex gap={20}>
@@ -934,14 +910,14 @@ function Reports() {
               mih={TEXT_INPUT_MIN_HEIGHT}
               {...form.getInputProps("financeOfficer")}
             />
-            <TextInput
+            <Autocomplete
               label={t(Dictionary.Report.EUR_IBAN)}
               mih={TEXT_INPUT_MIN_HEIGHT}
               flex={1}
+              data={eurIbanSelectData}
+              comboboxProps={{ withinPortal: false }}
               {...form.getInputProps("eurIban")}
-              onChange={(e) =>
-                form.setFieldValue("eurIban", formatIban(e.currentTarget.value))
-              }
+              onChange={(val) => form.setFieldValue("eurIban", formatIban(val))}
             />
           </Flex>
           <Button

@@ -9,13 +9,9 @@ type User = {
   surname: string;
   teamId: string | null;
   teamName: string;
-  gender: string | null;
-  cardNumber: string | null;
-  title: string | null;
+  title: string;
   email: string;
-  password: string;
   role: string;
-  iban: string | null;
   hideExpenses: boolean;
   temporaryPassword: string | null;
   hasTemporaryPassword: boolean;
@@ -30,13 +26,9 @@ type UserRequest = {
   name: string;
   surname: string;
   teamId: string;
-  gender: number | null;
-  cardNumber: string | null;
-  title: string | null;
+  title: string;
   email: string;
-  password: string;
   role: number;
-  iban: string | null;
   hideExpenses: boolean;
   temporaryPassword: string | null;
   hasTemporaryPassword: boolean;
@@ -49,13 +41,9 @@ type UserResponse = {
   surname: string;
   teamId: string;
   teamName: string;
-  gender: number | null;
-  cardNumber: string | null;
-  title: string | null;
+  title: string;
   email: string;
-  password: string;
   role: number;
-  iban: string | null;
   hideExpenses: boolean;
   temporaryPassword: string | null;
   hasTemporaryPassword: boolean;
@@ -83,29 +71,39 @@ const userSchema = z.object({
     .refine((value) => value !== null, {
       message: t(Dictionary.User.TEAM_MUST_BE_SELECTED),
     }),
+  title: z
+    .string()
+    .trim()
+    .min(2, t(Dictionary.User.TITLE_MIN_LENGTH))
+    .max(128, t(Dictionary.User.TITLE_MAX_LENGTH)),
   email: z
-    .email()
-    .trim()
-    .refine((v) => v.includes("@acibadem.com"), {
-      message: t(Dictionary.User.EMAIL_RULE),
-    })
-    .min(14, t(Dictionary.User.EMAIL_MIN_LENGTH))
-    .max(128, t(Dictionary.User.EMAIL_MAX_LENGTH)),
-  password: z
     .string()
     .trim()
-    .min(8, t(Dictionary.User.PASSWORD_MIN_LENGTH))
-    .max(32, t(Dictionary.User.PASSWORD_MAX_LENGTH))
-    .optional(),
+    .superRefine((val, ctx) => {
+      if (!val.endsWith("@acibadem.com")) {
+        ctx.addIssue({
+          code: "custom",
+          message: t(Dictionary.User.EMAIL_RULE),
+        });
+        return;
+      }
+
+      if (val.length < 14) {
+        ctx.addIssue({
+          code: "custom",
+          message: t(Dictionary.User.EMAIL_MIN_LENGTH),
+        });
+        return;
+      }
+
+      if (val.length > 128) {
+        ctx.addIssue({
+          code: "custom",
+          message: t(Dictionary.User.EMAIL_MAX_LENGTH),
+        });
+      }
+    }),
   role: z.enum(Role, t(Dictionary.User.ROLE_MUST_BE_SELECTED)),
-  iban: z
-    .string()
-    .nullable()
-    .optional()
-    .refine((val) => {
-      if (!val || val.trim() === "") return true;
-      return val.replace(/\s/g, "").length === 26;
-    }, t(Dictionary.Report.INVALID_IBAN)),
 });
 
 export default userSchema;

@@ -18,6 +18,7 @@ import {
   InputBase,
   Box,
   Checkbox,
+  Tooltip,
 } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import expenseSchema, {
@@ -26,7 +27,12 @@ import expenseSchema, {
   ExpenseResponse,
 } from "../../types/expense.types";
 import useExpenses from "./hooks/useExpenses";
-import { IconEdit, IconSearch, IconTrash } from "@tabler/icons-react";
+import {
+  IconEdit,
+  IconSearch,
+  IconTrash,
+  IconDownload,
+} from "@tabler/icons-react";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import { DateInput, DatesProvider } from "@mantine/dates";
@@ -56,6 +62,10 @@ import i18n from "../../helpers/translation/i18n";
 import CreateReportModal from "./components/CreateReportModal";
 import { dateParse } from "../../helpers/DateParser";
 import CurrencyType from "../../enums/currency-type";
+import { useLocation } from "react-router";
+import EditReportModal from "../Reports/components/EditReportModal";
+import Role from "../../enums/role";
+import { AiOutlineTeam } from "react-icons/ai";
 
 const INPUT_WIDTH = "25%";
 const MIN_FLEX_HEIGHT = 120;
@@ -86,6 +96,7 @@ const tlCurrencySelectorKeywords = [
 ];
 
 function Expenses() {
+  const location = useLocation();
   const { t } = useTranslation();
 
   const {
@@ -96,9 +107,11 @@ function Expenses() {
     replaceExpenses,
   } = useExpenses();
 
-  const { addReport } = useReports();
+  const { addReport, updateReport } = useReports();
 
-  const { handleDataRequest } = useRequestHandler();
+  const { handleDataRequest, downloadFile } = useRequestHandler();
+
+  const [activeUsers, setActiveUsers] = useState<User[]>([]);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -272,6 +285,8 @@ function Expenses() {
     );
 
     if (!response.isSuccess) return;
+
+    setActiveUsers(response.value);
 
     setActiveUserSelectData(
       response.value.map((x) => ({
@@ -686,6 +701,34 @@ function Expenses() {
     [],
   );
 
+  const managerSelectData = useMemo(() => {
+    return activeUsers
+      .filter((user) => user.role.toString() === Role.Admin)
+      .map((user) => ({
+        value: user.id,
+        label: `${user.name} ${user.surname}`,
+      }));
+  }, [activeUsers]);
+
+  const travelPlaceSelectData = useMemo(() => {
+    return [
+      ...new Map(
+        reports
+          .filter(
+            (report) => report.travelPlace && report.travelPlace.trim() !== "",
+          )
+          .map((report) => [
+            report.travelPlace,
+            { value: report.id, label: report.travelPlace },
+          ]),
+      ).values(),
+    ];
+  }, [reports]);
+
+  const projectSelectData = useMemo(() => {
+    return activeProjectSelectData.map((x) => x.label);
+  }, [activeProjectSelectData]);
+
   const handleReportSelect = (value: string) => {
     setShowReportError(false);
     setSearchQuery("");
@@ -720,6 +763,48 @@ function Expenses() {
     combobox.closeDropdown();
   };
 
+  const handleDownloadReport = async () => {
+    if (!selectedReport) return;
+    const report = reports.find((r) => r.id === selectedReport);
+    if (!report) return;
+
+    setIsLoading(true);
+
+    await downloadFile(urls.expenseExcel, report.name, undefined, {
+      reportId: report.id,
+      isTravel: report.isTravel,
+    });
+
+    setIsLoading(false);
+  };
+
+  const handleEditReport = () => {
+    if (!selectedReport) return;
+    const report = reports.find((r) => r.id === selectedReport);
+    if (!report) return;
+
+    modals.open({
+      title: <Title order={4}>{t(Dictionary.Report.EDIT)}</Title>,
+      size: "60%",
+      yOffset: 20,
+      styles: { content: { minHeight: 930 } },
+      closeOnClickOutside: false,
+      children: (
+        <EditReportModal
+          report={report}
+          updateReport={updateReport}
+          checkIfReportIsValid={checkIfReportIsValid}
+          activeUsers={activeUsers}
+          activeUserSelectData={activeUserSelectData}
+          managerSelectData={managerSelectData}
+          projectSelectData={projectSelectData}
+          travelPlaceSelectData={travelPlaceSelectData}
+          namePlaceholder={report.name}
+        />
+      ),
+    });
+  };
+
   useEffect(() => {
     if (!isInitialDeclarantSet && auth.currentUser) {
       form.setFieldValue("declarantId", auth.currentUser.id);
@@ -734,67 +819,124 @@ function Expenses() {
     getExpenses();
   }, []);
 
+  useEffect(() => {
+    if (location.state?.reportId && location.state?.reportName) {
+      setSelectedReport(location.state.reportId);
+      setNewReportName(location.state.reportName);
+    }
+  }, [location.state]);
+
   return (
     <Flex direction="column" h={PAGE_FLEX_HEIGHT} w="100%">
-      <Flex justify="space-between" align="center" gap={10}>
+      <Flex justify="space-between" align="center" gap={10} w="100%">
         <Title order={3} mb={5}>
           {t(Dictionary.Common.EXPENSES)}
         </Title>
-        <Box w={INPUT_WIDTH} pos="relative">
-          <Combobox
-            store={combobox}
-            onOptionSubmit={handleReportSelect}
-            withinPortal={false}
-          >
-            <Combobox.Target>
-              <InputBase
-                w="100%"
-                value={newReportName}
-                error={showReportError}
-                styles={{
-                  input: {
-                    borderColor: showReportError ? "red" : undefined,
-                  },
-                }}
-                rightSection={<Combobox.Chevron />}
-                onClick={handleOpenReportDropdown}
-                onFocus={handleOpenReportDropdown}
-                placeholder={t(Dictionary.Report.SELECT)}
-                onChange={handleReportNameChange}
-              ></InputBase>
-            </Combobox.Target>
-
-            <Combobox.Dropdown>
-              <Combobox.Options>
-                <Combobox.Option value="all">
-                  {t(Dictionary.Common.ALL)}
-                </Combobox.Option>
-                {filteredReportSelectData.map((x) => (
-                  <Combobox.Option key={x.value} value={x.value}>
-                    <Flex justify="space-between" align="center">
-                      {x.label}
-                      <Text size="sm" c="dimmed">
-                        {expenses.filter((e) => e.reportId === x.value).length}
-                      </Text>
-                    </Flex>
-                  </Combobox.Option>
-                ))}
-              </Combobox.Options>
-              <Combobox.Footer>
-                <Button
-                  mt={10}
-                  variant="light"
-                  fullWidth
-                  loading={isLoading}
-                  leftSection={<PiPlusCircle size={22} />}
-                  onClick={handleCreateReport}
+        <Flex flex={1} justify="flex-end" align="center">
+          <Text fw={600} size="sm">
+            {t(Dictionary.Expense.REPORT)}
+          </Text>
+        </Flex>
+        <Flex gap={10} align="center" w="25%">
+          <Box flex={1} pos="relative">
+            <Combobox
+              store={combobox}
+              onOptionSubmit={handleReportSelect}
+              withinPortal={false}
+            >
+              <Combobox.Target>
+                <Tooltip
+                  label={t(Dictionary.Report.SELECT)}
+                  disabled={!!newReportName}
+                  position="bottom"
+                  withArrow
+                  withinPortal={false}
                 >
-                  {t(Dictionary.Report.CREATE_NEW)}
-                </Button>
-              </Combobox.Footer>
-            </Combobox.Dropdown>
-          </Combobox>
-        </Box>
+                  <InputBase
+                    w="100%"
+                    value={newReportName}
+                    error={showReportError}
+                    styles={{
+                      input: {
+                        borderColor: showReportError ? "red" : undefined,
+                      },
+                    }}
+                    rightSection={<Combobox.Chevron />}
+                    onClick={handleOpenReportDropdown}
+                    onFocus={handleOpenReportDropdown}
+                    placeholder={t(Dictionary.Report.SELECT)}
+                    onChange={handleReportNameChange}
+                  ></InputBase>
+                </Tooltip>
+              </Combobox.Target>
+
+              <Combobox.Dropdown>
+                <Combobox.Options>
+                  <Combobox.Option value="all">
+                    {t(Dictionary.Common.ALL)}
+                  </Combobox.Option>
+                  {filteredReportSelectData.map((x) => (
+                    <Combobox.Option key={x.value} value={x.value}>
+                      <Flex justify="space-between" align="center">
+                        {x.label}
+                        <Text size="sm" c="dimmed">
+                          {
+                            expenses.filter((e) => e.reportId === x.value)
+                              .length
+                          }
+                        </Text>
+                      </Flex>
+                    </Combobox.Option>
+                  ))}
+                </Combobox.Options>
+                <Combobox.Footer>
+                  <Button
+                    mt={10}
+                    variant="light"
+                    fullWidth
+                    loading={isLoading}
+                    leftSection={<PiPlusCircle size={22} />}
+                    onClick={handleCreateReport}
+                  >
+                    {t(Dictionary.Report.CREATE_NEW)}
+                  </Button>
+                </Combobox.Footer>
+              </Combobox.Dropdown>
+            </Combobox>
+          </Box>
+          <Box pos="relative">
+            <Tooltip
+              label={t(Dictionary.Report.EDIT)}
+              withArrow
+              withinPortal={false}
+            >
+              <Button
+                variant="light"
+                onClick={handleEditReport}
+                loading={isLoading}
+                disabled={!selectedReport}
+              >
+                <IconEdit size={18} />
+              </Button>
+            </Tooltip>
+          </Box>
+          <Box pos="relative">
+            <Tooltip
+              label={t(Dictionary.Report.DOWNLOAD)}
+              withArrow
+              withinPortal={false}
+            >
+              <Button
+                variant="light"
+                onClick={handleDownloadReport}
+                loading={isLoading}
+                disabled={!selectedReport}
+              >
+                <IconDownload size={18} />
+              </Button>
+            </Tooltip>
+          </Box>
+        </Flex>
       </Flex>
       <Divider mt={7} mb={12} />
       <Flex gap={10} w="100%">
@@ -896,7 +1038,7 @@ function Expenses() {
                   variant="light"
                   loading={isLoading}
                   onClick={() => addOvertimeMember()}
-                  leftSection={<PiPlusCircle size={22} />}
+                  leftSection={<AiOutlineTeam size={22} />}
                 >
                   {t(Dictionary.OvertimeMember.ADD_NEW)}
                 </Button>

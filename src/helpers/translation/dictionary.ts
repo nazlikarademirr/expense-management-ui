@@ -123,6 +123,8 @@ abstract class Dictionary {
     static readonly TITLE = "user.title";
     static readonly IBAN = "user.iban";
     static readonly HIDE_EXPENSES = "user.hideExpenses";
+    static readonly TITLE_MIN_LENGTH = "user.titleMinLength";
+    static readonly TITLE_MAX_LENGTH = "user.titleMaxLength";
   };
 
   static Team = class {
@@ -221,6 +223,7 @@ abstract class Dictionary {
     static readonly SELECT_DECLARANT = "expense.selectDeclarant";
     static readonly BULK_DELETE = "expense.bulkDelete";
     static readonly SIMILARITY_WARNING = "expense.similarityWarning";
+    static readonly REPORT = "expense.report";
   };
 
   static OvertimeMember = class {
@@ -278,6 +281,11 @@ abstract class Dictionary {
       "report.purposeOfTravelPlaceholder";
     static readonly SELECT_DECLARANT = "report.selectDeclarant";
     static readonly BULK_DELETE = "report.bulkDelete";
+    static readonly GO_TO_EXPENSES = "report.goToExpenses";
+    static readonly SELECT_EXCHANGE_RATE_CURRENCY =
+      "report.selectExchangeRateCurrency";
+    static readonly EXCHANGE_RATE_INFORMATION =
+      "report.exchangeRateInformation";
   };
 }
 

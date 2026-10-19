@@ -116,7 +116,9 @@
     "deactivityRule": "The user cannot deactivate themselves.",
     "title": "Title",
     "iban": "IBAN",
-    "hideExpenses": "Hide Expenses"
+    "hideExpenses": "Hide Expenses",
+    "titleMinLength": "Title must have at least 2 letters.",
+    "titleMaxLength": "Title cannot exceed 128 characters."
   },
 
   "team": {
@@ -209,7 +211,8 @@
     "ocrError": "Sorry, something went wrong.",
     "selectDeclarant": "Please select the declarant.",
     "bulkDelete": "{{selectedExpenses}} number of expenses will be deleted, do you approve?",
-    "similarityWarning": "The expense has been added successfully. (A similar expense already exists, please check the details.)"
+    "similarityWarning": "The expense has been added successfully. (A similar expense already exists, please check the details.)",
+    "report": "Report : "
   },
 
   "overtimeMember": {
@@ -230,7 +233,7 @@
     "sameName": "There is already a report named {{name}}.",
     "created": "The report named {{name}} was successfully generated.",
     "deleted": "Report has been deleted successfully.",
-    "download": "Download",
+    "download": "Download The Report",
     "createNew": "Create New Report",
     "name": "Report Name",
     "updated": "Report has been updated successfully.",
@@ -261,6 +264,9 @@
     "new": "New Report",
     "purposeOfTravelPlaceholder": "Choose a project or enter your travel purpose.",
     "selectDeclarant": "Please select the declarant.",
-    "bulkDelete": "{{selectedReportsLength}} number of reports will be deleted, do you approve?"
+    "bulkDelete": "{{selectedReportsLength}} number of reports will be deleted, do you approve?",
+    "goToExpenses": "Go to Expenses",
+    "selectExchangeRateCurrency": "Select the currency you wish to convert :",
+    "exchangeRateInformation": "Exchange Rate Information"
   }
 }
