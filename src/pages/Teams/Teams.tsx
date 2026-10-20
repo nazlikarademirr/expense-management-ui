@@ -4,7 +4,6 @@ import { modals } from "@mantine/modals";
 import useTeams from "../../hooks/useTeams";
 import {
   Autocomplete,
-  Badge,
   Button,
   Card,
   Checkbox,
@@ -15,10 +14,10 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import { IconEdit, IconSearch } from "@tabler/icons-react";
+import { IconSearch } from "@tabler/icons-react";
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
-import EditTeamModal from "./components/EditTeamModal";
+import EditTeam from "./components/EditTeam";
 import {
   createJsonPatchDocumentFromObject,
   JsonPatchKeyValuePair,
@@ -32,7 +31,6 @@ import {
   TITLE_DIVIDER_MY,
 } from "../../constants/constants";
 import useUsers from "../../hooks/useUsers";
-import { IoMdAddCircleOutline, IoMdRemoveCircleOutline } from "react-icons/io";
 import { User } from "../../types/user.types";
 import { zod4Resolver } from "mantine-form-zod-resolver";
 import { useAuthentication } from "../../contexts/AuthenticationContext/AuthenticationProvider";
@@ -51,6 +49,10 @@ function Teams() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const [showActiveTeams, setShowActiveTeams] = useState(true);
+
+  const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
+  const [editingTeamData, setEditingTeamData] = useState<Team | null>(null);
+  const [editErrors, setEditErrors] = useState<Record<string, string>>({});
 
   const { handleDataRequest } = useRequestHandler();
 
@@ -76,20 +78,110 @@ function Teams() {
     validate: zod4Resolver(teamSchema),
   });
 
-  const openEditTeam = (team: Team) => {
-    modals.open({
-      title: <Title order={4}>{t(Dictionary.Team.EDIT)}</Title>,
-      size: "xl",
-      closeOnClickOutside: false,
-      children: (
-        <EditTeamModal
-          team={team}
-          updateTeam={updateTeam}
-          checkIfTeamIsValid={checkIfTeamIsValid}
-          managerSelectData={managerSelectData}
-        />
-      ),
+  const handleEditClick = (team: Team) => {
+    setEditingTeamId(team.id);
+    setEditingTeamData({ ...team });
+    setEditErrors({});
+  };
+
+  const handleCancelEdit = () => {
+    setEditingTeamId(null);
+    setEditingTeamData(null);
+    setEditErrors({});
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingTeamData) return;
+
+    setIsLoading(true);
+
+    const errors: Record<string, string> = {};
+    let hasError = false;
+
+    if (
+      !editingTeamData.name.trim() ||
+      editingTeamData.name.trim().length < 2
+    ) {
+      errors.name = t(Dictionary.Team.NAME_MIN_LENGTH);
+      hasError = true;
+    } else if (editingTeamData.name.trim().length > 128) {
+      errors.name = t(Dictionary.Team.NAME_MAX_LENGTH);
+      hasError = true;
+    }
+
+    if (
+      !editingTeamData.department.trim() ||
+      editingTeamData.department.trim().length < 2
+    ) {
+      errors.department = t(Dictionary.Team.DEPARTMENT_MIN_LENGTH);
+      hasError = true;
+    } else if (editingTeamData.department.trim().length > 128) {
+      errors.department = t(Dictionary.Team.DEPARTMENT_MAX_LENGTH);
+      hasError = true;
+    }
+
+    if ((editingTeamData.departmentManager ?? "").trim().length > 128) {
+      errors.departmentManager = t(
+        Dictionary.Team.DEPARTMENT_MANAGER_MAX_LENGTH,
+      );
+      hasError = true;
+    }
+
+    if ((editingTeamData.departmentHead ?? "").trim().length > 128) {
+      errors.departmentHead = t(Dictionary.Team.DEPARTMENT_HEAD_MAX_LENGTH);
+      hasError = true;
+    }
+
+    if (hasError) {
+      setEditErrors(errors);
+      setIsLoading(false);
+      return;
+    }
+
+    if (!checkIfTeamIsValid(editingTeamData)) {
+      setIsLoading(false);
+      return;
+    }
+
+    const patchDocument = createJsonPatchDocumentFromObject({
+      name: editingTeamData.name.trim(),
+      department: editingTeamData.department.trim(),
+      departmentManager: editingTeamData.departmentManager
+        ? editingTeamData.departmentManager.trim()
+        : "",
+      departmentHead: editingTeamData.departmentHead
+        ? editingTeamData.departmentHead.trim()
+        : "",
     });
+
+    const response = await handleDataRequest<JsonPatchKeyValuePair[], Team>(
+      `${urls.team}/${editingTeamData.id}`,
+      RequestType.Patch,
+      patchDocument,
+    );
+
+    if (!response.isSuccess) {
+      setIsLoading(false);
+      return;
+    }
+
+    updateTeam({
+      ...editingTeamData,
+      name: editingTeamData.name.trim(),
+      department: editingTeamData.department.trim(),
+      departmentManager: editingTeamData.departmentManager
+        ? editingTeamData.departmentManager.trim()
+        : "",
+      departmentHead: editingTeamData.departmentHead
+        ? editingTeamData.departmentHead.trim()
+        : "",
+    });
+
+    toast.success(t(Dictionary.Team.UPDATED));
+
+    setEditingTeamId(null);
+    setEditingTeamData(null);
+    setIsLoading(false);
   };
 
   const getActiveUsers = async () => {
@@ -146,6 +238,12 @@ function Teams() {
       ...form.values,
       name: form.values.name.trim(),
       department: form.values.department.trim(),
+      departmentManager: form.values.departmentManager
+        ? form.values.departmentManager.trim()
+        : "",
+      departmentHead: form.values.departmentHead
+        ? form.values.departmentHead.trim()
+        : "",
     };
 
     const response = await handleDataRequest<TeamRequest, Team>(
@@ -251,76 +349,6 @@ function Teams() {
     });
   };
 
-  const memoizedTeams = useMemo(
-    () =>
-      teams
-        .filter((x) => (showActiveTeams === true ? x.isActive : x))
-        .filter((x) =>
-          x.searchText.toLowerCase().includes(searchQuery.toLowerCase()),
-        )
-        .map((x: Team) => (
-          <Table.Tr key={x.id}>
-            <Table.Td> {x.name} </Table.Td>
-            <Table.Td> {x.department} </Table.Td>
-            <Table.Td> {x.departmentManager} </Table.Td>
-            <Table.Td> {x.departmentHead} </Table.Td>
-            <Table.Td>
-              <Badge
-                size="md"
-                color={x.isActive ? "green" : "gray"}
-                variant="light"
-              >
-                {x.isActive
-                  ? t(Dictionary.Common.ACTIVE)
-                  : t(Dictionary.Common.PASSIVE)}
-              </Badge>
-            </Table.Td>
-            <Table.Td>
-              <Flex justify="center" gap={5}>
-                <Flex justify="center" gap={10}>
-                  {x.isActive && (
-                    <Button
-                      size="sm"
-                      onClick={() => openEditTeam(x)}
-                      variant="light"
-                      color="blue"
-                      loading={isLoading}
-                      leftSection={<IconEdit size={18} />}
-                    >
-                      {t(Dictionary.Common.EDIT)}
-                    </Button>
-                  )}
-
-                  <Button
-                    size="sm"
-                    onClick={() => openTeamActivityModal(x)}
-                    variant="light"
-                    style={
-                      x.isActive
-                        ? { color: "red", backgroundColor: "#ffeeee" }
-                        : { color: "green", backgroundColor: "#e7ffe0" }
-                    }
-                    loading={isLoading}
-                    leftSection={
-                      x.isActive ? (
-                        <IoMdRemoveCircleOutline size={20} />
-                      ) : (
-                        <IoMdAddCircleOutline size={20} />
-                      )
-                    }
-                  >
-                    {x.isActive
-                      ? t(Dictionary.Team.DEACTIVATE)
-                      : t(Dictionary.Team.ACTIVATE)}
-                  </Button>
-                </Flex>
-              </Flex>
-            </Table.Td>
-          </Table.Tr>
-        )),
-    [teams, showActiveTeams, searchQuery, isLoading, users],
-  );
-
   const managerSelectData = useMemo(
     () =>
       users
@@ -330,6 +358,47 @@ function Teams() {
           label: `${user.name} ${user.surname}`,
         })),
     [users],
+  );
+
+  const memoizedTeams = useMemo(
+    () =>
+      teams
+        .filter((x) => (showActiveTeams === true ? x.isActive : x))
+        .filter((x) =>
+          x.searchText.toLowerCase().includes(searchQuery.toLowerCase()),
+        )
+        .map((x: Team) => {
+          const isEditing = editingTeamId === x.id;
+
+          return (
+            <EditTeam
+              key={x.id}
+              team={x}
+              isEditing={isEditing}
+              editingTeamData={editingTeamData}
+              setEditingTeamData={setEditingTeamData}
+              editErrors={editErrors}
+              setEditErrors={setEditErrors}
+              managerSelectData={managerSelectData}
+              isLoading={isLoading}
+              handleSaveEdit={handleSaveEdit}
+              handleCancelEdit={handleCancelEdit}
+              handleEditClick={handleEditClick}
+              openTeamActivityModal={openTeamActivityModal}
+            />
+          );
+        }),
+    [
+      teams,
+      showActiveTeams,
+      searchQuery,
+      isLoading,
+      users,
+      managerSelectData,
+      editingTeamId,
+      editingTeamData,
+      editErrors,
+    ],
   );
 
   useEffect(() => {
@@ -424,6 +493,7 @@ function Teams() {
             highlightOnHover
             withTableBorder
             withColumnBorders
+            layout="fixed"
           >
             <Table.Thead>
               <Table.Tr>

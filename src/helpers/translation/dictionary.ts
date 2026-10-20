@@ -149,6 +149,9 @@ abstract class Dictionary {
     static readonly DEPARTMENT_HEAD = "team.departmentHead";
     static readonly DEPARTMENT_MIN_LENGTH = "team.departmentMinLength";
     static readonly DEPARTMENT_MAX_LENGTH = "team.departmentMaxLength";
+    static readonly DEPARTMENT_MANAGER_MAX_LENGTH =
+      "team.departmentManagerMaxLength";
+    static readonly DEPARTMENT_HEAD_MAX_LENGTH = "team.departmentHeadMaxLength";
   };
 
   static Project = class {

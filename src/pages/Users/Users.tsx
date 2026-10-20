@@ -1,16 +1,18 @@
-import {
+import userSchema, {
   User,
   UserRequest,
   UserResponse,
 } from "../../types/user.types.ts";
-
 import {
+  Autocomplete,
   Badge,
   Button,
   Card,
   Checkbox,
   Divider,
   Flex,
+  Group,
+  Radio,
   ScrollArea,
   Select,
   Table,
@@ -20,6 +22,7 @@ import {
 import { IconSearch } from "@tabler/icons-react";
 import { modals } from "@mantine/modals";
 import useUsers from "../../hooks/useUsers.tsx";
+import { useForm } from "@mantine/form";
 import toast from "react-hot-toast";
 import { roles } from "../../constants/static-data.ts";
 import {
@@ -37,12 +40,15 @@ import {
 } from "../../constants/constants.ts";
 import { SelectItem } from "../../types/select-item.types.ts";
 import { Team } from "../../types/team.types.ts";
+import { zod4Resolver } from "mantine-form-zod-resolver";
 import { useAuthentication } from "../../contexts/AuthenticationContext/AuthenticationProvider.tsx";
 import Dictionary from "../../helpers/translation/dictionary.ts";
 import { useTranslation } from "react-i18next";
 import { PiPlusCircle } from "react-icons/pi";
 import EditUser from "./components/EditUser.tsx";
 
+const MIN_INPUT_HEIGHT = 80;
+const MIN_INPUT_WIDTH = 250;
 
 function Users() {
   const { users, addUser, updateUser, replaceUsers } = useUsers();
@@ -70,10 +76,9 @@ function Users() {
   const auth = useAuthentication();
   const { t } = useTranslation();
 
-  const handleAddNewClick = () => {
-    setEditingUserId("NEW_USER");
-    setEditingUserData({
-      id: "NEW_USER",
+  const form = useForm<User>({
+    initialValues: {
+      id: crypto.randomUUID(),
       name: "",
       surname: "",
       teamId: null,
@@ -84,13 +89,70 @@ function Users() {
       hideExpenses: false,
       temporaryPassword: "",
       hasTemporaryPassword: false,
-      isActive: true,
+      isActive: false,
       searchText: "",
       createUserId: "",
       createUserFullName: "",
       createDate: new Date(),
+    },
+    validate: zod4Resolver(userSchema),
+  });
+
+  const handleSave = async () => {
+    setIsLoading(true);
+
+    form.validate();
+
+    if (!form.isValid()) {
+      setIsLoading(false);
+      return;
+    }
+
+    if (
+      !checkIfUserIsValid({
+        ...form.values,
+        teamId: String(form.values.teamId),
+      })
+    ) {
+      setIsLoading(false);
+      return;
+    }
+
+    const userRequest: UserRequest = {
+      ...form.values,
+      name: form.values.name.trim(),
+      surname: form.values.surname.trim(),
+      title: form.values.title.trim(),
+      teamId: form.values.teamId ?? "",
+      email: form.values.email.trim(),
+      role: Number(form.values.role),
+      temporaryPassword: null,
+      hasTemporaryPassword: false,
+      isActive: true,
+    };
+
+    const response = await handleDataRequest<UserRequest, UserResponse>(
+      urls.user,
+      RequestType.Post,
+      userRequest,
+    );
+
+    if (!response.isSuccess) {
+      setIsLoading(false);
+      return;
+    }
+
+    addUser({
+      ...response.value,
+      role: response.value.role.toString(),
+      createUserFullName: auth.currentUserFullName,
     });
-    setEditErrors({});
+
+    form.reset();
+
+    toast.success(t(Dictionary.User.ADDED));
+
+    setIsLoading(false);
   };
 
   const handleEditClick = (user: User) => {
@@ -119,12 +181,18 @@ function Users() {
     ) {
       errors.name = t(Dictionary.User.NAME_MIN_LENGTH);
       hasError = true;
+    } else if (editingUserData.name.trim().length > 128) {
+      errors.name = t(Dictionary.User.NAME_MAX_LENGTH);
+      hasError = true;
     }
     if (
       !editingUserData.surname.trim() ||
       editingUserData.surname.trim().length < 2
     ) {
       errors.surname = t(Dictionary.User.SURNAME_MIN_LENGTH);
+      hasError = true;
+    } else if (editingUserData.surname.trim().length > 128) {
+      errors.surname = t(Dictionary.User.SURNAME_MAX_LENGTH);
       hasError = true;
     }
     if (
@@ -133,8 +201,14 @@ function Users() {
     ) {
       errors.title = t(Dictionary.User.TITLE_MIN_LENGTH);
       hasError = true;
+    } else if (editingUserData.title.trim().length > 128) {
+      errors.title = t(Dictionary.User.TITLE_MAX_LENGTH);
+      hasError = true;
     }
-    if (!editingUserData.email.includes("@acibadem.com")) {
+    if (editingUserData.email.trim().length > 128) {
+      errors.email = t(Dictionary.User.EMAIL_MAX_LENGTH);
+      hasError = true;
+    } else if (!editingUserData.email.trim().endsWith("@acibadem.com")) {
       errors.email = t(Dictionary.User.EMAIL_RULE);
       hasError = true;
     } else if (
@@ -169,64 +243,32 @@ function Users() {
       return;
     }
 
-    if (editingUserData.id === "NEW_USER") {
-      const userRequest: UserRequest = {
-        ...editingUserData,
-        name: editingUserData.name.trim(),
-        surname: editingUserData.surname.trim(),
-        teamId: editingUserData.teamId ?? "",
-        email: editingUserData.email.trim(),
-        role: Number(editingUserData.role),
-        temporaryPassword: null,
-        hasTemporaryPassword: false,
-        isActive: true,
-      };
+    const userRequest: UserRequest = {
+      ...editingUserData,
+      name: editingUserData.name.trim(),
+      surname: editingUserData.surname.trim(),
+      title: editingUserData.title.trim(),
+      teamId: editingUserData.teamId ?? "",
+      email: editingUserData.email.trim(),
+      role: Number(editingUserData.role),
+      temporaryPassword: null,
+      hasTemporaryPassword: false,
+    };
 
-      const response = await handleDataRequest<UserRequest, UserResponse>(
-        urls.user,
-        RequestType.Post,
-        userRequest,
-      );
+    const response = await handleDataRequest<UserRequest, UserResponse>(
+      `${urls.user}/${editingUserData.id}`,
+      RequestType.Put,
+      userRequest,
+    );
 
-      if (!response.isSuccess) {
-        setIsLoading(false);
-        return;
-      }
-
-      addUser({
-        ...response.value,
-        role: response.value.role.toString(),
-        createUserFullName: auth.currentUserFullName,
-      });
-
-      toast.success(t(Dictionary.User.ADDED));
-    } else {
-      const userRequest: UserRequest = {
-        ...editingUserData,
-        name: editingUserData.name.trim(),
-        surname: editingUserData.surname.trim(),
-        teamId: editingUserData.teamId ?? "",
-        email: editingUserData.email.trim(),
-        role: Number(editingUserData.role),
-        temporaryPassword: null,
-        hasTemporaryPassword: false,
-      };
-
-      const response = await handleDataRequest<UserRequest, UserResponse>(
-        `${urls.user}/${editingUserData.id}`,
-        RequestType.Put,
-        userRequest,
-      );
-
-      if (!response.isSuccess) {
-        setIsLoading(false);
-        return;
-      }
-
-      updateUser(editingUserData);
-
-      toast.success(t(Dictionary.User.UPDATED));
+    if (!response.isSuccess) {
+      setIsLoading(false);
+      return;
     }
+
+    updateUser(editingUserData);
+
+    toast.success(t(Dictionary.User.UPDATED));
 
     setEditingUserId(null);
     setEditingUserData(null);
@@ -387,17 +429,13 @@ function Users() {
   }, [users]);
 
   const memoizedUsers = useMemo(() => {
-    let userList = users
+    const userList = users
       .filter((x) => (showActiveUsers === true ? x.isActive : x))
       .filter((x) =>
         x.searchText.toLowerCase().includes(searchQuery.toLowerCase()),
       )
       .filter((x) => (selectedTeam ? x.teamId === selectedTeam : true))
       .filter((x) => (selectedRole ? x.role === selectedRole : true));
-
-    if (editingUserId === "NEW_USER" && editingUserData) {
-      userList = [editingUserData, ...userList];
-    }
 
     return userList.map((x: User) => {
       const isEditing = editingUserId === x.id;
@@ -443,24 +481,97 @@ function Users() {
 
   return (
     <Flex direction="column" h={PAGE_FLEX_HEIGHT}>
-      <Flex justify="space-between" align="center">
-        <Title order={3}>{t(Dictionary.Common.USERS)}</Title>
+      <Title order={3}>{t(Dictionary.Common.USERS)}</Title>
+      <Divider my={TITLE_DIVIDER_MY} />
+      <Card shadow="xs" radius="md" withBorder>
+        <Flex gap="xl" direction="row" justify="center">
+          <Flex gap="xl" direction="column" flex={1}>
+            <TextInput
+              {...form.getInputProps("name")}
+              withAsterisk
+              flex={1}
+              mih={MIN_INPUT_HEIGHT}
+              miw={MIN_INPUT_WIDTH}
+              label={t(Dictionary.User.NAME)}
+            />
+            <Select
+              {...form.getInputProps("teamId")}
+              withAsterisk
+              data={activeTeamSelectData}
+              searchable
+              comboboxProps={{ withinPortal: false }}
+              flex={1}
+              mih={MIN_INPUT_HEIGHT}
+              miw={MIN_INPUT_WIDTH}
+              label={t(Dictionary.User.TEAM_NAME)}
+            />
+          </Flex>
+          <Flex gap="xl" direction="column" flex={1}>
+            <TextInput
+              {...form.getInputProps("surname")}
+              withAsterisk
+              flex={1}
+              mih={MIN_INPUT_HEIGHT}
+              miw={MIN_INPUT_WIDTH}
+              label={t(Dictionary.User.SURNAME)}
+            />
+            <TextInput
+              {...form.getInputProps("email")}
+              withAsterisk
+              flex={1}
+              mih={MIN_INPUT_HEIGHT}
+              miw={MIN_INPUT_WIDTH}
+              label={t(Dictionary.User.EMAIL)}
+            />
+          </Flex>
+          <Flex gap="xl" direction="column" flex={1}>
+            <Autocomplete
+              {...form.getInputProps("title")}
+              withAsterisk
+              flex={1}
+              mih={MIN_INPUT_HEIGHT}
+              miw={MIN_INPUT_WIDTH}
+              label={t(Dictionary.User.TITLE)}
+              data={titleSelectData}
+              clearable
+              maxDropdownHeight={100}
+              comboboxProps={{
+                withinPortal: false,
+              }}
+            />
+            <Radio.Group
+              label={t(Dictionary.User.ROLE)}
+              withAsterisk
+              flex={1}
+              mih={MIN_INPUT_HEIGHT}
+              miw={MIN_INPUT_WIDTH}
+              {...form.getInputProps("role")}
+            >
+              <Group mt="xs">
+                {roles.map((x) => (
+                  <Radio key={x.value} value={x.value} label={x.label}></Radio>
+                ))}
+              </Group>
+            </Radio.Group>
+          </Flex>
+        </Flex>
         <Button
-          onClick={handleAddNewClick}
+          onClick={handleSave}
           variant="light"
+          loading={isLoading}
+          mt={15}
           leftSection={<PiPlusCircle size={22} />}
-          disabled={editingUserId !== null}
         >
           {t(Dictionary.User.ADD_NEW)}
         </Button>
-      </Flex>
-      <Divider my={TITLE_DIVIDER_MY} />
+      </Card>
       <Card mt="xs" withBorder radius="md" padding="sm" flex={1}>
         <Flex gap="xs" align="center" mb="md">
           <TextInput
             radius="xl"
             rightSection={<IconSearch size={SEARCH_ICON_SIZE} />}
             flex={5}
+            {...form.getInputProps("searchText")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />

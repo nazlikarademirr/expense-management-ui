@@ -142,7 +142,9 @@
     "departmentManager": "Department Manager",
     "departmentHead": "Department Head",
     "departmentMinLength": "Department must have at least 2 letters.",
-    "departmentMaxLength": "Department cannot exceed 128 characters."
+    "departmentMaxLength": "Department cannot exceed 128 characters.",
+    "departmentManagerMaxLength": "Department manager cannot exceed 128 characters.",
+    "departmentHeadMaxLength": "Department head cannot exceed 128 characters."
   },
 
   "project": {

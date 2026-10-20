@@ -80,6 +80,14 @@ const userSchema = z.object({
     .string()
     .trim()
     .superRefine((val, ctx) => {
+      if (val.length > 128) {
+        ctx.addIssue({
+          code: "custom",
+          message: t(Dictionary.User.EMAIL_MAX_LENGTH),
+        });
+        return;
+      }
+
       if (!val.endsWith("@acibadem.com")) {
         ctx.addIssue({
           code: "custom",
@@ -92,14 +100,6 @@ const userSchema = z.object({
         ctx.addIssue({
           code: "custom",
           message: t(Dictionary.User.EMAIL_MIN_LENGTH),
-        });
-        return;
-      }
-
-      if (val.length > 128) {
-        ctx.addIssue({
-          code: "custom",
-          message: t(Dictionary.User.EMAIL_MAX_LENGTH),
         });
       }
     }),
