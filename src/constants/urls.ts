@@ -29,18 +29,23 @@ interface Urls {
 //   login: "https://10.150.0.73/expense/core-service/api/authenticate",
 // } as const;
 
+const origin =
+  typeof window !== "undefined"
+    ? window.location.origin
+    : "http://localhost:3000";
+
 const urls: Urls = {
-  user: "https://localhost:7004/api/user",
-  team: "https://localhost:7004/api/team",
-  project: "https://localhost:7004/api/project",
-  userPassword: "https://localhost:7004/api/user-password",
-  temporaryPassword: "https://localhost:7004/api/temporary-password",
-  expense: "https://localhost:7165/api/expense",
-  expenseBulkDelete: "https://localhost:7165/api/expense/bulk-delete",
-  report: "https://localhost:7214/api/report",
-  reportBulkDelete: "https://localhost:7214/api/report/bulk-delete",
-  expenseExcel: "https://localhost:7214/api/expense-excel",
-  login: "https://localhost:7192/api/authenticate",
+  user: `${origin}/company-service/api/user`,
+  team: `${origin}/company-service/api/team`,
+  project: `${origin}/company-service/api/project`,
+  userPassword: `${origin}/company-service/api/user-password`,
+  temporaryPassword: `${origin}/company-service/api/temporary-password`,
+  expense: `${origin}/expense-service/api/expense`,
+  expenseBulkDelete: `${origin}/expense-service/api/expense/bulk-delete`,
+  report: `${origin}/report-service/api/report`,
+  reportBulkDelete: `${origin}/report-service/api/report/bulk-delete`,
+  expenseExcel: `${origin}/report-service/api/expense-excel`,
+  login: `${origin}/core-service/api/authenticate`,
 } as const;
 
 export default urls;

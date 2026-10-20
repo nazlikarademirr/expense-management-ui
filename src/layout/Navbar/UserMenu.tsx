@@ -28,7 +28,9 @@ function UserMenu() {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const [language, setLanguage] = useState<string | null>("");
+  const [language, setLanguage] = useState<string | null>(
+    localStorage.getItem("lang") || i18n.language || "tr",
+  );
 
   const { handleDataRequest } = useRequestHandler();
 
@@ -91,7 +93,7 @@ function UserMenu() {
         : false,
     );
 
-    setLanguage(localStorage.getItem("lang"));
+    setLanguage(localStorage.getItem("lang") || i18n.language || "tr");
   }, [auth.currentUser]);
 
   return (

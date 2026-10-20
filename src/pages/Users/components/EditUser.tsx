@@ -52,6 +52,15 @@ const EditUser = ({
 }: EditUserProps) => {
   const { t } = useTranslation();
 
+  const hasChanges =
+    editingUserData !== null &&
+    ((editingUserData.name ?? "") !== (x.name ?? "") ||
+      (editingUserData.surname ?? "") !== (x.surname ?? "") ||
+      (editingUserData.title ?? "") !== (x.title ?? "") ||
+      (editingUserData.teamId ?? "") !== (x.teamId ?? "") ||
+      (editingUserData.email ?? "") !== (x.email ?? "") ||
+      String(editingUserData.role ?? "") !== String(x.role ?? ""));
+
   return (
     <Table.Tr key={x.id}>
       <Table.Td>
@@ -74,7 +83,11 @@ const EditUser = ({
                     ...editingUserData!,
                     name: val,
                   });
-                  if (editErrors.name && val.trim().length >= 2)
+                  if (
+                    editErrors.name &&
+                    val.trim().length >= 2 &&
+                    val.trim().length <= 128
+                  )
                     setEditErrors((prev) => ({ ...prev, name: "" }));
                 }}
                 error={!!editErrors.name}
@@ -123,7 +136,11 @@ const EditUser = ({
                     ...editingUserData!,
                     surname: val,
                   });
-                  if (editErrors.surname && val.trim().length >= 2)
+                  if (
+                    editErrors.surname &&
+                    val.trim().length >= 2 &&
+                    val.trim().length <= 128
+                  )
                     setEditErrors((prev) => ({ ...prev, surname: "" }));
                 }}
                 error={!!editErrors.surname}
@@ -173,7 +190,11 @@ const EditUser = ({
                     ...editingUserData!,
                     title: val,
                   });
-                  if (editErrors.title && val.trim().length >= 2)
+                  if (
+                    editErrors.title &&
+                    val.trim().length >= 2 &&
+                    val.trim().length <= 128
+                  )
                     setEditErrors((prev) => ({ ...prev, title: "" }));
                 }}
                 error={!!editErrors.title}
@@ -277,7 +298,8 @@ const EditUser = ({
                   if (
                     editErrors.email &&
                     val.trim().length >= 14 &&
-                    val.includes("@acibadem.com")
+                    val.trim().length <= 128 &&
+                    val.trim().endsWith("@acibadem.com")
                   )
                     setEditErrors((prev) => ({ ...prev, email: "" }));
                 }}
@@ -375,8 +397,9 @@ const EditUser = ({
                 onClick={handleSaveEdit}
                 variant="light"
                 loading={isLoading}
+                disabled={!hasChanges}
               >
-                {x.id === "NEW_USER" ? t(Dictionary.User.ADD_NEW) : t(Dictionary.Common.SAVE)}
+                {t(Dictionary.Common.SAVE)}
               </Button>
               <Button
                 onClick={handleCancelEdit}

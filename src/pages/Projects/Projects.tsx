@@ -7,7 +7,6 @@ import { modals } from "@mantine/modals";
 import useProjects from "../../hooks/useProjects";
 import { useEffect, useMemo, useState } from "react";
 import {
-  Badge,
   Button,
   Card,
   Checkbox,
@@ -18,9 +17,9 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import { IconEdit, IconSearch } from "@tabler/icons-react";
+import { IconSearch } from "@tabler/icons-react";
 import toast from "react-hot-toast";
-import EditProjectModal from "./components/EditProjectModal";
+import EditProject from "./components/EditProject";
 import {
   createJsonPatchDocumentFromObject,
   JsonPatchKeyValuePair,
@@ -33,7 +32,6 @@ import {
   SEARCH_ICON_SIZE,
   TITLE_DIVIDER_MY,
 } from "../../constants/constants";
-import { IoMdAddCircleOutline, IoMdRemoveCircleOutline } from "react-icons/io";
 import { zod4Resolver } from "mantine-form-zod-resolver";
 import { useAuthentication } from "../../contexts/AuthenticationContext/AuthenticationProvider";
 import Dictionary from "../../helpers/translation/dictionary";
@@ -47,6 +45,12 @@ function Projects() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const [showActiveProjects, setShowActiveProjects] = useState(true);
+
+  const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
+  const [editingProjectData, setEditingProjectData] = useState<Project | null>(
+    null,
+  );
+  const [editErrors, setEditErrors] = useState<Record<string, string>>({});
 
   const { handleDataRequest } = useRequestHandler();
 
@@ -70,19 +74,86 @@ function Projects() {
     validate: zod4Resolver(projectSchema),
   });
 
-  const openEditProject = (project: Project) => {
-    modals.open({
-      title: <Title order={4}>{t(Dictionary.Project.EDIT)}</Title>,
-      size: "xl",
-      closeOnClickOutside: false,
-      children: (
-        <EditProjectModal
-          project={project}
-          updateProject={updateProject}
-          checkIfProjectIsValid={checkIfProjectIsValid}
-        />
-      ),
+  const handleEditClick = (project: Project) => {
+    setEditingProjectId(project.id);
+    setEditingProjectData({ ...project });
+    setEditErrors({});
+  };
+
+  const handleCancelEdit = () => {
+    setEditingProjectId(null);
+    setEditingProjectData(null);
+    setEditErrors({});
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingProjectData) return;
+
+    setIsLoading(true);
+
+    const errors: Record<string, string> = {};
+    let hasError = false;
+
+    if (
+      !editingProjectData.name.trim() ||
+      editingProjectData.name.trim().length < 2
+    ) {
+      errors.name = t(Dictionary.Project.NAME_MIN_LENGTH);
+      hasError = true;
+    } else if (editingProjectData.name.trim().length > 128) {
+      errors.name = t(Dictionary.Project.NAME_MAX_LENGTH);
+      hasError = true;
+    }
+
+    if (
+      !editingProjectData.code.trim() ||
+      editingProjectData.code.trim().length < 2
+    ) {
+      errors.code = t(Dictionary.Project.CODE_MIN_LENGTH);
+      hasError = true;
+    } else if (editingProjectData.code.trim().length > 128) {
+      errors.code = t(Dictionary.Project.CODE_MAX_LENGTH);
+      hasError = true;
+    }
+
+    if (hasError) {
+      setEditErrors(errors);
+      setIsLoading(false);
+      return;
+    }
+
+    if (!checkIfProjectIsValid(editingProjectData)) {
+      setIsLoading(false);
+      return;
+    }
+
+    const patchDocument = createJsonPatchDocumentFromObject({
+      name: editingProjectData.name.trim(),
+      code: editingProjectData.code.trim(),
     });
+
+    const response = await handleDataRequest<JsonPatchKeyValuePair[], Project>(
+      `${urls.project}/${editingProjectData.id}`,
+      RequestType.Patch,
+      patchDocument,
+    );
+
+    if (!response.isSuccess) {
+      setIsLoading(false);
+      return;
+    }
+
+    updateProject({
+      ...editingProjectData,
+      name: editingProjectData.name.trim(),
+      code: editingProjectData.code.trim(),
+    });
+
+    toast.success(t(Dictionary.Project.UPDATED));
+
+    setEditingProjectId(null);
+    setEditingProjectData(null);
+    setIsLoading(false);
   };
 
   const getProjects = async () => {
@@ -241,61 +312,35 @@ function Projects() {
         .filter((x) =>
           x.searchText.toLowerCase().includes(searchQuery.toLowerCase()),
         )
-        .map((x: Project) => (
-          <Table.Tr key={x.id}>
-            <Table.Td> {x.name} </Table.Td>
-            <Table.Td> {x.code} </Table.Td>
-            <Table.Td>
-              <Badge
-                size="md"
-                color={x.isActive ? "green" : "gray"}
-                variant="light"
-              >
-                {x.isActive
-                  ? t(Dictionary.Common.ACTIVE)
-                  : t(Dictionary.Common.PASSIVE)}
-              </Badge>
-            </Table.Td>
-            <Table.Td>
-              <Flex justify="center" gap={5}>
-                {x.isActive ? (
-                  <Button
-                    onClick={() => openEditProject(x)}
-                    variant="light"
-                    loading={isLoading}
-                    leftSection={<IconEdit size={18} />}
-                    color="blue"
-                  >
-                    {t(Dictionary.Common.EDIT)}
-                  </Button>
-                ) : (
-                  <div></div>
-                )}
-                <Button
-                  onClick={() => openProjectActivityModal(x)}
-                  variant="light"
-                  loading={isLoading}
-                  style={{
-                    color: x.isActive ? "red" : "green",
-                    backgroundColor: x.isActive ? "#ffeeee" : "#e7ffe0",
-                  }}
-                  leftSection={
-                    x.isActive ? (
-                      <IoMdRemoveCircleOutline size={20} />
-                    ) : (
-                      <IoMdAddCircleOutline size={20} />
-                    )
-                  }
-                >
-                  {x.isActive
-                    ? t(Dictionary.Project.DEACTIVATE)
-                    : t(Dictionary.Project.ACTIVATE)}
-                </Button>
-              </Flex>
-            </Table.Td>
-          </Table.Tr>
-        )),
-    [projects, showActiveProjects, searchQuery, isLoading],
+        .map((x: Project) => {
+          const isEditing = editingProjectId === x.id;
+
+          return (
+            <EditProject
+              key={x.id}
+              project={x}
+              isEditing={isEditing}
+              editingProjectData={editingProjectData}
+              setEditingProjectData={setEditingProjectData}
+              editErrors={editErrors}
+              setEditErrors={setEditErrors}
+              isLoading={isLoading}
+              handleSaveEdit={handleSaveEdit}
+              handleCancelEdit={handleCancelEdit}
+              handleEditClick={handleEditClick}
+              openProjectActivityModal={openProjectActivityModal}
+            />
+          );
+        }),
+    [
+      projects,
+      showActiveProjects,
+      searchQuery,
+      isLoading,
+      editingProjectId,
+      editingProjectData,
+      editErrors,
+    ],
   );
 
   useEffect(() => {
@@ -360,6 +405,7 @@ function Projects() {
             highlightOnHover
             withTableBorder
             withColumnBorders
+            layout="fixed"
           >
             <Table.Thead>
               <Table.Tr>

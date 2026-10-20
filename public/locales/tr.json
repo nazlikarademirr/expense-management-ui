@@ -141,7 +141,9 @@
     "departmentManager": "Bölüm Yöneticisi",
     "departmentHead": "Bölüm Üst Yöneticisi",
     "departmentMinLength": "Bölüm en az 2 harften oluşmalıdır.",
-    "departmentMaxLength": "Bölüm 128 karakteri geçemez."
+    "departmentMaxLength": "Bölüm 128 karakteri geçemez.",
+    "departmentManagerMaxLength": "Bölüm yöneticisi 128 karakteri geçemez.",
+    "departmentHeadMaxLength": "Bölüm üst yöneticisi 128 karakteri geçemez."
   },
 
   "project": {

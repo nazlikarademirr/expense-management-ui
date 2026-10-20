@@ -33,6 +33,18 @@ const teamSchema = z.object({
     .trim()
     .min(2, t(Dictionary.Team.DEPARTMENT_MIN_LENGTH))
     .max(128, t(Dictionary.Team.DEPARTMENT_MAX_LENGTH)),
+  departmentManager: z
+    .string()
+    .trim()
+    .max(128, t(Dictionary.Team.DEPARTMENT_MANAGER_MAX_LENGTH))
+    .nullable()
+    .optional(),
+  departmentHead: z
+    .string()
+    .trim()
+    .max(128, t(Dictionary.Team.DEPARTMENT_HEAD_MAX_LENGTH))
+    .nullable()
+    .optional(),
 });
 
 export default teamSchema;
